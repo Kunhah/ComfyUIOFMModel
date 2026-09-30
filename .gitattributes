@@ -4,3 +4,4 @@ comfy_api_nodes/apis/__init__.py linguist-generated
 
 # Windows double-click launchers need CRLF line endings.
 *.bat text eol=crlf
+*.sh text eol=lf

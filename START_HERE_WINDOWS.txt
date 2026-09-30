@@ -1,7 +1,8 @@
 HOW TO START COMFYUI ON WINDOWS
 ===============================
 
-You do not need to know how to code. You only double-click two files.
+You do not need to know how to code. You only double-click files.
+(On Linux: run  ./start_comfyui.sh  and  ./settings_api_keys.sh  instead. Everything else is the same.)
 
 
 1. GET THE FOLDER
@@ -28,12 +29,51 @@ You do not need to know how to code. You only double-click two files.
    Next time, just double-click START_COMFYUI.bat again: it starts in under a minute.
 
 
-3. OPEN A WORKFLOW
-   In ComfyUI click  Workflow -> Open  and pick a file from the "ai_influencer" folder,
-   then click "Run" (or "Queue"). Your pictures are saved in the "output" folder.
+3. PICK A WORKFLOW: WHAT IS FREE, WHAT COSTS MONEY
+   In ComfyUI click  Workflow -> Open  and pick a file from the "ai_influencer" folder.
+   Then click "Run". Your pictures are saved in the "output" folder.
+
+   There are two kinds of workflows:
+
+   ONLINE (costs Comfy credits, works on any computer, no downloads)
+     01  Character creation (makes 16 big pictures per full run: this adds up)
+     04  Photo to video
+     05  Automated production
+     06  Train your own character model (uses fal.ai credits instead, with its own key)
+     These use paid online services. Each paid box shows its price before you click Run.
+     The credits come from the Comfy account you signed in with.
+
+   ON YOUR OWN GRAPHICS CARD (free to run, but needs a strong card and big downloads)
+     07, 08, 09, 09b, 10   Make pictures with Krea 2 on your computer
+     These need AI model files (about 14-23 GB, downloaded once and shared by all of them)
+     and an NVIDIA card with 8 GB of memory or more (RTX 3060 Ti or better). On a weaker card
+     or a laptop, use the online workflows instead.
+     11  Video with MiniMax: only on a rented pod (needs a huge graphics card)
+
+   FREE AND LIGHT
+     09c  Practice version of 09b, to learn the buttons (no downloads, no graphics card)
+     12   Adds a camera look (grain, colour) to a picture you already have
+     13   Pick the best pictures from a batch
 
 
-4. CHANGE YOUR API KEYS LATER
+4. "MISSING MODELS": DO I HAVE TO DOWNLOAD THEM?
+   When you open a workflow from the "own graphics card" group, ComfyUI lists the model files
+   it uses on the right side. You do NOT have to download anything just to look at a workflow.
+   Ignore that list. Only when you click "Run" does a window open that:
+     - tells you if your graphics card can run it at all (if not, it says so: don't download),
+     - explains each file and its size,
+     - lets you pick the Krea 2 version that fits your card:
+         Low memory (GGUF)    8-11 GB cards: RTX 3060 Ti, 3070, 4060, 5060
+                              (also installs a free add-on; restart ComfyUI once afterwards)
+         Standard (FP8)       cards with 12 GB or more
+         Small (NVFP4)        RTX 50-series cards with 12 GB or more
+         Full quality (BF16)  very big cards only (40 GB or more)
+       The window marks the one that fits your card as "recommended".
+     - and downloads only the files that workflow needs, into the right folder.
+   You can open that window any time: Extensions menu -> "AI Influencer: Models".
+
+
+5. CHANGE YOUR API KEYS LATER
    Double-click  SETTINGS_API_KEYS.bat , fill in the boxes, click Save,
    then close the black ComfyUI window and start START_COMFYUI.bat again.
    Each key has a "Get key" button that opens the website where you create it.
@@ -42,8 +82,8 @@ You do not need to know how to code. You only double-click two files.
 
 IF SOMETHING GOES WRONG
    - Read the last lines in the black window; they usually say what happened.
-   - Without an NVIDIA graphics card, ComfyUI runs on the processor. That works, but
-     local image generation is very slow. The workflows that use online services still work.
+   - Without an NVIDIA graphics card, ComfyUI runs on the processor. The online workflows
+     still work; the "own graphics card" ones are far too slow there.
    - To redo the installation, delete the "venv" folder and double-click START_COMFYUI.bat.
    - Still stuck? Take a screenshot of the black window and send it to the person who
      shared this folder with you.

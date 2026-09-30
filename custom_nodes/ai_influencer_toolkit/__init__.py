@@ -36,6 +36,13 @@ except Exception as e:  # never let the pod queue take the nodes down with it
     logging.warning("AI Influencer pod queue disabled: %s", e)
 
 try:
+    from . import model_routes  # noqa: F401  (registers the /ai_influencer/models routes)
+except Exception as e:
+    import logging
+
+    logging.warning("AI Influencer Models window disabled: %s", e)
+
+try:
     from . import input_listing
 
     input_listing.install()  # LoadImage dropdown includes input/ai_influencer/** subfolders
@@ -44,7 +51,7 @@ except Exception as e:
 
     logging.warning("AI Influencer LoadImage subfolder listing disabled: %s", e)
 
-WEB_DIRECTORY = "./web"  # web/pod_queue.js: the "Pod queue" panel on the canvas
+WEB_DIRECTORY = "./web"  # web/pod_queue.js: the "Pod queue" panel; web/model_helper.js: the "Models" window
 
 
 class AIInfluencerToolkitExtension(ComfyExtension):

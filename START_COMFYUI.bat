@@ -1,6 +1,6 @@
 @echo off
 rem Double-click to start ComfyUI. The first run installs Python packages into .\venv (a few GB, 10-30 min).
-rem All the real work is in custom_nodes\ai_influencer_toolkit\tools\windows_launcher.py.
+rem All the real work is in custom_nodes\ai_influencer_toolkit\tools\launcher.py.
 setlocal
 cd /d "%~dp0"
 title ComfyUI
@@ -37,7 +37,7 @@ if not exist "venv\Scripts\python.exe" (
 )
 
 :run
-"venv\Scripts\python.exe" custom_nodes\ai_influencer_toolkit\tools\windows_launcher.py %*
+"venv\Scripts\python.exe" custom_nodes\ai_influencer_toolkit\tools\launcher.py %*
 echo.
 echo ComfyUI has stopped. If that was not on purpose, the reason is in the text above.
 pause

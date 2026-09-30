@@ -22,7 +22,8 @@ Before building anything, the current ComfyUI (v0.35.0) was inspected end to end
 **Krea 2, GPT Image 2.5, Seedance 2.5, and OpenRouter all already exist as official, first-party
 ComfyUI nodes** (`comfy_api_nodes/`) — no third-party custom nodes were installed, so there is
 nothing here to audit for maintenance/security risk, and `git pull`-ing ComfyUI updates these
-nodes for you. Two things from the brief work differently than assumed, and are documented in
+nodes for you. The one exception is optional: choosing the Low memory (GGUF) Krea 2 version for
+8 GB cards installs city96's ComfyUI-GGUF, pinned to one commit (see [Models](#models)). Two things from the brief work differently than assumed, and are documented in
 full below rather than silently reinterpreted:
 
 1. **Auth is one Comfy account key, not four provider keys.** See [Credentials](#credentials).
@@ -67,7 +68,14 @@ plus `requirements.txt`, opens the key window once, and then starts ComfyUI with
 Later runs start right away, and they reinstall only when `requirements.txt` changes.
 `SETTINGS_API_KEYS.bat` opens that key window (`tools/configure_gui.py`, a window version of
 `configure.py`). `START_HERE_WINDOWS.txt` has the same steps for people who don't code. The logic
-is in `tools/windows_launcher.py`, and `START_COMFYUI.bat --reinstall` redoes the installs.
+is in `tools/launcher.py`, and `START_COMFYUI.bat --reinstall` redoes the installs.
+
+**On Linux:** `./start_comfyui.sh` does the same thing (Python itself comes from your package
+manager; the script says which package to install when it's missing), and `./settings_api_keys.sh`
+opens the key window, or asks in the terminal when Tk isn't installed. The launcher installs
+PyTorch only when the venv doesn't have it yet, and it adds `--cpu` when the installed torch can't
+run on the card (as with this box's GTX 1060). Extra `main.py` arguments go after `--`, as in
+`./start_comfyui.sh -- --port 8190`.
 
 ## Credentials (API keys)
 
@@ -590,17 +598,56 @@ held jobs are not in this PC's log.
 
 ### Models
 
-Download links are in each workflow's note and embedded in the loader nodes (ComfyUI offers to
-download missing ones):
+Nothing needs downloading until you run a local workflow. Opening one only shows a notice with how
+much it needs. **Pressing Run** with a file missing opens the **Models** window
+(`web/model_helper.js`, server side `model_routes.py`) and nothing is queued. The window says what
+each file is for and how big it is, checks the graphics card ComfyUI is using (too weak, CPU only,
+or which Krea 2 version fits), and downloads only what the switched-on nodes load into the right
+`models/` folder, with progress. An interrupted download resumes. It's always available from
+**Extensions → AI Influencer: Models**. While "Hold for the pod" is on, Run isn't checked, because
+the pod has its own models. ComfyUI's own missing-models list on the right still appears when a
+workflow opens. It lists the same files, and nothing has to be downloaded from there.
+
+From a terminal (or on a pod), `tools/models.py` does the same:
+
+```bash
+python custom_nodes/ai_influencer_toolkit/tools/models.py                  # GPU advice + every model, downloaded or not
+python custom_nodes/ai_influencer_toolkit/tools/models.py 09b --download   # what 09b needs, and get the missing ones
+python custom_nodes/ai_influencer_toolkit/tools/models.py --version nvfp4  # choose the Krea 2 version
+```
+
+**Krea 2 versions.** The workflows are saved with the FP8 files. When a workflow opens, the Krea 2
+loaders are switched to the version chosen in `AI_INFLUENCER_KREA_VERSION` (set in the Models
+window) if that one is downloaded, or else to any downloaded version:
+
+| Version | Files (model + text encoder) | For |
+|---|---|---|
+| `fp8`, Standard (default) | `krea2_turbo_fp8_scaled` + `qwen3vl_4b_fp8_scaled`, 18.4 GB | most cards with 12 GB+; under 16 GB part of it waits in RAM (slower) |
+| `nvfp4`, Small | `krea2_turbo_nvfp4` + `qwen3vl_4b_fp8_scaled`, 12.9 GB | RTX 50-series with 12 GB+ (fast NVFP4 math); slightly lower quality |
+| `gguf`, Low memory | `krea2_turbo-Q4_K_M.gguf` ([vantagewithai/Krea-2-Turbo-GGUF](https://huggingface.co/vantagewithai/Krea-2-Turbo-GGUF)) + `qwen3vl_4b_fp8_scaled`, 12.7 GB | 8-11 GB cards (RTX 3060 Ti, 3070, 4060, 5060); a 4-bit Krea 2 that fits in 8 GB, with a little less fine detail |
+| `bf16`, Full quality | `krea2_turbo_bf16` + `qwen3vl_4b_bf16`, 35.2 GB | 40 GB+ (RTX 6000 Pro class) |
+
+The GGUF file loads with ComfyUI-GGUF's `UnetLoaderGGUF` node instead of `UNETLoader`, so opening
+a workflow with that version chosen swaps the loader node too (same MODEL output, links kept). The
+text encoder stays the FP8 one: ComfyUI unloads it before the image model runs, so it doesn't
+compete for the 8 GB. ComfyUI-GGUF comes from GitHub at the commit pinned in `model_catalog.py`
+(`GGUF_COMMIT`) and goes into `custom_nodes/ComfyUI-GGUF/` (git-ignored), with its one requirement
+(`gguf`). The Models window or `tools/models.py <workflow> --download` installs it when the GGUF
+version is chosen. ComfyUI has to be restarted once afterwards, and until then opening a workflow
+keeps the normal loader.
+
+The pod (`pod_bootstrap.sh`) always installs FP8, so jobs held for the pod should use FP8. The whole
+list, with sizes and URLs, is `model_catalog.py`:
 
 | File | Folder |
 |---|---|
-| `krea2_turbo_fp8_scaled.safetensors` | `models/diffusion_models/` |
-| `qwen3vl_4b_fp8_scaled.safetensors` | `models/text_encoders/` |
+| Krea 2 (one version, above) | `models/diffusion_models/` + `models/text_encoders/` |
 | `qwen_image_vae.safetensors` | `models/vae/` |
+| `krea2_style_reference.safetensors` | `models/loras/` (09b: follow the reference photos) |
+| `sdpose_wholebody_fp16.safetensors` | `models/checkpoints/` (09b: poses) |
 | `seedvr2_3b_int8_convrot.safetensors` | `models/diffusion_models/` (Workflow 08 upscale) |
 | `seedvr2_ema_vae_fp16.safetensors` | `models/vae/` (Workflow 08 upscale) |
-| `sigclip_vision_patch14_384.safetensors` | `models/clip_vision/` (optional scoring) |
+| `sigclip_vision_patch14_384.safetensors` | `models/clip_vision/` (Workflow 07 scoring) |
 | `birefnet.safetensors` | `models/background_removal/` (background blur) |
 | your checkpoints | `models/loras/<project>/` |
 

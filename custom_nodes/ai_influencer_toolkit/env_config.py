@@ -36,6 +36,10 @@ SETTINGS = [
             default="http://127.0.0.1:8188"),
     Setting("AI_INFLUENCER_DEFAULT_PROJECT", "Character used when a node's project field is blank "
             "(folder name under input/ai_influencer/ and output/projects/).", default="default"),
+    Setting("AI_INFLUENCER_KREA_VERSION", "Which Krea 2 version the local workflows use: fp8 (standard, 12 GB+ "
+            "cards), gguf (low memory, 8 GB cards), nvfp4 (small, RTX 50-series) or bf16 (full quality, 40 GB+). "
+            "Set it in the Models window.",
+            default="fp8"),
     Setting("FAL_KEY", "fal.ai key, only for the fal LoRA nodes (Workflow 06) and train_lora.py / eval_lora.py.",
             secret=True, url="https://fal.ai/dashboard/keys"),
     Setting("FAL_BUDGET_USD", "Refuse fal.ai jobs estimated above this many dollars (0 = no limit).", default="0"),
