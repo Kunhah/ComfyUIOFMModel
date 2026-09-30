@@ -14,7 +14,10 @@ from .nodes_automask import AIInfluencerAutoMask
 from .nodes_camera import AIInfluencerCameraImperfections
 from .nodes_character import AIInfluencerLoadCharacter, AIInfluencerPromptBuilder
 from .nodes_local_lora import AIInfluencerApplyCharacterLora, AIInfluencerLoraCheckpointTester
+from .nodes_pick import AIInfluencerPickCandidate, AIInfluencerPickWinner
 from .nodes_save import AIInfluencerSaveImage, AIInfluencerSaveVideo
+from .nodes_sheet import AIInfluencerCustomSheet, AIInfluencerSheetPrompt, AIInfluencerSliceSheet
+from .nodes_variation import AIInfluencerPlacementVariations
 
 try:
     from .nodes_fal_lora import AIInfluencerFalLoraImage, AIInfluencerTrainCharacterLoRA
@@ -57,6 +60,12 @@ class AIInfluencerToolkitExtension(ComfyExtension):
             AIInfluencerBlurBackground,
             AIInfluencerCameraImperfections,
             AIInfluencerAutoMask,
+            AIInfluencerPlacementVariations,
+            AIInfluencerPickCandidate,
+            AIInfluencerPickWinner,
+            AIInfluencerSheetPrompt,
+            AIInfluencerSliceSheet,
+            AIInfluencerCustomSheet,
             *_FAL_LORA_NODES,
         ]
 

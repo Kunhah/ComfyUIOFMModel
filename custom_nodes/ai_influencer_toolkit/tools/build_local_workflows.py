@@ -8,6 +8,8 @@ user/default/workflows/ai_influencer/. Re-run after editing this file; it overwr
     10_preview_then_4k.json          cheap small previews, then upscale the one you picked to 4K
     12_camera_pass.json              the camera-imperfections pass on an image you already have
     09c_practice_no_gpu.json         09b's clicks without Krea 2, to rehearse before renting a GPU
+    01_character_creation.json       GPT Image 2.5: front portrait candidates -> character sheets -> example photos
+    13_pick_winner.json              pick one of a 09b queue's candidates into final/
 """
 from __future__ import annotations
 
@@ -15,6 +17,16 @@ import json
 import os
 
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+DEFAULT_ANGLES = "\n".join(f"{yaw}: {words}" for yaw, words in [
+        (0, "the body facing the camera"),
+        (35, "the body turned slightly toward frame-right, face toward the camera"),
+        (-35, "the body turned slightly toward frame-left, face toward the camera"),
+        (65, "three-quarter view, the body turned toward frame-right, head turned back toward the camera"),
+        (-65, "three-quarter view, the body turned toward frame-left, head turned back toward the camera"),
+        (90, "seen in profile, facing frame-right"),
+        (-90, "seen in profile, facing frame-left"),
+        (160, "seen from behind, looking back over the shoulder toward the camera"),
+    ])  # the node's own default (nodes_variation.ANGLES); kept here so this script needs no ComfyUI
 OUT_DIR = os.path.join(REPO_ROOT, "user", "default", "workflows", "ai_influencer")
 
 KREA_UNET = "krea2_turbo_fp8_scaled.safetensors"
@@ -270,8 +282,10 @@ def lora_model(g: Graph, unet, x: int, y: int, project: str):
     return apply
 
 
-def save_node(g: Graph, image_src, pos, stage: str, model: str, prompt_src=None, operation="generate", project="lina", provider="local_krea2"):
-    save = g.node("AIInfluencerSaveImage", pos, [project, stage, provider, model, operation, "", "", "", -1, 0, "", ""],
+def save_node(g: Graph, image_src, pos, stage: str, model: str, prompt_src=None, operation="generate", project="lina", provider="local_krea2",
+              quality="", size="", n_refs=0, subfolder=""):
+    # "fixed" is the frontend's control_after_generate value for the `seed` widget, which it adds to any seed input
+    save = g.node("AIInfluencerSaveImage", pos, [project, stage, provider, model, operation, "", quality, size, -1, "fixed", n_refs, "", "", subfolder],
                   size=(360, 420), inputs=[("images", "IMAGE"), ("prompt_text", "STRING")], outputs=[("IMAGE", "IMAGE"), ("output_path", "STRING")])
     g.link(image_src, 0, save, "images")
     if prompt_src is not None:
@@ -435,7 +449,7 @@ It copies composition, not an exact skeleton. If the pose must match exactly, a 
 
 **06 Camera imperfections** adds the ISO grain, lens fringing, corner falloff and white balance drift a real camera leaves behind, which is what keeps the result from reading as AI. Same node and same defaults as Workflow 08.
 
-For **edits of an existing image** (hair color, outfit, background) use Workflow 03 (GPT Image 2.5 edit), with the image as the candidate and a canonical photo as the reference.
+For **edits of an existing image** (hair color, outfit, background) there is no workflow any more: Workflow 03 (GPT Image 2.5 edit) was removed. Re-generate here with a changed prompt instead.
 
 {MODELS_NOTE}""", size=(560, 700))
     g.dump("09_krea2_pose_transfer.json")
@@ -561,25 +575,17 @@ next to each input (`--in-place` to overwrite, `--out DIR` to collect them elsew
 
 
 def build_09c():
-    """09b with the diffusion step taken out: same mask, same prompt fields, same filters, same
-    save, but her photo is pasted into the mask instead of generated. No model files, no GPU, so
-    it runs on any machine and you can rehearse the clicks before the pod meter starts."""
+    """09b with the diffusion step taken out: same candidates-per-queue, same mask, same prompt
+    fields, same filters, same save, but where 09b generates her, the skeleton Krea 2 would be
+    given is pasted into the mask instead. No model files, no GPU, so it runs on any machine and
+    you can rehearse the clicks before the pod meter starts."""
     g = Graph()
-    g.group("01 LOCATION PHOTO (paint the mask here)", 0, 0, 400, 700, color="#b58b2a")
+    g.group("01 LOCATION PHOTO (painting a mask is optional)", 0, 0, 400, 700, color="#b58b2a")
     plate = g.node("LoadImage", (30, 60), ["ai_influencer/MyCharacter/scenes/practice_plate.png", "image"], size=(340, 380),
-                   outputs=[("IMAGE", "IMAGE"), ("MASK", "MASK")], title="LOCATION plate (mask this one)")
+                   outputs=[("IMAGE", "IMAGE"), ("MASK", "MASK")], title="LOCATION plate")
     scaled = g.node("ImageScaleToTotalPixels", (30, 480), ["lanczos", 1.0, 16], size=(340, 130),
                     inputs=[("image", "IMAGE")], outputs=[("IMAGE", "IMAGE")])
     g.link(plate, 0, scaled, "image")
-
-    g.group("02 THE MASK", 430, 0, 400, 220, color="#b58b2a")
-    grow = g.node("GrowMask", (460, 60), [12, True], size=(340, 110),
-                  inputs=[("mask", "MASK")], outputs=[("MASK", "MASK")], title="Grow mask (feather the seam)")
-    g.link(plate, 1, grow, "mask")
-
-    g.group("03 HER (stands in for the Krea 2 generation)", 430, 260, 400, 500, color="#8A8")
-    her = g.node("LoadImage", (460, 320), ["ai_influencer/MyCharacter/dataset/29.png", "image"], size=(340, 380),
-                 outputs=[("IMAGE", "IMAGE"), ("MASK", "MASK")], title="Any photo of her")
 
     g.group("04 PROMPT (the real thing, same fields as 09b)", 860, 0, 830, 760, color="#b58b2a")
     _, builder = character_prompt(
@@ -591,15 +597,43 @@ def build_09c():
         camera="85mm f/1.8 portrait lens, shallow depth of field, background strongly out of focus, eye level",
         lighting="warm golden hour light",
     )
-    prompt_preview = g.node("PreviewAny", (890, 260), size=(320, 420), inputs=[("source", "*")], outputs=[("STRING", "STRING")], title="The prompt Krea 2 would get")
-    g.link(builder, 0, prompt_preview, "source")
 
-    g.group("05 FIXED BACKGROUND", 1720, 0, 400, 300, color="#a1309b")
-    composite = g.node("ImageCompositeMasked", (1750, 60), [0, 0, True], size=(340, 150),
+    g.group("02 CANDIDATES: a place and an angle per seed (same node as 09b)", 430, 0, 400, 1000, color="#8A8")
+    vary = g.node("AIInfluencerPlacementVariations", (460, 60), [0, "randomize", 4, "placement + angle", "new angle per seed", 0.15, 0.85, 0.45, 0.7, 0.35, DEFAULT_ANGLES],
+                  size=(340, 400), inputs=[("plate", "IMAGE"), ("prompt", "STRING"), ("pose_keypoints", "POSE_KEYPOINT")],
+                  outputs=[("keypoints", "POSE_KEYPOINT"), ("prompt", "STRING"), ("seed", "INT"), ("folder", "STRING"), ("label", "STRING")],
+                  title="Placement & Angle per Seed")
+    for o in vary["outputs"]:
+        o["shape"] = 6  # list output
+    g.link(scaled, 0, vary, "plate")
+    g.link(builder, 0, vary, "prompt")
+    labels = g.node("PreviewAny", (460, 500), size=(340, 460), inputs=[("source", "*")], outputs=[("STRING", "STRING")], title="What each candidate got")
+    g.link(vary, 4, labels, "source")
+
+    g.group("03 WHERE SHE GOES (per candidate)", 0, 1040, 1500, 620, color="#8A8")
+    auto = g.node("AIInfluencerAutoMask", (30, 1100), ["auto", 4.0, "center"], size=(340, 200),
+                  inputs=[("plate", "IMAGE"), ("painted_mask", "MASK"), ("pose_keypoints", "POSE_KEYPOINT")],
+                  outputs=[("mask", "MASK"), ("preview", "IMAGE"), ("method", "STRING"), ("keypoints", "POSE_KEYPOINT")], title="Auto Mask")
+    g.link(scaled, 0, auto, "plate")
+    g.link(plate, 1, auto, "painted_mask")
+    g.link(vary, 0, auto, "pose_keypoints")
+    grow = g.node("GrowMask", (30, 1340), [12, True], size=(340, 110),
+                  inputs=[("mask", "MASK")], outputs=[("MASK", "MASK")], title="Grow mask (feather the seam)")
+    g.link(auto, 0, grow, "mask")
+    skeleton = g.node("SDPoseDrawKeypoints", (400, 1100), [True, True, True, False, 4, 2, 0.5, True], size=(320, 260),
+                      inputs=[("keypoints", "POSE_KEYPOINT")], outputs=[("IMAGE", "IMAGE")], title="Skeleton (picture 3 in 09b)")
+    g.link(auto, 3, skeleton, "keypoints")
+    masks = g.node("PreviewImage", (750, 1100), size=(340, 500), inputs=[("images", "IMAGE")], title="Masks (red = where she goes)")
+    g.link(auto, 1, masks, "images")
+    skel_preview = g.node("PreviewImage", (1120, 1100), size=(340, 500), inputs=[("images", "IMAGE")], title="Skeletons")
+    g.link(skeleton, 0, skel_preview, "images")
+
+    g.group("05 FIXED BACKGROUND (the skeleton stands in for Krea 2)", 1720, 0, 400, 300, color="#a1309b")
+    composite = g.node("ImageCompositeMasked", (1750, 60), [0, 0, False], size=(340, 150),
                        inputs=[("destination", "IMAGE"), ("source", "IMAGE"), ("mask", "MASK")],
                        outputs=[("IMAGE", "IMAGE")], title="Keep background pixel-identical")
     g.link(scaled, 0, composite, "destination")
-    g.link(her, 0, composite, "source")
+    g.link(skeleton, 0, composite, "source")
     g.link(grow, 0, composite, "mask")
 
     g.group("06 FILTERS (the same two nodes as 09b group 08)", 1720, 340, 400, 560, color="#a1309b")
@@ -610,9 +644,13 @@ def build_09c():
     g.link(grow, 0, blur, "subject_mask")  # on the pod this mask comes from BiRefNet instead
     shot = camera_imperfections(g, blur, 1750, 620)
 
-    g.group("07 OUTPUT", 2150, 0, 800, 560, color="#444")
-    save_node(g, shot, (2180, 60), "misc_image", "practice run (no GPU)", builder,
-              operation="other", project="", provider="other")
+    g.group("07 OUTPUT: one folder per queue, like 09b", 2150, 0, 800, 560, color="#444")
+    save = save_node(g, shot, (2180, 60), "local_candidate", "practice run (no GPU)", None,
+                     operation="other", project="", provider="other")
+    g.link(vary, 1, save, "prompt_text", widget=True)
+    g.link(vary, 2, save, "seed", widget=True)
+    g.link(vary, 4, save, "notes", widget=True)
+    g.link(vary, 3, save, "subfolder", widget=True)
     cmp_ = g.node("ImageCompare", (2570, 60), [], size=(340, 480), inputs=[("image_a", "IMAGE"), ("image_b", "IMAGE")], title="Plate / result")
     g.link(scaled, 0, cmp_, "image_a")
     g.link(shot, 0, cmp_, "image_b")
@@ -623,29 +661,269 @@ Workflow 09b's clicks, minus Krea 2. Everything here runs on CPU in a few second
 learn the moves before the vast.ai meter starts. Queue it as is first, then change things.
 
 ## The loop you are rehearsing
-1. **01**: right-click the plate -> **Open in MaskEditor**, paint where she should be, Save. The
-   shape you paint is where she lands and how big she is. `practice_plate.png` already has one
-   painted, so you can see the effect before doing your own.
-2. **03**: any photo of her. On the pod this loader doesn't exist -- Krea 2 *generates* what goes
-   inside the mask, using the character LoRA and the reference photos. Here the photo is just
-   pasted in so you can see where the mask puts it.
-3. **04**: the real Prompt Builder. Type in the fields and watch *The prompt Krea 2 would get*:
-   the mandatory "don't look AI" block is appended for you, every time, whatever you type.
-4. **05**: `ImageCompositeMasked` -- outside the painted mask, the plate is bit-identical. That is
-   what "fixed background" means.
-5. **06**: the two filter nodes, exactly as 09b runs them: background blur, then ISO grain, corner
-   fringing, falloff and a white balance drift. Queue again for a different grain roll.
-6. **07**: saved to `output/projects/MyCharacter/outputs/images/misc/` and logged, with a
-   plate/result slider.
+1. **01**: the location photo. Painting a mask is optional: with nothing painted, each candidate
+   gets its own place. Paint one (right-click -> **Open in MaskEditor**) and every candidate stands
+   where you painted -- only the angle still changes. `practice_plate.png` may already carry a
+   painted mask; the *Masks* preview and *What each candidate got* show which case you are in.
+2. **02**: *Placement & Angle per Seed* turns one queue into **4 candidates**, each with its own
+   seed, its own spot in the photo (left to right, nearer or further back) and its own body angle
+   (front, three-quarter, profile, back over the shoulder). The angle is drawn in the skeleton
+   *and* written into the prompt, so they never disagree. Queue again: new seed, new set.
+3. **03**: the masks and skeletons it made. In 09b the skeleton is picture 3 for Krea 2.
+4. **04**: the real Prompt Builder. The mandatory "don't look AI" block is appended for you.
+5. **05**: here the *skeleton* is pasted into the mask so you can see where she would stand. On
+   the pod Krea 2 paints her there. Outside the mask the plate is bit-identical.
+6. **06**: background blur, then ISO grain, fringing, falloff, white balance drift.
+7. **07**: the 4 candidates land together in `outputs/images/candidates/9b_<seed>/`, each logged
+   with its label. Then open **Workflow 13** to pick the winner -- also a free, local step. (These
+   practice files say `practice_run` in their names; delete their folders when you're done.)
 
 ## What is missing on purpose
-Krea 2 + your character LoRA, the identity reference LoRA, and the SDPose skeleton -- all of them
-need model files and a big GPU. In 09b they sit between groups 04 and 05. Nothing else differs:
-same mask, same prompt node, same filters, same save.
-
-One honest difference: here the blur's subject mask is the mask you painted; on the pod BiRefNet
-cuts her out properly, so hair and shoulders blend instead of following your brush.""", size=(560, 780))
+Krea 2 + your character LoRA, the identity reference LoRA, SDPose's pose extraction from a photo,
+and BiRefNet -- all need model files. Nothing else differs from 09b.""", size=(560, 820))
     g.dump("09c_practice_no_gpu.json")
+
+
+# ---------------------------------------------------------------------------------------------
+# Workflow 01: character creation on GPT Image 2.5 (partner API, moderated -- keep it SFW)
+
+GPT_MODEL = "gpt-image-2.5-flare"
+
+IDENTITY_FROM_PICTURES = (
+    "Picture 1 is the person; every attached picture shows the same person. Keep their face, bone structure, hair, "
+    "skin tone, marks and body exactly as in the pictures. Do not beautify or change the face."
+)
+
+# Example photos for LoRA training: (what the shot shows, clothing, setting, camera, light). They
+# change expression, framing, outfit, place and light on purpose: a LoRA trained on one t-shirt
+# learns the t-shirt.
+EXAMPLE_SHOTS = [
+    ("close-up of the face, facing the camera, natural smile showing the upper teeth",
+     "the same clothes as in picture 1", "small bright kitchen", "eye level, phone camera", "morning daylight from a window"),
+    ("from the waist up, facing the camera, arms relaxed",
+     "grey hoodie", "city sidewalk, daytime", "eye level, phone camera", "overcast daylight"),
+    ("full body from the top of the head to the feet, standing, facing the camera, both feet visible",
+     "black t-shirt, blue jeans, white sneakers", "park path", "eye level, 28mm phone camera", "late afternoon sun"),
+    ("sitting at a cafe table, looking out of the window, laughing",
+     "cream knit sweater", "cafe interior", "slightly above eye level, phone camera", "warm indoor light"),
+]
+# (sheet, which earlier sheets it sees besides the front portrait). Studio's four, then this pack's.
+SHEETS = [
+    ("face-turnaround", []),
+    ("full-body-360", ["face-turnaround"]),
+    ("expression-grid", ["face-turnaround"]),
+    ("upper-body", ["face-turnaround"]),
+    ("outfit-grid", ["face-turnaround", "full-body-360"]),
+    ("pose-grid", ["face-turnaround", "full-body-360"]),
+    ("lighting-grid", ["face-turnaround"]),
+    ("expression-grid-extra", ["face-turnaround"]),
+]
+TEMPLATES_DIR = "character-sheet-studio/.claude/skills/character-sheet-studio/templates"
+
+CANDIDATE_PROMPT = (
+    "Photo of a fictional adult: DESCRIBE THE CHARACTER HERE - gender, age, build, face shape, eyes, hair, skin, distinguishing marks. "
+    "Front-facing head and shoulders portrait, looking straight into the camera, relaxed neutral expression, mouth closed. "
+    "Plain white t-shirt. Plain light grey wall. Eye level, 50mm. Soft window light. "
+    "Natural unretouched photo with real skin texture."
+)
+
+
+def shot_text(action, clothing, setting, camera, light):
+    return (f"Photo of the person: {action}. Clothing: {clothing}. Setting: {setting}. Camera: {camera}. Light: {light}. "
+            f"{IDENTITY_FROM_PICTURES} Natural unretouched photo with real skin texture.")
+
+
+def gpt_image(g: Graph, pos, prompt, refs=(), n=1, size="1024x1536", quality="medium", title=None, prompt_src=None):
+    """OpenAI GPT Image 2.5 partner node. refs become picture 1, 2, ... in order."""
+    node = g.node("OpenAIGPTImageNodeV2", pos, [prompt, GPT_MODEL, size, 1024, 1024, "auto", quality, n, 0, "fixed"],
+                  size=(420, 460), outputs=[("IMAGE", "IMAGE")], title=title)
+    node["inputs"] = []
+    for i, ref in enumerate(refs, 1):
+        node["inputs"].append({"label": f"image_{i}", "name": f"model.images.image_{i}", "shape": 7, "type": "IMAGE", "link": None})
+        g.link(ref, 0, node, f"model.images.image_{i}")
+    k = len(refs) + 1
+    node["inputs"].append({"label": f"image_{k}", "name": f"model.images.image_{k}", "shape": 7, "type": "IMAGE", "link": None})
+    node["inputs"].append({"name": "model.mask", "shape": 7, "type": "MASK", "link": None})
+    if prompt_src is not None:
+        g.link(prompt_src, 0, node, "prompt", widget=True)
+    node["color"], node["bgcolor"] = "#432", "#653"  # partner API: billed, moderated
+    return node
+
+
+def gpt_save(g: Graph, image_src, pos, stage, quality, size, n_refs, subfolder=""):
+    return save_node(g, image_src, pos, stage, GPT_MODEL, None, operation="generate" if n_refs == 0 else "edit",
+                     project="", provider="openai_gpt_image", quality=quality, size=size, n_refs=n_refs, subfolder=subfolder)
+
+
+CUSTOM_LOCKS = [
+    "Soft grey seamless studio background, the same grey behind every view.",
+    "Flat even softbox lighting, no hard shadows.",
+    "Eye level, identical framing and scale.",
+    "Keep the face and identity exactly as in the reference images.",
+    "No text, no labels, no watermark.",
+]  # = sheet_slicing.DEFAULT_LOCKS / DEFAULT_AVOID
+CUSTOM_AVOID = [
+    "No borders and no drop shadows between the panels.",
+    "Leave a clear strip of empty grey background between neighbouring panels; no figure overlaps another panel.",
+    "Do not crop the person at a panel edge.",
+]
+
+
+def slicer(g: Graph, sheet_img, template_src, pos):
+    cut = g.node("AIInfluencerSliceSheet", pos, ["", "", "plain grey studio background", 0.09, 0.05], size=(400, 380),
+                 inputs=[("sheet_image", "IMAGE"), ("template", "STRING")], outputs=[("crops", "IMAGE"), ("captions", "STRING")],
+                 title="Slice into one picture per view")
+    for o in cut["outputs"]:
+        o["shape"] = 6  # list output
+    g.link(sheet_img, 0, cut, "sheet_image")
+    g.link(template_src, 0, cut, "template")
+    return cut
+
+
+def build_01():
+    g = Graph()
+    g.group("01 FRONT PORTRAIT CANDIDATES — GPT Image 2.5 (queue this first)", 0, 0, 1320, 1000, color="#b58b2a")
+    candidates = gpt_image(g, (30, 60), CANDIDATE_PROMPT, n=4, title="WHO SHE IS + 4 candidates per call (change the seed for 4 new ones)")
+    gpt_save(g, candidates, (480, 60), "character_candidate", "medium", "1024x1536", 0)
+    own = g.node("LoadImage", (30, 580), ["example.png", "image"], size=(400, 380), outputs=[("IMAGE", "IMAGE"), ("MASK", "MASK")],
+                 title="OR your own front photo (Ctrl+B to switch it on)", mode=BYPASS)
+    pick = g.node("AIInfluencerPickCandidate", (480, 580), [0], size=(360, 110),
+                  inputs=[("candidates", "IMAGE"), ("own_image", "IMAGE")], outputs=[("image", "IMAGE")],
+                  title="PICK: 0 = just show them. Then 1-4 and queue again")
+    g.link(candidates, 0, pick, "candidates")
+    g.link(own, 0, pick, "own_image")
+    front = g.node("PreviewImage", (880, 580), size=(400, 380), inputs=[("images", "IMAGE")], title="Picture 1 of every request below")
+    g.link(pick, 0, front, "images")
+
+    col_w = 880
+    row_h = 900
+    g.group("02 CHARACTER SHEETS (16:9, 4K) -> sliced into one picture per view, captioned, for the LoRA", 0, 1040, 4 * col_w + 20, 2 * row_h + 20, color="#a1309b")
+    sheets = {}
+    for i, (sheet, sees) in enumerate(SHEETS):
+        x, y = 30 + (i % 4) * col_w, 1100 + (i // 4) * row_h
+        sp = g.node("AIInfluencerSheetPrompt", (x, y), [sheet, TEMPLATES_DIR], size=(420, 110), outputs=[("prompt", "STRING")], title=sheet)
+        refs = [pick, *(sheets[n] for n in sees)]
+        img = gpt_image(g, (x, y + 140), "", refs=refs, size="3840x2160", title=f"{sheet} ({len(refs)} picture{'s' * (len(refs) > 1)} of her)", prompt_src=sp)
+        sheets[sheet] = img
+        gpt_save(g, img, (x + 450, y), "character_sheet", "medium", "3840x2160", len(refs), subfolder=sheet)
+        slicer(g, img, sp, (x + 450, y + 460))
+
+    # your own sheet: muted until you switch it on (Ctrl+M on the group's nodes), so it costs nothing by default
+    x, y = 30, 1100 + 2 * row_h
+    first_custom = len(g.nodes)
+    g.group("02b YOUR OWN SHEET (muted: select its nodes, Ctrl+M to switch on)", 0, y - 20, col_w + 20, row_h - 40, color="#a1309b")
+    custom = g.node("AIInfluencerCustomSheet", (x, y + 40), [
+        "Outfit Variations",
+        "seen straight from the front, standing, the whole person visible from the top of the head to both feet, "
+        "wearing the same clothes as in the reference images, neutral expression",
+        "\n".join(f"seen straight from the front, standing, the whole person visible, wearing {o}" for o in (
+            "a red raincoat and rubber boots", "a ski jacket and ski pants",
+            "a white linen shirt and beige shorts", "a black leather jacket and dark jeans")),
+        "\n".join(CUSTOM_LOCKS), "\n".join(CUSTOM_AVOID), ""], size=(420, 560), outputs=[("template", "STRING")], title="Custom Character Sheet")
+    img = gpt_image(g, (x + 450, y + 40), "", refs=[pick, sheets["face-turnaround"], sheets["full-body-360"]], size="3840x2160",
+                    title="your sheet (3 pictures of the person)", prompt_src=custom)
+    gpt_save(g, img, (x + 450, y + 520), "character_sheet", "medium", "3840x2160", 3, subfolder="custom")
+    slicer(g, img, custom, (x + 450, y + 560))
+    for n in g.nodes[first_custom:]:
+        n["mode"] = NEVER
+
+    g.group("03 EXAMPLE PHOTOS FOR THE LORA — each sees the front portrait + face and full-body sheets", 0, 1100 + 3 * row_h + 20, 4 * col_w + 20, 620, color="#3f789e")
+    for i, shot in enumerate(EXAMPLE_SHOTS):
+        x, y = 30 + i * col_w, 1100 + 3 * row_h + 80
+        refs = [pick, sheets["face-turnaround"], sheets["full-body-360"]]
+        img = gpt_image(g, (x, y), shot_text(*shot), refs=refs, title=f"Example {i + 1}")
+        gpt_save(g, img, (x + 450, y), "character_canonical", "medium", "1024x1536", len(refs), subfolder="reference_set")
+
+    g.note((1360, 0), """# 01 Character creation (GPT Image 2.5)
+
+Makes character sheets and a few example photos to train the character's LoRA on. From then on the
+**local** workflows (08-12) make everything else. Everything below can be changed on the canvas --
+see **Make it yours** at the end.
+
+**1. Queue.** Describe the character in the first node (the only place they are ever described in
+words): it makes **4 front portraits in one call** (`n`). *PICK* is 0, so everything after it is
+skipped and you only see the candidates (saved to `outputs/images/candidates/`).
+
+**2. Pick.** Set *PICK* to the one you want and queue again. The candidates call is **not**
+repeated: its inputs didn't change, so ComfyUI reuses it (that's why its seed is `fixed` -- GPT
+ignores the seed, it only tells ComfyUI "new call"; change it by hand for new candidates). Already
+have a front photo? Ctrl+B *OR your own front photo*, load it, and it wins over the candidates.
+
+**3. The rest runs by itself**, each request carrying the pictures that pin the character down:
+
+| Sheet | Shows | Pictures it sees |
+|---|---|---|
+| face-turnaround | 7 head angles | front portrait |
+| full-body-360 | 7 body angles | front + face-turnaround |
+| expression-grid | 9 expressions | front + face-turnaround |
+| upper-body | 7 torso angles | front + face-turnaround |
+| outfit-grid | 7 outfits | front + face + full-body sheets |
+| pose-grid | 9 poses | front + face + full-body sheets |
+| lighting-grid | 7 lights | front + face-turnaround |
+| expression-grid-extra | 9 more expressions | front + face-turnaround |
+| 4 example photos | outfit, place and light changes | front + face + full-body sheets |
+
+The first four sheets are Character Sheet Studio's templates, the other four ship with the node
+pack; all are sent unchanged. After the first node nothing describes the person in words -- the
+studio's rule: extra words compete with the pictures and cause drift.
+
+**Slicing.** A LoRA trained on whole sheets learns to draw sheets. *Slice into one picture per
+view* cuts each sheet into its panels (it finds each figure on the grey background, so a hand over
+a panel line stays whole) and writes one caption per crop: the trigger word from character.json
+plus that panel's own wording ("lit by a warm tungsten table lamp", "wearing a grey sports
+hoodie"...), so the LoRA learns the light, outfit or pose as a variable, not as the person. ~60
+crops per character, in `outputs/images/sheet_crops/<sheet>_<time>/`. Grid panels are about
+640x1080. Look at them before copying into `input/ai_influencer/<project>/dataset/` -- the captions
+assume GPT kept the panel order. Sheets made earlier: `tools/slice_sheets.py`.
+
+**No blur, no camera pass here, on purpose:** these are training and reference pictures. Grain or a
+blurred background in the dataset gets learned by the LoRA.
+
+**Cost at medium quality** (see each node's price badge): 4 candidates ≈ $0.06, 8 sheets ≈ $0.55,
+4 examples ≈ $0.24 -- about **$0.85 per character**. Slicing is free (local, CPU).
+
+## Make it yours
+- **Which sheets:** any *Character Sheet Prompt* can be switched to another sheet in its dropdown.
+  Don't want one? Select its GPT node and Ctrl+M (mute): its save and slicer are skipped too.
+- **Your own sheet:** group 02b. Type a title, the large view, and **one panel per line** (outfits,
+  poses, lights, props, hairstyles... describe what changes, not the person), then select the
+  group's nodes and Ctrl+M to switch it on. Fill *save_as* to keep it as a template: it appears in
+  every sheet dropdown (press R) and in `user/ai_influencer/sheet_templates/`. A file there with the
+  same name as a built-in sheet replaces it -- that's how you edit the built-in outfit list.
+- **Which pictures a sheet sees:** rewire its `image_1..` inputs (up to 16; each one is billed).
+- **Quality, size, count:** on each GPT node (`quality`, `size`, `n`). Sheets at `2048x1152` cost
+  ~$0.02 less each, but the sliced panels get half as big.
+- **Example photos:** edit their prompts; copy an *Example* + its Save node for more.
+- **Captions:** *caption_prefix* (default: the trigger word), *caption_suffix*, and *threshold* /
+  *padding* for how tightly figures are cut, on each slicer.
+
+**Account risk.** This is a partner API: proxied through Comfy, billed to your account, moderated
+by OpenAI. Keep it to ordinary clothed pictures of a fictional adult. Anything else belongs on the
+local pipeline (README, "Responsible use and account risk").""", size=(780, 1100))
+    g.dump("01_character_creation.json")
+
+
+def build_13():
+    g = Graph()
+    g.group("PICK THE WINNER (runs on this PC, no GPU, never held for the pod)", 0, 0, 900, 700, color="#8A8")
+    g.node("AIInfluencerPickWinner", (30, 60), ["(no candidate folders yet)", 0], size=(820, 600),
+           outputs=[("winner", "IMAGE")], title="Pick Winner")
+    g.note((930, 0), """# 13 Pick the winner
+
+Workflow 09b saves the candidates of each queue into their own folder,
+`outputs/images/candidates/9b_<seed>/` -- also when the queue ran on the pod (the folders are
+downloaded to this PC at the same path). A batch of 10 held jobs is 10 folders.
+
+1. Press **R** on the canvas so the folder list is current, pick a **folder** (newest first).
+2. Queue with **winner = 0**: all its candidates show in the node, in order (#1 first). The
+   label of each -- seed, where she stands, which angle -- is in `logs/generations.jsonl`.
+3. Set **winner** to the number you want, queue: that file is **copied** (not re-saved: same
+   pixels, same embedded workflow) to `outputs/images/final/9b_<seed>_winner<N>.png`.
+4. Next folder.
+
+The *Pod queue*'s "Hold for the pod" never holds this workflow: it only reads files on this PC.
+Dragging a candidate PNG onto the canvas restores its whole 09b setup, seed included.""", size=(520, 460))
+    g.dump("13_pick_winner.json")
 
 
 if __name__ == "__main__":
@@ -655,3 +933,5 @@ if __name__ == "__main__":
     build_10()
     build_12()
     build_09c()
+    build_01()
+    build_13()

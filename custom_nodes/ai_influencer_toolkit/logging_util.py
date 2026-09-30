@@ -32,11 +32,17 @@ import time
 
 import folder_paths
 
+try:
+    from . import env_config
+except ImportError:  # the tools/ scripts import this file as a top-level module
+    import env_config
+
 _SAFE_NAME_RE = re.compile(r"[^A-Za-z0-9_-]+")
 
 OUTPUT_STAGE_SUBDIR: dict[str, str] = {
     "character_candidate": os.path.join("outputs", "images", "candidates"),
     "character_canonical": os.path.join("outputs", "images", "final"),
+    "character_sheet": os.path.join("outputs", "images", "sheets"),
     "krea_candidate": os.path.join("outputs", "images", "candidates"),
     "gpt_refined": os.path.join("outputs", "images", "final"),
     "local_candidate": os.path.join("outputs", "images", "candidates"),
@@ -96,13 +102,15 @@ def character_json_path(project: str) -> str:
     return os.path.join(get_project_output_dir(project), "character.json")
 
 
-def output_filename_prefix(project: str, stage: str, basename: str) -> str:
+def output_filename_prefix(project: str, stage: str, basename: str, subfolder: str = "") -> str:
     """A filename_prefix relative to ComfyUI's output/ directory, safe to pass straight to
-    folder_paths.get_save_image_path / ImageSaveHelper / SaveVideo's own path resolution."""
+    folder_paths.get_save_image_path / ImageSaveHelper / SaveVideo's own path resolution.
+    `subfolder` is one extra folder level inside the stage's folder (sanitized to a single name)."""
     sub = OUTPUT_STAGE_SUBDIR.get(stage, os.path.join("outputs", "images", "misc"))
     ensure_project(project)
     basename = _SAFE_NAME_RE.sub("_", basename or "gen").strip("._") or "gen"
-    return os.path.join("projects", project, sub, basename)
+    extra = _SAFE_NAME_RE.sub("_", subfolder or "").strip("._")
+    return os.path.join("projects", project, sub, *([extra] if extra else []), basename)
 
 
 def get_logs_path() -> str:

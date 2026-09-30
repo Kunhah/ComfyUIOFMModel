@@ -1,0 +1,52 @@
+{
+  "task": "Upper Body, one single canvas, 16:9",
+  "identity": {
+    "source": "the attached reference images only",
+    "rule": "The person is the person in the reference images. Only the views described below change."
+  },
+  "layout": {
+    "hero": {
+      "position": "left half",
+      "content": "seen straight from the front, both shoulders square to the viewer, the chest and both arms visible, framed from the top of the head to the waist, neutral expression with the mouth closed"
+    },
+    "grid": {
+      "position": "right half",
+      "rows": 2,
+      "cols": 3,
+      "reading_order": "left to right, top to bottom",
+      "cells": [
+        {
+          "view": "the torso turned toward frame-left, the right shoulder nearer the viewer than the left, the left ear hidden, both arms visible, framed from the top of the head to the waist, neutral expression with the mouth closed"
+        },
+        {
+          "view": "the torso turned toward frame-right, the left shoulder nearer the viewer than the right, the right ear hidden, both arms visible, framed from the top of the head to the waist, neutral expression with the mouth closed"
+        },
+        {
+          "view": "the body turned to face frame-left, only the left side of the torso visible, the right arm hidden behind the body, the left ear visible, framed from the top of the head to the waist, neutral expression with the mouth closed"
+        },
+        {
+          "view": "the body turned to face frame-right, only the right side of the torso visible, the left arm hidden behind the body, the right ear visible, framed from the top of the head to the waist, neutral expression with the mouth closed"
+        },
+        {
+          "view": "seen from behind, both shoulder blades and both arms visible, no face visible, framed from the top of the head to the waist"
+        },
+        {
+          "view": "seen from behind and turned toward frame-left, the left shoulder blade nearer the viewer, the line of the left cheek just visible past the hair, framed from the top of the head to the waist"
+        }
+      ]
+    }
+  },
+  "locks": {
+    "background_grey": "Soft grey seamless studio background, the same grey behind every view.",
+    "lighting_flat": "Flat even softbox lighting, no hard shadows.",
+    "camera_eye_50": "Eye level, 50mm, identical framing and scale.",
+    "identity_close_person": "Keep the face and identity exactly as in the reference images.",
+    "no_text": "No text, no labels, no watermark.",
+    "hair_clear_of_ears": "Hair falls behind both shoulders so both ears and the jawline stay visible."
+  },
+  "consistency": "Every panel shows a different visible step of the torso rotating and no two panels repeat the same view. Frame every panel from the top of the head to the waist. Keep the expression, wardrobe, scale and framing identical across all seven panels.",
+  "must_avoid": [
+    "No borders and no drop shadows between the panels.",
+    "Do not crop the head, arms or waist at a panel edge."
+  ]
+}

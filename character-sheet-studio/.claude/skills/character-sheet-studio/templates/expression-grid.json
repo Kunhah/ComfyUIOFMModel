@@ -1,0 +1,58 @@
+{
+  "task": "Expression Grid, one single canvas, 16:9",
+  "identity": {
+    "source": "the attached reference images only",
+    "rule": "The person is the person in the reference images. Only the views described below change."
+  },
+  "layout": {
+    "hero": {
+      "position": "left half",
+      "content": "seen straight from the front, the head not turned, framed as a head-and-shoulders portrait, a neutral expression, the mouth closed and relaxed"
+    },
+    "grid": {
+      "position": "right half",
+      "rows": 2,
+      "cols": 4,
+      "reading_order": "left to right, top to bottom",
+      "cells": [
+        {
+          "view": "seen straight from the front, the head not turned, framed as a head-and-shoulders portrait, a soft closed-mouth smile, the eyes slightly narrowed"
+        },
+        {
+          "view": "seen straight from the front, the head not turned, framed as a head-and-shoulders portrait, a wide open smile showing the upper teeth"
+        },
+        {
+          "view": "seen straight from the front, the head not turned, framed as a head-and-shoulders portrait, both eyes fully closed, the mouth relaxed"
+        },
+        {
+          "view": "seen straight from the front, the head not turned, framed as a head-and-shoulders portrait, the eyes turned to the side while the head stays facing forward"
+        },
+        {
+          "view": "seen straight from the front, the head not turned, framed as a head-and-shoulders portrait, one eyebrow raised, the mouth closed"
+        },
+        {
+          "view": "seen straight from the front, the head not turned, framed as a head-and-shoulders portrait, a firm serious expression, the brows slightly drawn together"
+        },
+        {
+          "view": "seen straight from the front, the head not turned, framed as a head-and-shoulders portrait, the eyes wide open and both brows lifted, the mouth slightly open"
+        },
+        {
+          "view": "seen straight from the front, the head not turned, framed as a head-and-shoulders portrait, a playful wink, one eye fully closed while the other stays open, a slight closed-mouth smile"
+        }
+      ]
+    }
+  },
+  "locks": {
+    "background_grey": "Soft grey seamless studio background, the same grey behind every view.",
+    "lighting_flat": "Flat even softbox lighting, no hard shadows.",
+    "camera_eye_50": "Eye level, 50mm, identical framing and scale.",
+    "identity_close_person": "Keep the face and identity exactly as in the reference images.",
+    "no_text": "No text, no labels, no watermark.",
+    "hair_clear_of_ears": "Hair falls behind both shoulders so both ears and the jawline stay visible."
+  },
+  "consistency": "Every panel shows the same head at the same size, framed identically, with the eyes on the same horizontal line across the whole sheet. Only the expression differs between panels and no two panels repeat the same expression.",
+  "must_avoid": [
+    "No borders and no drop shadows between the panels.",
+    "Do not crop any head at a panel edge."
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "task": "Lighting Study, one single canvas, 16:9",
+  "identity": {
+    "source": "the attached reference images only",
+    "rule": "The person is the person in the reference images. Only the views described below change."
+  },
+  "layout": {
+    "hero": {
+      "position": "left half",
+      "content": "seen straight from the front, the head not turned, framed as a head-and-shoulders portrait, neutral expression with the mouth closed, lit by flat even softbox lighting with no hard shadows"
+    },
+    "grid": {
+      "position": "right half",
+      "rows": 2,
+      "cols": 3,
+      "reading_order": "left to right, top to bottom",
+      "cells": [
+        {
+          "view": "seen straight from the front, the head not turned, framed as a head-and-shoulders portrait, neutral expression with the mouth closed, lit by soft daylight from a large window at frame-left, the far cheek in gentle shadow"
+        },
+        {
+          "view": "seen straight from the front, the head not turned, framed as a head-and-shoulders portrait, neutral expression with the mouth closed, lit by hard midday sun from high above, short dark shadows under the brows, nose and chin"
+        },
+        {
+          "view": "seen straight from the front, the head not turned, framed as a head-and-shoulders portrait, neutral expression with the mouth closed, lit by warm low golden hour sun from behind, a bright rim of light along the hair and shoulders, the face softly filled"
+        },
+        {
+          "view": "seen straight from the front, the head not turned, framed as a head-and-shoulders portrait, neutral expression with the mouth closed, lit by flat overcast daylight, very soft shadows, slightly cool colour"
+        },
+        {
+          "view": "seen straight from the front, the head not turned, framed as a head-and-shoulders portrait, neutral expression with the mouth closed, lit by a warm tungsten table lamp at frame-right, the rest of the face falling into shadow"
+        },
+        {
+          "view": "seen straight from the front, the head not turned, framed as a head-and-shoulders portrait, neutral expression with the mouth closed, lit by cool blue and magenta light from neon signs at night, coloured highlights on both cheeks"
+        }
+      ]
+    }
+  },
+  "locks": {
+    "background_grey": "Soft grey seamless studio background, the same grey behind every view.",
+    "identity_close_person": "Keep the face and identity exactly as in the reference images.",
+    "no_text": "No text, no labels, no watermark.",
+    "camera_eye_50": "Eye level, 50mm, identical framing and scale.",
+    "same_clothes": "The same clothes as in the reference images in every view.",
+    "hair_clear_of_ears": "Hair falls behind both shoulders so both ears and the jawline stay visible."
+  },
+  "consistency": "Every panel shows the same head at the same size, framed identically, with the eyes on the same horizontal line across the whole sheet. Only the light falling on the person differs between panels; the grey background stays grey.",
+  "must_avoid": [
+    "No borders and no drop shadows between the panels.",
+    "Leave a clear strip of empty grey background between neighbouring panels; no figure overlaps another panel.",
+    "Do not crop any head at a panel edge."
+  ]
+}

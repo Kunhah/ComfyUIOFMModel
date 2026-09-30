@@ -1,0 +1,54 @@
+{
+  "task": "Outfit Variations, one single canvas, 16:9",
+  "identity": {
+    "source": "the attached reference images only",
+    "rule": "The person is the person in the reference images. Only the views described below change."
+  },
+  "layout": {
+    "hero": {
+      "position": "left half",
+      "content": "seen straight from the front, standing, the whole person visible from the top of the head to both feet, wearing the same clothes as in the reference images, neutral expression with the mouth closed"
+    },
+    "grid": {
+      "position": "right half",
+      "rows": 2,
+      "cols": 3,
+      "reading_order": "left to right, top to bottom",
+      "cells": [
+        {
+          "view": "seen straight from the front, standing, the whole person visible from the top of the head to both feet, wearing a white t-shirt, straight blue jeans and white sneakers, neutral expression with the mouth closed"
+        },
+        {
+          "view": "seen straight from the front, standing, the whole person visible from the top of the head to both feet, wearing a tailored navy blazer over a white shirt, grey trousers and black loafers, neutral expression with the mouth closed"
+        },
+        {
+          "view": "seen straight from the front, standing, the whole person visible from the top of the head to both feet, wearing a light linen summer shirt, beige shorts and canvas sneakers, neutral expression with the mouth closed"
+        },
+        {
+          "view": "seen straight from the front, standing, the whole person visible from the top of the head to both feet, wearing a grey sports hoodie, black joggers and running shoes, neutral expression with the mouth closed"
+        },
+        {
+          "view": "seen straight from the front, standing, the whole person visible from the top of the head to both feet, wearing a long camel wool coat over a black turtleneck, dark jeans and ankle boots, neutral expression with the mouth closed"
+        },
+        {
+          "view": "seen straight from the front, standing, the whole person visible from the top of the head to both feet, wearing a formal all-black evening outfit and polished black shoes, neutral expression with the mouth closed"
+        }
+      ]
+    }
+  },
+  "locks": {
+    "background_grey": "Soft grey seamless studio background, the same grey behind every view.",
+    "identity_close_person": "Keep the face and identity exactly as in the reference images.",
+    "no_text": "No text, no labels, no watermark.",
+    "lighting_flat": "Flat even softbox lighting, no hard shadows.",
+    "camera_full_body": "Eye level, 50mm, identical framing and scale, both feet on one shared baseline.",
+    "same_hair": "Same hairstyle in every view."
+  },
+  "consistency": "Every panel shows the same person at the same scale and pose. Only the clothing differs between panels and no two panels repeat an outfit.",
+  "must_avoid": [
+    "No borders and no drop shadows between the panels.",
+    "Leave a clear strip of empty grey background between neighbouring panels; no figure overlaps another panel.",
+    "Do not crop the head, hands or feet at a panel edge.",
+    "Every outfit fully covers the torso."
+  ]
+}

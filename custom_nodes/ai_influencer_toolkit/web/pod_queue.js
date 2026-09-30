@@ -28,9 +28,12 @@ function workflowName() {
 }
 
 // --- the Queue button, intercepted while holding ---------------------------------------------
+// Picking a winner (Workflow 13) needs no GPU and works on files already on this PC: never hold it.
+const RUNS_HERE = new Set(["AIInfluencerPickWinner", "PreviewImage", "PreviewAny"]);
+const runsHere = output => Object.values(output || {}).every(n => RUNS_HERE.has(n.class_type));
 const originalQueuePrompt = api.queuePrompt.bind(api);
 api.queuePrompt = async function (number, promptData, options) {
-  if (!hold) return originalQueuePrompt(number, promptData, options);
+  if (!hold || runsHere(promptData.output)) return originalQueuePrompt(number, promptData, options);
   const res = await post("/add", { prompt: promptData.output, workflow: promptData.workflow, name: workflowName() });
   if (res.error) throw new Error(res.error);
   toast("Held for the pod", `#${res.n} · ${res.count} waiting` + (res.notes?.length ? ` · ${res.notes.join("; ")}` : ""),

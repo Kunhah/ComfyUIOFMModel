@@ -15,7 +15,7 @@ from . import logging_util, pricing
 
 _PROVIDERS = ["krea", "local_krea2", "openai_gpt_image", "bytedance_seedream", "bytedance_seedance", "openrouter", "other"]
 _OPERATIONS = ["generate", "edit", "refine", "image_to_video", "other"]
-_IMAGE_STAGES = ["character_candidate", "character_canonical", "krea_candidate", "gpt_refined", "local_candidate", "local_final", "misc_image"]
+_IMAGE_STAGES = ["character_candidate", "character_canonical", "krea_candidate", "gpt_refined", "local_candidate", "local_final", "character_sheet", "misc_image"]
 _VIDEO_STAGES = ["seedance_video", "minimax_h3_video", "misc_video"]
 
 
@@ -45,6 +45,8 @@ class AIInfluencerSaveImage(IO.ComfyNode):
                 IO.Int.Input("n_reference_images", default=0, min=0, max=20, optional=True, tooltip="Reference images sent with the request, if any (affects GPT Image cost estimate)."),
                 IO.String.Input("job_id", default="", optional=True, tooltip="Provider job/request id if you have one on hand."),
                 IO.String.Input("notes", default="", optional=True),
+                IO.String.Input("subfolder", default="", optional=True,
+                                tooltip="Optional folder inside the stage's folder, e.g. one per queue so its candidates stay together."),
             ],
             outputs=[IO.Image.Output(), IO.String.Output(display_name="output_path")],
             hidden=[IO.Hidden.prompt, IO.Hidden.extra_pnginfo],
@@ -67,10 +69,11 @@ class AIInfluencerSaveImage(IO.ComfyNode):
         n_reference_images: int = 0,
         job_id: str = "",
         notes: str = "",
+        subfolder: str = "",
     ) -> IO.NodeOutput:
         project = logging_util.sanitize_project_name(project)
         basename = f"{stage}_{model.replace(' ', '_') or 'gen'}"
-        filename_prefix = logging_util.output_filename_prefix(project, stage, basename)
+        filename_prefix = logging_util.output_filename_prefix(project, stage, basename, subfolder)
 
         results: list[ui.SavedResult] = ui.ImageSaveHelper.save_images(
             images, filename_prefix=filename_prefix, folder_type=IO.FolderType.output, cls=cls

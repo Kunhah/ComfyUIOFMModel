@@ -1,0 +1,60 @@
+{
+  "task": "Pose Sheet, one single canvas, 16:9",
+  "identity": {
+    "source": "the attached reference images only",
+    "rule": "The person is the person in the reference images. Only the views described below change."
+  },
+  "layout": {
+    "hero": {
+      "position": "left half",
+      "content": "seen straight from the front, standing, the whole person visible from the top of the head to both feet, arms relaxed at the sides, neutral expression with the mouth closed"
+    },
+    "grid": {
+      "position": "right half",
+      "rows": 2,
+      "cols": 4,
+      "reading_order": "left to right, top to bottom",
+      "cells": [
+        {
+          "view": "the whole person visible from the top of the head to the feet, walking toward the camera mid-stride, relaxed expression"
+        },
+        {
+          "view": "the whole person visible from the top of the head to the feet, sitting on a plain grey stool, one knee raised, hands resting on the knee, relaxed expression"
+        },
+        {
+          "view": "the whole person visible from the top of the head to the feet, standing with both arms crossed over the chest, relaxed expression"
+        },
+        {
+          "view": "the whole person visible from the top of the head to the feet, standing with one hand on the hip, weight on one leg, relaxed expression"
+        },
+        {
+          "view": "the whole person visible from the top of the head to the feet, crouching low, forearms resting on the knees, relaxed expression"
+        },
+        {
+          "view": "the whole person visible from the top of the head to the feet, seen from behind, looking back over the shoulder toward the camera, relaxed expression"
+        },
+        {
+          "view": "the whole person visible from the top of the head to the feet, standing with both hands in the pockets, leaning slightly to one side, relaxed expression"
+        },
+        {
+          "view": "the whole person visible from the top of the head to the feet, one hand lifted, tucking hair behind the ear, head slightly tilted, relaxed expression"
+        }
+      ]
+    }
+  },
+  "locks": {
+    "background_grey": "Soft grey seamless studio background, the same grey behind every view.",
+    "identity_close_person": "Keep the face and identity exactly as in the reference images.",
+    "no_text": "No text, no labels, no watermark.",
+    "lighting_flat": "Flat even softbox lighting, no hard shadows.",
+    "camera_full_body": "Eye level, 35mm, the whole person inside every panel at the same scale.",
+    "same_clothes": "The same clothes as in the reference images in every view."
+  },
+  "consistency": "Every panel shows the same person in the same clothes at the same scale. Only the pose differs between panels and no two panels repeat a pose.",
+  "must_avoid": [
+    "No borders and no drop shadows between the panels.",
+    "Leave a clear strip of empty grey background between neighbouring panels; no figure overlaps another panel.",
+    "Do not crop the head, hands or feet at a panel edge.",
+    "No props other than the plain grey stool."
+  ]
+}

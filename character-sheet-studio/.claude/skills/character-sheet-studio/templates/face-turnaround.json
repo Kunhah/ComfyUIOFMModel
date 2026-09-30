@@ -1,0 +1,52 @@
+{
+  "task": "Face Turnaround, one single canvas, 16:9",
+  "identity": {
+    "source": "the attached reference images only",
+    "rule": "The person is the person in the reference images. Only the views described below change."
+  },
+  "layout": {
+    "hero": {
+      "position": "left half",
+      "content": "seen straight from the front, both eyes and both ears visible, the nose centred, neutral expression with the mouth closed"
+    },
+    "grid": {
+      "position": "right half",
+      "rows": 2,
+      "cols": 3,
+      "reading_order": "left to right, top to bottom",
+      "cells": [
+        {
+          "view": "the head turned toward frame-left, three quarters of the face visible, the far cheek partly hidden, the far ear not visible, neutral expression with the mouth closed"
+        },
+        {
+          "view": "the head turned toward frame-right, three quarters of the face visible, the far cheek partly hidden, the far ear not visible, neutral expression with the mouth closed"
+        },
+        {
+          "view": "the head in full left profile, only one eye visible, the line of the nose, lips and chin standing out against the background, neutral expression with the mouth closed"
+        },
+        {
+          "view": "the head in full right profile, only one eye visible, the line of the nose, lips and chin standing out against the background, neutral expression with the mouth closed"
+        },
+        {
+          "view": "the head turned mostly away toward frame-left, the back of the head and the hair from behind dominant, with the cheekbone and the tip of the nose still just visible past the hair, neutral expression with the mouth closed"
+        },
+        {
+          "view": "the head turned mostly away toward frame-right, the back of the head and the hair from behind dominant, with the cheekbone and the tip of the nose still just visible past the hair, neutral expression with the mouth closed"
+        }
+      ]
+    }
+  },
+  "locks": {
+    "background_grey": "Soft grey seamless studio background, the same grey behind every view.",
+    "lighting_flat": "Flat even softbox lighting, no hard shadows.",
+    "camera_eye_50": "Eye level, 50mm, identical framing and scale.",
+    "identity_close_person": "Keep the face and identity exactly as in the reference images.",
+    "no_text": "No text, no labels, no watermark.",
+    "hair_clear_of_ears": "Hair falls behind both shoulders so both ears and the jawline stay visible."
+  },
+  "consistency": "Every panel shows a different step of the rotation and no two panels repeat the same angle. All seven views show the same head at the same scale, framed the same way, with the eyes on the same horizontal line across the whole sheet, a neutral expression and the mouth closed.",
+  "must_avoid": [
+    "No borders and no drop shadows between the panels.",
+    "Do not crop any head at a panel edge."
+  ]
+}

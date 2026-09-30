@@ -1,6 +1,6 @@
 {
- "last_node_id": 13,
- "last_link_id": 14,
+ "last_node_id": 17,
+ "last_link_id": 25,
  "nodes": [
   {
    "id": 1,
@@ -30,7 +30,7 @@
      "name": "MASK",
      "type": "MASK",
      "links": [
-      2
+      7
      ],
      "slot_index": 1
     }
@@ -42,7 +42,7 @@
     "ai_influencer/MyCharacter/scenes/practice_plate.png",
     "image"
    ],
-   "title": "LOCATION plate (mask this one)"
+   "title": "LOCATION plate"
   },
   {
    "id": 2,
@@ -70,8 +70,10 @@
      "name": "IMAGE",
      "type": "IMAGE",
      "links": [
-      5,
-      13
+      3,
+      6,
+      13,
+      24
      ],
      "slot_index": 0
     }
@@ -87,87 +89,6 @@
   },
   {
    "id": 3,
-   "type": "GrowMask",
-   "pos": [
-    460,
-    60
-   ],
-   "size": [
-    340,
-    110
-   ],
-   "flags": {},
-   "order": 2,
-   "mode": 0,
-   "inputs": [
-    {
-     "name": "mask",
-     "type": "MASK",
-     "link": 2
-    }
-   ],
-   "outputs": [
-    {
-     "name": "MASK",
-     "type": "MASK",
-     "links": [
-      7,
-      9
-     ],
-     "slot_index": 0
-    }
-   ],
-   "properties": {
-    "Node name for S&R": "GrowMask"
-   },
-   "widgets_values": [
-    12,
-    true
-   ],
-   "title": "Grow mask (feather the seam)"
-  },
-  {
-   "id": 4,
-   "type": "LoadImage",
-   "pos": [
-    460,
-    320
-   ],
-   "size": [
-    340,
-    380
-   ],
-   "flags": {},
-   "order": 3,
-   "mode": 0,
-   "inputs": [],
-   "outputs": [
-    {
-     "name": "IMAGE",
-     "type": "IMAGE",
-     "links": [
-      6
-     ],
-     "slot_index": 0
-    },
-    {
-     "name": "MASK",
-     "type": "MASK",
-     "links": [],
-     "slot_index": 1
-    }
-   ],
-   "properties": {
-    "Node name for S&R": "LoadImage"
-   },
-   "widgets_values": [
-    "ai_influencer/MyCharacter/dataset/29.png",
-    "image"
-   ],
-   "title": "Any photo of her"
-  },
-  {
-   "id": 5,
    "type": "AIInfluencerLoadCharacter",
    "pos": [
     890,
@@ -178,7 +99,7 @@
     150
    ],
    "flags": {},
-   "order": 4,
+   "order": 2,
    "mode": 0,
    "inputs": [],
    "outputs": [
@@ -198,7 +119,7 @@
      "name": "identity_prompt",
      "type": "STRING",
      "links": [
-      3
+      2
      ],
      "slot_index": 2
     },
@@ -223,7 +144,7 @@
    ]
   },
   {
-   "id": 6,
+   "id": 4,
    "type": "AIInfluencerPromptBuilder",
    "pos": [
     1250,
@@ -234,13 +155,13 @@
     620
    ],
    "flags": {},
-   "order": 5,
+   "order": 3,
    "mode": 0,
    "inputs": [
     {
      "name": "identity",
      "type": "STRING",
-     "link": 3,
+     "link": 2,
      "widget": {
       "name": "identity"
      }
@@ -251,8 +172,7 @@
      "name": "prompt",
      "type": "STRING",
      "links": [
-      4,
-      12
+      4
      ],
      "slot_index": 0
     }
@@ -274,24 +194,121 @@
    ]
   },
   {
-   "id": 7,
-   "type": "PreviewAny",
+   "id": 5,
+   "type": "AIInfluencerPlacementVariations",
    "pos": [
-    890,
-    260
+    460,
+    60
    ],
    "size": [
-    320,
-    420
+    340,
+    400
    ],
    "flags": {},
-   "order": 6,
+   "order": 4,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "plate",
+     "type": "IMAGE",
+     "link": 3
+    },
+    {
+     "name": "prompt",
+     "type": "STRING",
+     "link": 4
+    },
+    {
+     "name": "pose_keypoints",
+     "type": "POSE_KEYPOINT",
+     "link": null
+    }
+   ],
+   "outputs": [
+    {
+     "name": "keypoints",
+     "type": "POSE_KEYPOINT",
+     "links": [
+      8
+     ],
+     "slot_index": 0,
+     "shape": 6
+    },
+    {
+     "name": "prompt",
+     "type": "STRING",
+     "links": [
+      20
+     ],
+     "slot_index": 1,
+     "shape": 6
+    },
+    {
+     "name": "seed",
+     "type": "INT",
+     "links": [
+      21
+     ],
+     "slot_index": 2,
+     "shape": 6
+    },
+    {
+     "name": "folder",
+     "type": "STRING",
+     "links": [
+      23
+     ],
+     "slot_index": 3,
+     "shape": 6
+    },
+    {
+     "name": "label",
+     "type": "STRING",
+     "links": [
+      5,
+      22
+     ],
+     "slot_index": 4,
+     "shape": 6
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerPlacementVariations"
+   },
+   "widgets_values": [
+    0,
+    "randomize",
+    4,
+    "placement + angle",
+    "new angle per seed",
+    0.15,
+    0.85,
+    0.45,
+    0.7,
+    0.35,
+    "0: the body facing the camera\n35: the body turned slightly toward frame-right, face toward the camera\n-35: the body turned slightly toward frame-left, face toward the camera\n65: three-quarter view, the body turned toward frame-right, head turned back toward the camera\n-65: three-quarter view, the body turned toward frame-left, head turned back toward the camera\n90: seen in profile, facing frame-right\n-90: seen in profile, facing frame-left\n160: seen from behind, looking back over the shoulder toward the camera"
+   ],
+   "title": "Placement & Angle per Seed"
+  },
+  {
+   "id": 6,
+   "type": "PreviewAny",
+   "pos": [
+    460,
+    500
+   ],
+   "size": [
+    340,
+    460
+   ],
+   "flags": {},
+   "order": 5,
    "mode": 0,
    "inputs": [
     {
      "name": "source",
      "type": "*",
-     "link": 4
+     "link": 5
     }
    ],
    "outputs": [
@@ -306,10 +323,227 @@
     "Node name for S&R": "PreviewAny"
    },
    "widgets_values": [],
-   "title": "The prompt Krea 2 would get"
+   "title": "What each candidate got"
+  },
+  {
+   "id": 7,
+   "type": "AIInfluencerAutoMask",
+   "pos": [
+    30,
+    1100
+   ],
+   "size": [
+    340,
+    200
+   ],
+   "flags": {},
+   "order": 6,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "plate",
+     "type": "IMAGE",
+     "link": 6
+    },
+    {
+     "name": "painted_mask",
+     "type": "MASK",
+     "link": 7
+    },
+    {
+     "name": "pose_keypoints",
+     "type": "POSE_KEYPOINT",
+     "link": 8
+    }
+   ],
+   "outputs": [
+    {
+     "name": "mask",
+     "type": "MASK",
+     "links": [
+      9
+     ],
+     "slot_index": 0
+    },
+    {
+     "name": "preview",
+     "type": "IMAGE",
+     "links": [
+      11
+     ],
+     "slot_index": 1
+    },
+    {
+     "name": "method",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 2
+    },
+    {
+     "name": "keypoints",
+     "type": "POSE_KEYPOINT",
+     "links": [
+      10
+     ],
+     "slot_index": 3
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerAutoMask"
+   },
+   "widgets_values": [
+    "auto",
+    4.0,
+    "center"
+   ],
+   "title": "Auto Mask"
   },
   {
    "id": 8,
+   "type": "GrowMask",
+   "pos": [
+    30,
+    1340
+   ],
+   "size": [
+    340,
+    110
+   ],
+   "flags": {},
+   "order": 7,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "mask",
+     "type": "MASK",
+     "link": 9
+    }
+   ],
+   "outputs": [
+    {
+     "name": "MASK",
+     "type": "MASK",
+     "links": [
+      15,
+      17
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "GrowMask"
+   },
+   "widgets_values": [
+    12,
+    true
+   ],
+   "title": "Grow mask (feather the seam)"
+  },
+  {
+   "id": 9,
+   "type": "SDPoseDrawKeypoints",
+   "pos": [
+    400,
+    1100
+   ],
+   "size": [
+    320,
+    260
+   ],
+   "flags": {},
+   "order": 8,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "keypoints",
+     "type": "POSE_KEYPOINT",
+     "link": 10
+    }
+   ],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [
+      12,
+      14
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "SDPoseDrawKeypoints"
+   },
+   "widgets_values": [
+    true,
+    true,
+    true,
+    false,
+    4,
+    2,
+    0.5,
+    true
+   ],
+   "title": "Skeleton (picture 3 in 09b)"
+  },
+  {
+   "id": 10,
+   "type": "PreviewImage",
+   "pos": [
+    750,
+    1100
+   ],
+   "size": [
+    340,
+    500
+   ],
+   "flags": {},
+   "order": 9,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "images",
+     "type": "IMAGE",
+     "link": 11
+    }
+   ],
+   "outputs": [],
+   "properties": {
+    "Node name for S&R": "PreviewImage"
+   },
+   "widgets_values": [],
+   "title": "Masks (red = where she goes)"
+  },
+  {
+   "id": 11,
+   "type": "PreviewImage",
+   "pos": [
+    1120,
+    1100
+   ],
+   "size": [
+    340,
+    500
+   ],
+   "flags": {},
+   "order": 10,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "images",
+     "type": "IMAGE",
+     "link": 12
+    }
+   ],
+   "outputs": [],
+   "properties": {
+    "Node name for S&R": "PreviewImage"
+   },
+   "widgets_values": [],
+   "title": "Skeletons"
+  },
+  {
+   "id": 12,
    "type": "ImageCompositeMasked",
    "pos": [
     1750,
@@ -320,23 +554,23 @@
     150
    ],
    "flags": {},
-   "order": 7,
+   "order": 11,
    "mode": 0,
    "inputs": [
     {
      "name": "destination",
      "type": "IMAGE",
-     "link": 5
+     "link": 13
     },
     {
      "name": "source",
      "type": "IMAGE",
-     "link": 6
+     "link": 14
     },
     {
      "name": "mask",
      "type": "MASK",
-     "link": 7
+     "link": 15
     }
    ],
    "outputs": [
@@ -344,7 +578,7 @@
      "name": "IMAGE",
      "type": "IMAGE",
      "links": [
-      8
+      16
      ],
      "slot_index": 0
     }
@@ -355,12 +589,12 @@
    "widgets_values": [
     0,
     0,
-    true
+    false
    ],
    "title": "Keep background pixel-identical"
   },
   {
-   "id": 9,
+   "id": 13,
    "type": "AIInfluencerBlurBackground",
    "pos": [
     1750,
@@ -371,18 +605,18 @@
     180
    ],
    "flags": {},
-   "order": 8,
+   "order": 12,
    "mode": 0,
    "inputs": [
     {
      "name": "image",
      "type": "IMAGE",
-     "link": 8
+     "link": 16
     },
     {
      "name": "subject_mask",
      "type": "MASK",
-     "link": 9
+     "link": 17
     }
    ],
    "outputs": [
@@ -390,7 +624,7 @@
      "name": "image",
      "type": "IMAGE",
      "links": [
-      10
+      18
      ],
      "slot_index": 0
     },
@@ -413,7 +647,7 @@
    "title": "Blur Background"
   },
   {
-   "id": 10,
+   "id": 14,
    "type": "AIInfluencerCameraImperfections",
    "pos": [
     1750,
@@ -424,13 +658,13 @@
     280
    ],
    "flags": {},
-   "order": 9,
+   "order": 13,
    "mode": 0,
    "inputs": [
     {
      "name": "image",
      "type": "IMAGE",
-     "link": 10
+     "link": 18
     }
    ],
    "outputs": [
@@ -438,8 +672,8 @@
      "name": "image",
      "type": "IMAGE",
      "links": [
-      11,
-      14
+      19,
+      25
      ],
      "slot_index": 0
     }
@@ -460,7 +694,7 @@
    "title": "Camera Imperfections"
   },
   {
-   "id": 11,
+   "id": 15,
    "type": "AIInfluencerSaveImage",
    "pos": [
     2180,
@@ -471,20 +705,44 @@
     420
    ],
    "flags": {},
-   "order": 10,
+   "order": 14,
    "mode": 0,
    "inputs": [
     {
      "name": "images",
      "type": "IMAGE",
-     "link": 11
+     "link": 19
     },
     {
      "name": "prompt_text",
      "type": "STRING",
-     "link": 12,
+     "link": 20,
      "widget": {
       "name": "prompt_text"
+     }
+    },
+    {
+     "name": "seed",
+     "type": "INT",
+     "link": 21,
+     "widget": {
+      "name": "seed"
+     }
+    },
+    {
+     "name": "notes",
+     "type": "STRING",
+     "link": 22,
+     "widget": {
+      "name": "notes"
+     }
+    },
+    {
+     "name": "subfolder",
+     "type": "STRING",
+     "link": 23,
+     "widget": {
+      "name": "subfolder"
      }
     }
    ],
@@ -507,7 +765,7 @@
    },
    "widgets_values": [
     "",
-    "misc_image",
+    "local_candidate",
     "other",
     "practice run (no GPU)",
     "other",
@@ -515,13 +773,15 @@
     "",
     "",
     -1,
+    "fixed",
     0,
+    "",
     "",
     ""
    ]
   },
   {
-   "id": 12,
+   "id": 16,
    "type": "ImageCompare",
    "pos": [
     2570,
@@ -532,18 +792,18 @@
     480
    ],
    "flags": {},
-   "order": 11,
+   "order": 15,
    "mode": 0,
    "inputs": [
     {
      "name": "image_a",
      "type": "IMAGE",
-     "link": 13
+     "link": 24
     },
     {
      "name": "image_b",
      "type": "IMAGE",
-     "link": 14
+     "link": 25
     }
    ],
    "outputs": [],
@@ -554,7 +814,7 @@
    "title": "Plate / result"
   },
   {
-   "id": 13,
+   "id": 17,
    "type": "MarkdownNote",
    "pos": [
     2980,
@@ -562,10 +822,10 @@
    ],
    "size": [
     560,
-    780
+    820
    ],
    "flags": {},
-   "order": 12,
+   "order": 16,
    "mode": 0,
    "inputs": [],
    "outputs": [],
@@ -573,7 +833,7 @@
     "Node name for S&R": "MarkdownNote"
    },
    "widgets_values": [
-    "# 09c Practice run (no GPU, no models)\n\nWorkflow 09b's clicks, minus Krea 2. Everything here runs on CPU in a few seconds, so you can\nlearn the moves before the vast.ai meter starts. Queue it as is first, then change things.\n\n## The loop you are rehearsing\n1. **01**: right-click the plate -> **Open in MaskEditor**, paint where she should be, Save. The\n   shape you paint is where she lands and how big she is. `practice_plate.png` already has one\n   painted, so you can see the effect before doing your own.\n2. **03**: any photo of her. On the pod this loader doesn't exist -- Krea 2 *generates* what goes\n   inside the mask, using the character LoRA and the reference photos. Here the photo is just\n   pasted in so you can see where the mask puts it.\n3. **04**: the real Prompt Builder. Type in the fields and watch *The prompt Krea 2 would get*:\n   the mandatory \"don't look AI\" block is appended for you, every time, whatever you type.\n4. **05**: `ImageCompositeMasked` -- outside the painted mask, the plate is bit-identical. That is\n   what \"fixed background\" means.\n5. **06**: the two filter nodes, exactly as 09b runs them: background blur, then ISO grain, corner\n   fringing, falloff and a white balance drift. Queue again for a different grain roll.\n6. **07**: saved to `output/projects/MyCharacter/outputs/images/misc/` and logged, with a\n   plate/result slider.\n\n## What is missing on purpose\nKrea 2 + your character LoRA, the identity reference LoRA, and the SDPose skeleton -- all of them\nneed model files and a big GPU. In 09b they sit between groups 04 and 05. Nothing else differs:\nsame mask, same prompt node, same filters, same save.\n\nOne honest difference: here the blur's subject mask is the mask you painted; on the pod BiRefNet\ncuts her out properly, so hair and shoulders blend instead of following your brush."
+    "# 09c Practice run (no GPU, no models)\n\nWorkflow 09b's clicks, minus Krea 2. Everything here runs on CPU in a few seconds, so you can\nlearn the moves before the vast.ai meter starts. Queue it as is first, then change things.\n\n## The loop you are rehearsing\n1. **01**: the location photo. Painting a mask is optional: with nothing painted, each candidate\n   gets its own place. Paint one (right-click -> **Open in MaskEditor**) and every candidate stands\n   where you painted -- only the angle still changes. `practice_plate.png` may already carry a\n   painted mask; the *Masks* preview and *What each candidate got* show which case you are in.\n2. **02**: *Placement & Angle per Seed* turns one queue into **4 candidates**, each with its own\n   seed, its own spot in the photo (left to right, nearer or further back) and its own body angle\n   (front, three-quarter, profile, back over the shoulder). The angle is drawn in the skeleton\n   *and* written into the prompt, so they never disagree. Queue again: new seed, new set.\n3. **03**: the masks and skeletons it made. In 09b the skeleton is picture 3 for Krea 2.\n4. **04**: the real Prompt Builder. The mandatory \"don't look AI\" block is appended for you.\n5. **05**: here the *skeleton* is pasted into the mask so you can see where she would stand. On\n   the pod Krea 2 paints her there. Outside the mask the plate is bit-identical.\n6. **06**: background blur, then ISO grain, fringing, falloff, white balance drift.\n7. **07**: the 4 candidates land together in `outputs/images/candidates/9b_<seed>/`, each logged\n   with its label. Then open **Workflow 13** to pick the winner -- also a free, local step. (These\n   practice files say `practice_run` in their names; delete their folders when you're done.)\n\n## What is missing on purpose\nKrea 2 + your character LoRA, the identity reference LoRA, SDPose's pose extraction from a photo,\nand BiRefNet -- all need model files. Nothing else differs from 09b."
    ]
   }
  ],
@@ -588,91 +848,91 @@
   ],
   [
    2,
-   1,
-   1,
    3,
+   2,
+   4,
    0,
-   "MASK"
+   "STRING"
   ],
   [
    3,
-   5,
    2,
+   0,
+   5,
+   0,
+   "IMAGE"
+  ],
+  [
+   4,
+   4,
+   0,
+   5,
+   1,
+   "STRING"
+  ],
+  [
+   5,
+   5,
+   4,
    6,
    0,
    "STRING"
   ],
   [
-   4,
    6,
+   2,
    0,
    7,
    0,
-   "STRING"
+   "IMAGE"
   ],
   [
+   7,
+   1,
+   1,
+   7,
+   1,
+   "MASK"
+  ],
+  [
+   8,
    5,
+   0,
+   7,
    2,
+   "POSE_KEYPOINT"
+  ],
+  [
+   9,
+   7,
    0,
    8,
    0,
-   "IMAGE"
+   "MASK"
   ],
   [
-   6,
-   4,
-   0,
-   8,
-   1,
-   "IMAGE"
-  ],
-  [
+   10,
    7,
    3,
+   9,
    0,
-   8,
-   2,
-   "MASK"
+   "POSE_KEYPOINT"
   ],
   [
-   8,
-   8,
-   0,
-   9,
-   0,
-   "IMAGE"
-  ],
-  [
-   9,
-   3,
-   0,
-   9,
+   11,
+   7,
    1,
-   "MASK"
-  ],
-  [
    10,
-   9,
-   0,
-   10,
-   0,
-   "IMAGE"
-  ],
-  [
-   11,
-   10,
-   0,
-   11,
    0,
    "IMAGE"
   ],
   [
    12,
-   6,
+   9,
    0,
    11,
-   1,
-   "STRING"
+   0,
+   "IMAGE"
   ],
   [
    13,
@@ -684,9 +944,97 @@
   ],
   [
    14,
-   10,
+   9,
    0,
    12,
+   1,
+   "IMAGE"
+  ],
+  [
+   15,
+   8,
+   0,
+   12,
+   2,
+   "MASK"
+  ],
+  [
+   16,
+   12,
+   0,
+   13,
+   0,
+   "IMAGE"
+  ],
+  [
+   17,
+   8,
+   0,
+   13,
+   1,
+   "MASK"
+  ],
+  [
+   18,
+   13,
+   0,
+   14,
+   0,
+   "IMAGE"
+  ],
+  [
+   19,
+   14,
+   0,
+   15,
+   0,
+   "IMAGE"
+  ],
+  [
+   20,
+   5,
+   1,
+   15,
+   1,
+   "STRING"
+  ],
+  [
+   21,
+   5,
+   2,
+   15,
+   2,
+   "INT"
+  ],
+  [
+   22,
+   5,
+   4,
+   15,
+   3,
+   "STRING"
+  ],
+  [
+   23,
+   5,
+   3,
+   15,
+   4,
+   "STRING"
+  ],
+  [
+   24,
+   2,
+   0,
+   16,
+   0,
+   "IMAGE"
+  ],
+  [
+   25,
+   14,
+   0,
+   16,
    1,
    "IMAGE"
   ]
@@ -694,7 +1042,7 @@
  "groups": [
   {
    "id": 1,
-   "title": "01 LOCATION PHOTO (paint the mask here)",
+   "title": "01 LOCATION PHOTO (painting a mask is optional)",
    "bounding": [
     0,
     0,
@@ -707,32 +1055,6 @@
   },
   {
    "id": 2,
-   "title": "02 THE MASK",
-   "bounding": [
-    430,
-    0,
-    400,
-    220
-   ],
-   "color": "#b58b2a",
-   "font_size": 24,
-   "flags": {}
-  },
-  {
-   "id": 3,
-   "title": "03 HER (stands in for the Krea 2 generation)",
-   "bounding": [
-    430,
-    260,
-    400,
-    500
-   ],
-   "color": "#8A8",
-   "font_size": 24,
-   "flags": {}
-  },
-  {
-   "id": 4,
    "title": "04 PROMPT (the real thing, same fields as 09b)",
    "bounding": [
     860,
@@ -745,8 +1067,34 @@
    "flags": {}
   },
   {
+   "id": 3,
+   "title": "02 CANDIDATES: a place and an angle per seed (same node as 09b)",
+   "bounding": [
+    430,
+    0,
+    400,
+    1000
+   ],
+   "color": "#8A8",
+   "font_size": 24,
+   "flags": {}
+  },
+  {
+   "id": 4,
+   "title": "03 WHERE SHE GOES (per candidate)",
+   "bounding": [
+    0,
+    1040,
+    1500,
+    620
+   ],
+   "color": "#8A8",
+   "font_size": 24,
+   "flags": {}
+  },
+  {
    "id": 5,
-   "title": "05 FIXED BACKGROUND",
+   "title": "05 FIXED BACKGROUND (the skeleton stands in for Krea 2)",
    "bounding": [
     1720,
     0,
@@ -772,7 +1120,7 @@
   },
   {
    "id": 7,
-   "title": "07 OUTPUT",
+   "title": "07 OUTPUT: one folder per queue, like 09b",
    "bounding": [
     2150,
     0,

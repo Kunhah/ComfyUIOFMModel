@@ -1,0 +1,88 @@
+{
+ "last_node_id": 2,
+ "last_link_id": 0,
+ "nodes": [
+  {
+   "id": 1,
+   "type": "AIInfluencerPickWinner",
+   "pos": [
+    30,
+    60
+   ],
+   "size": [
+    820,
+    600
+   ],
+   "flags": {},
+   "order": 0,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "winner",
+     "type": "IMAGE",
+     "links": [],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerPickWinner"
+   },
+   "widgets_values": [
+    "(no candidate folders yet)",
+    0
+   ],
+   "title": "Pick Winner"
+  },
+  {
+   "id": 2,
+   "type": "MarkdownNote",
+   "pos": [
+    930,
+    0
+   ],
+   "size": [
+    520,
+    460
+   ],
+   "flags": {},
+   "order": 1,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [],
+   "properties": {
+    "Node name for S&R": "MarkdownNote"
+   },
+   "widgets_values": [
+    "# 13 Pick the winner\n\nWorkflow 09b saves the candidates of each queue into their own folder,\n`outputs/images/candidates/9b_<seed>/` -- also when the queue ran on the pod (the folders are\ndownloaded to this PC at the same path). A batch of 10 held jobs is 10 folders.\n\n1. Press **R** on the canvas so the folder list is current, pick a **folder** (newest first).\n2. Queue with **winner = 0**: all its candidates show in the node, in order (#1 first). The\n   label of each -- seed, where she stands, which angle -- is in `logs/generations.jsonl`.\n3. Set **winner** to the number you want, queue: that file is **copied** (not re-saved: same\n   pixels, same embedded workflow) to `outputs/images/final/9b_<seed>_winner<N>.png`.\n4. Next folder.\n\nThe *Pod queue*'s \"Hold for the pod\" never holds this workflow: it only reads files on this PC.\nDragging a candidate PNG onto the canvas restores its whole 09b setup, seed included."
+   ]
+  }
+ ],
+ "links": [],
+ "groups": [
+  {
+   "id": 1,
+   "title": "PICK THE WINNER (runs on this PC, no GPU, never held for the pod)",
+   "bounding": [
+    0,
+    0,
+    900,
+    700
+   ],
+   "color": "#8A8",
+   "font_size": 24,
+   "flags": {}
+  }
+ ],
+ "config": {},
+ "extra": {
+  "ds": {
+   "scale": 0.6,
+   "offset": [
+    0,
+    0
+   ]
+  }
+ },
+ "version": 0.4
+}

@@ -10,7 +10,9 @@ pipelines that share the same project folders, character.json and log:
   [Local Krea 2 pipeline](#local-krea-2-pipeline-character-lora). Needs an RTX 5090 / RTX 6000
   Pro class GPU, so in practice ComfyUI on RunPod, not the local GTX 1060.
 - **Cloud API pipeline.** Generation through ComfyUI's official partner API nodes for Krea,
-  OpenAI GPT Image, and ByteDance Seedance, with no local model at all. Workflows 01-06.
+  OpenAI GPT Image, and ByteDance Seedance, with no local model at all. Workflows 01 and 04-06;
+  Workflow 01 is where the character is created (GPT Image 2.5), which gives the local pipeline
+  its training pictures.
 
 ComfyUI is the interface, prompt/identity manager, and local cost log for both.
 
@@ -75,7 +77,7 @@ wins over `.env`. You only need the keys for the parts you use:
 
 | Setting | Needed for | Get it at |
 |---|---|---|
-| `COMFY_API_KEY` | Workflows 01-05 (Krea / GPT Image / Seedance partner nodes) when queued by script; in the browser, signing in to your Comfy account is enough | <https://platform.comfy.org/login> |
+| `COMFY_API_KEY` | Workflows 01, 04, 05 (Krea / GPT Image / Seedance partner nodes) when queued by script; in the browser, signing in to your Comfy account is enough | <https://platform.comfy.org/login> |
 | `FAL_KEY` | Workflow 06 and `train_lora.py` / `eval_lora.py` (fal.ai) | <https://fal.ai/dashboard/keys> |
 | `VAST_API_KEY` | renting GPU pods: `vast_pod.py`, `comfy_pod.py`, the Pod queue | <https://cloud.vast.ai/manage-keys/> |
 | `HF_TOKEN` | the pod workflows: gated Krea 2 download and the private transfer repo (write access) | <https://huggingface.co/settings/tokens> |
@@ -128,8 +130,12 @@ input/ai_influencer/<project>/        things you feed INTO generation
 output/projects/<project>/            things generation PRODUCES
     character.json                       non-secret character description (see below)
     prompts/                             optional saved reusable prompt text (manual)
-    outputs/images/candidates/           Krea candidates (Save & Log Image, stage=krea_candidate)
-    outputs/images/final/                approved/refined images (stage=gpt_refined or character_canonical)
+    outputs/images/candidates/           candidates; Workflow 09b: one folder per queue, 9b_<seed>/
+    outputs/images/final/                approved images; Workflow 13's winners; reference_set/ (Workflow 01 example photos)
+    outputs/images/sheets/<sheet>/       Workflow 01's character sheets (stage=character_sheet)
+    outputs/images/sheet_crops/          the sheets cut into one picture + caption per view
+
+user/ai_influencer/sheet_templates/  your own character sheet templates (listed in every sheet dropdown)
     outputs/images/misc/                 anything else
     outputs/videos/                      Seedance output (Save & Log Video)
     lora_tests/<timestamp>/              checkpoint test grid.png + report.json (Workflow 07)
@@ -178,12 +184,11 @@ There's no trainable LoRA slot in any of these cloud APIs, so consistency is eng
 
 1. **Wording consistency** — `character.json`'s `trigger` + `permanent_features`, prepended to
    every prompt via `AIInfluencerPromptBuilder`.
-2. **Krea `style_reference`** — chain up to 10 images (Workflow 02) to steer style/composition.
+2. **Krea `style_reference`** — chain up to 10 images (Workflow 05) to steer style/composition.
    This is a *style* reference per Krea's own API, not a guaranteed face-identity lock.
-3. **GPT Image 2.5 multi-image edit** — the strongest identity tool available: feed it the
-   generated candidate *plus* 1–2 canonical reference photos and an editing instruction that says
-   to preserve the person's face (Workflow 03). This is the API's actual identity-preservation
-   mechanism, and it's opt-in/paid on purpose (see Cost control).
+3. **GPT Image 2.5 multi-image edit** — the strongest identity tool available: every request in
+   Workflow 01 carries the front portrait plus the character sheets made before it, so the sheets
+   and example photos converge on one face instead of drifting request by request.
 4. **Seedance `reference_images`** — carry canonical photos alongside the starting frame into
    video generation (Workflow 04) so identity/clothing/environment stay locked across motion.
 
@@ -428,9 +433,9 @@ the same look at any resolution: `blur_amount` ~0.8 is subtle, 1.5 (the default)
 lens, 3+ is extreme. `subject_edge_shift` moves the sharp/blurred boundary a little if the mask
 cuts too tightly. Set `blur_amount` to 0, or mute the group, for a sharp background.
 
-The prompt's camera field in Workflows 02, 05, 08 and 09 also asks for a shallow depth of field,
+The prompt's camera field in Workflows 05, 08 and 09 also asks for a shallow depth of field,
 which helps the model compose for it — but that's a hint, and the node is what makes it certain.
-`tools/pod_bootstrap.sh` downloads the BiRefNet file along with the other models. The cloud workflows (01-05) only have the prompt wording; to blur those too, add the same three
+`tools/pod_bootstrap.sh` downloads the BiRefNet file along with the other models. The cloud workflows (04, 05) only have the prompt wording; to blur those too, add the same three
 nodes after their Save node (BiRefNet runs locally and is small, but it is a local model, which is
 the one thing the cloud pipeline otherwise avoids).
 
@@ -450,7 +455,7 @@ chromatic aberration, off white balance — and no airbrushing, HDR glow or over
 
 **After generation.** Prompt wording is a hint the model half-follows, so the artifacts themselves
 are applied by the **Camera Imperfections** node (`nodes_camera.py`), wired into every image
-workflow (02, 03, 05, 06, 08, 09, 09b, 10) as the last step, after any upscale and blur so nothing
+workflow (05, 06, 08, 09, 09b, 10) as the last step, after any upscale and blur so nothing
 sharpens the grain away:
 
 - **ISO grain** whose clump size is a percentage of the short side (so it survives an upscale),
@@ -466,8 +471,9 @@ sharpens the grain away:
 pushed high ISO. Set it to 0, or mute the node, for a clean image. It's pure torch — no model, no
 download — which is why the cloud workflows get it too.
 
-It is deliberately **not** in Workflow 01 (canonical identity references stay clean, since every
-later generation is conditioned on them) or in Workflow 07 (checkpoint comparison).
+It is deliberately **not** in Workflow 01 (its front portrait, reference set and sheets are
+identity references and LoRA training pictures: every later generation is conditioned on them, and
+grain in a dataset gets learned) or in Workflow 07 (checkpoint comparison).
 
 **Images you already have** — generated before this existed, or from somewhere else — get the same
 pass two ways:
@@ -495,8 +501,8 @@ ControlNet**, so it's image-to-image: `denoise` 0.8 keeps pose and framing, 0.7 
 colors/lighting (and pulls the face toward the reference), 0.9 keeps only the rough layout. It
 transfers composition, not an exact skeleton.
 
-**Edits** of a finished image (hair color, outfit, background, one prompt) use Workflow 03 (GPT
-Image 2.5 edit): the local image is the candidate and a canonical photo is the identity reference.
+**Edits** of a finished image (hair color, outfit, background, one prompt) have no workflow of
+their own any more: Workflow 03 (GPT Image 2.5 edit) was removed, since generation is local now.
 Core ComfyUI has no Krea 2 edit model. (AI Toolkit can train Krea 2 edit LoRAs, but running them
 needs a third-party node pack, which this setup doesn't install.)
 
@@ -602,7 +608,7 @@ it matters which pipeline you use:
 
 | Path | Who can act on it | Notes |
 |---|---|---|
-| Workflows 01-05 (Krea, GPT Image 2.5, Seedance) | the provider, and your **Comfy account** | requests are proxied through Comfy's backend and billed to one account; the providers moderate prompts *and* outputs under their own usage policies, which do not allow sexual content. This is the realistic way to get flagged. |
+| Workflows 01, 04, 05 (GPT Image 2.5, Seedance, Krea) | the provider, and your **Comfy account** | requests are proxied through Comfy's backend and billed to one account; the providers moderate prompts *and* outputs under their own usage policies, which do not allow sexual content. This is the realistic way to get flagged. |
 | Workflow 06 (fal.ai LoRA training) | fal.ai | separate account and policy; your dataset is uploaded to them. |
 | The training pod transfer | Hugging Face | the dataset passes through a private HF repo, which is still subject to their content policy. |
 | vast.ai / RunPod | the GPU host | they have their own acceptable-use policy for what you run on the rented machine. |
@@ -610,7 +616,7 @@ it matters which pipeline you use:
 | Wherever you post | the platform | rules on AI-generated people, nudity and AI labelling. In practice this is where accounts die, not in generation. |
 
 So: **anything mature belongs on the local pipeline**, which is why it exists. If you send it
-through Workflows 01-05 you are handing it to a moderated API under someone else's terms.
+through Workflows 01, 04 or 05 you are handing it to a moderated API under someone else's terms.
 
 **Not a loophole:** the camera-imperfections pass is aesthetic. It does not strip metadata or
 provenance signals, and it is not a way around a platform's AI-labelling rules — label your
@@ -636,48 +642,88 @@ VIDEO, 09 OUTPUT) wherever a workflow's stages match that shape.
 
 ### 01 — Character Creation (`01_character_creation.json`)
 
-Establishes one character instead of 7 unrelated faces. ComfyUI has no built-in "pause for human
-approval" node, so this is a genuinely two-phase, two-Queue-click workflow:
+Makes the character sheets and a few example photos her LoRA is trained on, with GPT Image 2.5
+only. Two queues:
 
-- **Phase A** (left): Krea 2 Large generates seed portraits from your written description. Queue
-  a few times for different seeds; each candidate saves to
-  `output/projects/<project>/outputs/images/candidates/`.
-- **You pick one** and copy it to `input/ai_influencer/<project>/references/canonical/front.png`.
-- **Phase B** (right): a Load Image node points at that file; six GPT Image 2.5 edit calls turn
-  it into 3/4 left, 3/4 right, profile, smiling portrait, upper body, and full body — all
-  identity-locked to the same reference — plus the front image itself is re-saved as the 7th
-  canonical shot. All seven land in `outputs/images/final/` as `character_canonical`.
+1. **Queue.** The first node is the only place she is ever described in words. It makes **4 front
+   portraits in one call** (`n` = 4, saved to `outputs/images/candidates/`). *Pick Candidate* is
+   0, so nothing after it runs.
+2. **Set *PICK* to 1-4 and queue again.** The candidates call is not repeated: its inputs didn't
+   change, so ComfyUI reuses the result (its seed is `fixed` for that reason; GPT itself ignores the
+   seed, so change it by hand for 4 new ones). Already have a front photo, e.g. from ChatGPT?
+   Ctrl+B *OR your own front photo* and load it: it wins over the candidates.
 
-Rejected candidates simply aren't copied into `references/canonical/` — they stay in
-`references/candidate/` / `outputs/images/candidates/`, physically separate from the approved set.
+Everything else then runs by itself: **8 character sheets** and 4 example photos, each request
+carrying the pictures that pin her down. The face-turnaround sees the front portrait; full-body-360,
+expression-grid, upper-body, lighting-grid and expression-grid-extra see the front + face-turnaround;
+outfit-grid, pose-grid and the example photos also see full-body-360. A sheet shows her in 7-9
+views, so it is a lot of identity for one (billed) context image.
 
-### 02 — Krea Main Image Generator (`02_krea_main_generator.json`)
+| Sheet | Changes | From |
+|---|---|---|
+| face-turnaround, full-body-360, upper-body | the angle | Character Sheet Studio |
+| expression-grid | the expression | Character Sheet Studio |
+| outfit-grid | the clothes (6 everyday outfits) | this pack, `sheet_templates/` |
+| pose-grid | the pose (8: walking, sitting, arms crossed, crouching, ...) | this pack |
+| lighting-grid | the light (window, midday sun, golden hour, overcast, lamp, neon) | this pack |
+| expression-grid-extra | 8 more expressions | this pack |
 
-The high-volume workflow. Load Character supplies identity wording; Prompt Builder has one field
-per architecture-diagram concern (scene, subject action, clothing, environment, camera & lens,
-lighting), plus `realism_instructions` / `identity_preservation_instructions` fields for
-per-shot additions. The anti-"AI influencer" wording is no longer a field default you could delete:
-the node always appends it, and the Camera Imperfections node at the end of the workflow applies
-the grain and lens artifacts it asks for (see
-[Camera imperfections](#6-camera-imperfections-always-on)). Copy its output into the Krea node's prompt field. Aspect ratio is a dropdown on
-the Krea node (1:1, 4:5, 9:16, 16:9, plus 4:3/3:2/2.35:1/2:3 also supported by the API). An
-optional, disconnected-by-default OpenRouter node is included for prompt expansion — wire its
-output into Prompt Builder's `extra` field if you want it; left alone, it never runs and never
-costs anything (ComfyUI only executes nodes reachable from an output node — an unwired node is
-simply never included). Only Krea runs here.
+All eight are sent unchanged, 16:9 at 3840x2160, and follow the studio's rules: one thing changes
+per sheet, everything else is locked, and she is never described in words (the pictures are the
+only identity source). The studio's templates are read from
+`character-sheet-studio/.claude/skills/character-sheet-studio/templates/`; only the templates are
+used, not its wizard (which uploads to WaveSpeed and has an agent look at every photo). Saved to
+`outputs/images/sheets/<sheet>/`.
 
-### 03 — GPT Image 2.5 Premium Refinement (`03_gpt_refinement.json`)
+**Slicing into training pictures.** A LoRA trained on whole sheets learns to draw sheets, so each
+sheet goes through *Slice Character Sheet*: it finds each figure on the grey background (a hand
+reaching over a panel line stays with its figure; a panel it can't separate falls back to its grid
+position), crops it, and writes a caption: the trigger word from `character.json` (or
+`[trigger]`) plus that panel's wording from the template, e.g. "l1na, … lit by a warm tungsten table
+lamp at frame-right, plain grey studio background". The light, outfit or pose is in the caption, so
+the LoRA learns it as a variable rather than as part of her. About 60 crops per character, in
+`outputs/images/sheet_crops/<sheet>_<time>/` as `00.png` + `00.txt` (00 is the large view). Grid
+panels come out around 640x1080, fine for a LoRA but smaller than the example photos. The captions
+assume GPT kept the template's panel order, so look at the crops before copying them into
+`input/ai_influencer/<project>/dataset/`. For sheets made earlier:
 
-Manually run, per candidate you decide is worth it. Loads a Krea candidate plus up to two
-canonical references, and edits it with an **editable** default instruction:
+```bash
+python custom_nodes/ai_influencer_toolkit/tools/slice_sheets.py \
+    output/projects/lina/outputs/images/sheets/pose-grid --project lina
+```
 
-> Preserve the person's identity and recognizable facial characteristics from the canonical
-> reference images. Preserve the composition, pose, clothing and scene of the candidate unless
-> explicitly instructed otherwise. Improve photographic realism and correct visible generation
-> defects. Preserve natural skin texture and realistic imperfections. Do not beautify the subject
-> or unnecessarily modify facial structure.
+The 4 example photos change outfit, place and light, and are saved to
+`outputs/images/final/reference_set/`; copy an *Example* node + its Save node for more.
 
-This never runs automatically after Workflow 02 — it's a separate file you open on purpose.
+**Make it yours.** Nothing in Workflow 01 is fixed to one character or one taste:
+
+- **Which sheets:** each *Character Sheet Prompt* has a dropdown of every template; mute a sheet's
+  GPT node (Ctrl+M) to skip it, its save and its slicer.
+- **Your own sheets:** *Custom Character Sheet* (group 02b, muted until you switch it on) takes a
+  title, the large view, and one panel per line: outfits, poses, lights, hairstyles, props,
+  anything. Describe what changes, never the person. The grid is sized from the number of lines.
+  Its *save_as* keeps it as a template in `user/ai_influencer/sheet_templates/<name>.json`, which
+  every dropdown lists (press R). A file there with a built-in's name replaces the built-in, which
+  is how to change e.g. the outfit list. Hand-written JSON in the same format works too.
+- **Which pictures each request sees, quality, size, how many candidates:** rewire the GPT node's
+  `image_1..` inputs (each is billed), or change its `quality` / `size` / `n`.
+- **Captions and cutting:** each slicer has *caption_prefix* (default: the trigger word),
+  *caption_suffix*, *threshold* and *padding*. The slicer reads the layout and captions from the
+  template it is wired to, so custom sheets are cut and captioned correctly too. The CLI takes
+  `--template my.json`, `--caption-prefix`, `--caption-suffix`, `--threshold`, `--padding`.
+- **Wording:** all prompts refer to "the person", so the character can be anyone. Only the first
+  node describes them.
+
+No blur and no camera pass in this workflow, on purpose (see
+[Camera imperfections](#6-camera-imperfections-always-on)). About **$0.85 per character** at medium
+quality (4 candidates ≈ $0.06, 8 sheets ≈ $0.55, 4 examples ≈ $0.24); slicing is local and free. Each
+node shows its price badge.
+
+### 02 / 03 — removed
+
+The Krea main generator (02) and GPT Image refinement (03) were removed: generation is local
+(Workflows 08-10, 09b) and character creation is all in 01. Workflow 05 still chains the cloud
+Krea → GPT → Seedance path if you want it. Both files are in git history.
 
 ### 04 — Seedance Image-to-Video (`04_seedance_image_to_video.json`)
 
@@ -751,13 +797,46 @@ group 05 (mask grow/feather, the composite), group 08 (the filters), and the pro
    [Camera imperfections](#6-camera-imperfections-always-on)).
 5. **Queue.** Group 08 then runs on its own: background blur → camera pass (ISO grain, corner
    fringing, falloff, white balance drift) → saved to `outputs/images/final/` and logged.
-6. **Want another grain roll on the same picture?** Set the *Sampler*'s control to `fixed` and
-   queue again — the generation is cached, so only the two filter nodes re-run.
+6. **Want another grain roll on the same picture?** Set *Placement & Angle per Seed*'s control to
+   `fixed` and queue again — the generation is cached, so only the two filter nodes re-run.
+
+**Several candidates per queue, each in a new place and at a new angle.** *Placement & Angle per
+Seed* (group 05c) turns one queue into `candidates` (default 4) separate generations. Each gets its
+own seed (base seed + 0, 1, 2, …), its own spot in the location photo (five slots from `x_min` to
+`x_max`, nearer/bigger or further/smaller between `size_min` and `size_max`, with her eyes on the
+`horizon` line) and its own body angle (front, three-quarter, profile or back-over-the-shoulder, to
+either side). Within one queue no two candidates share a slot (up to 5) or an angle (up to 8). The
+angle is drawn into the skeleton Krea 2 is conditioned on *and* written into the prompt, and Auto
+Mask outputs the skeleton wherever it actually put the mask, so the mask, the skeleton and the words
+always agree. Everything is a function of the seed, so a saved PNG dragged back onto the canvas
+rebuilds the same set.
+
+- `pose` = *new angle per seed* ignores the pose photo; *reference pose* keeps its skeleton and
+  only moves, rescales and mirrors it (a 2D skeleton can't be turned to a new angle honestly).
+- `vary` = *off* is the old behaviour: same place and pose, only the seed changes.
+- `angles` is the list candidates draw from, one per line as `degrees: words for the prompt`
+  (0 = facing the camera, positive = turned toward frame-right, 180 = back to the camera). Delete
+  the ones you don't want, add your own.
+- A **painted mask** still wins: every candidate stands where you painted and only the angle
+  changes. A person already in the plate is replaced in place, the same way.
+
+The candidates of one queue are saved together in `outputs/images/candidates/9b_<seed>/`, each with
+its label (seed, place, angle) in `logs/generations.jsonl`. Through the Pod queue with batch count
+10, that's 10 folders. Pick the winners with **Workflow 13**. Each candidate is a full generation:
+4 candidates take 4x the GPU time.
 
 Opening it on this machine is fine for reading the graph, but queuing it is not: Krea 2 needs an
 RTX 5090 / RTX 6000 Pro class GPU, and this box's GTX 1060 isn't supported by the installed torch
 build at all. Run it on the vast.ai pod (see
 [Running this setup on a rented GPU](#running-this-setup-on-a-rented-gpu-vastai--runpod)).
+
+### 13 — Pick the winner (`13_pick_winner.json`)
+
+One node, *Pick Winner*: choose a candidate folder (newest first; press R to refresh the list), queue
+with `winner` 0 to see its candidates in order, then set `winner` and queue again. That file is
+**copied**, not re-saved, to `outputs/images/final/9b_<seed>_winner<N>.png`, so its pixels and
+embedded workflow stay the same. It works the same for folders a pod run downloaded. It needs no
+GPU or models, and the Pod queue's "Hold for the pod" lets it run on this PC.
 
 ### 11 — MiniMax H3 Image-to-Video (`11_minimax_h3_image_to_video.json`)
 
@@ -851,7 +930,7 @@ toolkit works around.
 Budget assumption from the brief: ~500 Krea images/month, ~100 GPT Image edits/month, low
 Seedance volume. Design choices that keep it that way:
 
-- GPT refinement and Seedance video are **separate workflows** you open on purpose (02/03/04), and
+- Character creation and Seedance video are **separate workflows** you open on purpose (01/04), and
   **off by default** inside the combined workflow (05) — never triggered automatically by a Krea
   generation.
 - Every partner node shows ComfyUI's own live price badge before you queue.

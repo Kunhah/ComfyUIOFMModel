@@ -1,0 +1,52 @@
+{
+  "task": "Full Body 360, one single canvas, 16:9",
+  "identity": {
+    "source": "the attached reference images only",
+    "rule": "The person is the person in the reference images. Only the views described below change."
+  },
+  "layout": {
+    "hero": {
+      "position": "left half",
+      "content": "seen straight from the front, the complete forward-facing side and both feet visible from the top of the head to the baseline, neutral expression with the mouth closed"
+    },
+    "grid": {
+      "position": "right half",
+      "rows": 2,
+      "cols": 3,
+      "reading_order": "left to right, top to bottom",
+      "cells": [
+        {
+          "view": "turned toward frame-left, the far-side outline partly behind the near side, most of the front and part of the left side visible from the top of the head to the baseline, neutral expression with the mouth closed"
+        },
+        {
+          "view": "turned toward frame-right, the far-side outline partly behind the near side, most of the front and part of the right side visible from the top of the head to the baseline, neutral expression with the mouth closed"
+        },
+        {
+          "view": "seen in full left profile, the complete left-side outline visible from the top of the head to the baseline, neutral expression with the mouth closed"
+        },
+        {
+          "view": "seen in full right profile, the complete right-side outline visible from the top of the head to the baseline, neutral expression with the mouth closed"
+        },
+        {
+          "view": "turned away toward frame-right, most of the back visible, only a narrow sliver of the front visible, both feet on the baseline, neutral expression with the mouth closed"
+        },
+        {
+          "view": "seen from directly behind, the complete back and both feet visible, no part of the face visible, framed from the top of the head to the baseline"
+        }
+      ]
+    }
+  },
+  "locks": {
+    "background_grey": "Soft grey seamless studio background, the same grey behind every view.",
+    "lighting_flat": "Flat even softbox lighting, no hard shadows.",
+    "camera_eye_50": "Eye level, 50mm, identical framing and scale.",
+    "identity_close_person": "Keep the face and identity exactly as in the reference images.",
+    "no_text": "No text, no labels, no watermark.",
+    "hair_clear_of_ears": "Hair falls behind both shoulders so both ears and the jawline stay visible."
+  },
+  "consistency": "Every panel shows a different visible step of the same complete rotation and no two panels repeat the same view. Show the whole person from head to toe in every panel, with both feet on the same baseline. Keep the wardrobe, expression, scale and framing identical across all seven panels.",
+  "must_avoid": [
+    "No borders and no drop shadows between the panels.",
+    "Do not crop the head, hands or feet at a panel edge."
+  ]
+}

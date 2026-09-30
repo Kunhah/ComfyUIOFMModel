@@ -1,1342 +1,3611 @@
 {
-  "id": "3f6a0f2a-3f6f-4b1b-9a01-000000000001",
-  "revision": 0,
-  "last_node_id": 25,
-  "last_link_id": 22,
-  "nodes": [
+ "last_node_id": 50,
+ "last_link_id": 76,
+ "nodes": [
+  {
+   "id": 1,
+   "type": "OpenAIGPTImageNodeV2",
+   "pos": [
+    30,
+    60
+   ],
+   "size": [
+    420,
+    460
+   ],
+   "flags": {},
+   "order": 0,
+   "mode": 0,
+   "inputs": [
     {
-      "id": 1,
-      "type": "MarkdownNote",
-      "pos": [
-        -200,
-        -420
-      ],
-      "size": [
-        900,
-        380
-      ],
-      "flags": {},
-      "order": 0,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [],
-      "properties": {
-        "Node name for S&R": "MarkdownNote"
-      },
-      "widgets_values": [
-        "# 01 \u2014 Character Creation\n\nBuilds one consistent fictional character from a text description, converging on a single canonical identity instead of 7 different-looking people.\n\n**This is a two-phase, manual-approval workflow** (ComfyUI has no built-in 'pause for human review' node, so approval happens between two Queue Prompt runs):\n\n1. **Phase A (this side):** describe the character in the Krea 2 Large node's prompt and generate seed candidates. Queue it a few times (different random seeds) to get several options, saved under `output/projects/<project>/outputs/images/candidates/`.\n2. **Pick the best one.** Copy that PNG into `input/ai_influencer/<project>/references/canonical/front.png`.\n3. **Phase B (right side):** point the Load Image node at that file and Queue again. GPT Image 2.5 edits it into 6 more consistent angles using it as the identity reference \u2014 the strongest available identity-lock without a trainable LoRA (none of Krea 2 / GPT Image 2.5 / Seedance 2.5's cloud APIs expose one; see README_AI_INFLUENCER.md).\n\nSet the **project** field on every Save & Log / Load Character node to the same name (or set AI_INFLUENCER_DEFAULT_PROJECT in .env once)."
-      ],
-      "color": "#222",
-      "bgcolor": "#000"
+     "label": "image_1",
+     "name": "model.images.image_1",
+     "shape": 7,
+     "type": "IMAGE",
+     "link": null
     },
     {
-      "id": 2,
-      "type": "Krea2ImageNode",
-      "pos": [
-        -200,
-        40
-      ],
-      "size": [
-        400,
-        380
-      ],
-      "flags": {},
-      "order": 1,
-      "mode": 0,
-      "inputs": [
-        {
-          "label": "style_reference",
-          "name": "model.style_reference",
-          "shape": 7,
-          "type": "KREA_STYLE_REF",
-          "link": null
-        }
-      ],
-      "outputs": [
-        {
-          "name": "IMAGE",
-          "type": "IMAGE",
-          "links": [
-            1,
-            2
-          ]
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "Krea2ImageNode"
-      },
-      "widgets_values": [
-        "Describe your fictional character in detail here, e.g.: photorealistic portrait of a 29-year-old woman, Brazilian, olive skin, dark brown wavy shoulder-length hair, brown eyes, slim athletic build, small nose scar above left eyebrow, natural everyday makeup, wearing a plain white t-shirt, neutral studio background, soft window light, shot on a 35mm lens, candid photography, natural skin texture, no beauty filter",
-        "Krea 2 Large",
-        "1:1",
-        "1K",
-        "medium",
-        "",
-        0.35,
-        0,
-        "randomize"
-      ],
-      "color": "#432",
-      "bgcolor": "#653"
-    },
-    {
-      "id": 3,
-      "type": "AIInfluencerSaveImage",
-      "pos": [
-        260,
-        40
-      ],
-      "size": [
-        320,
-        380
-      ],
-      "flags": {},
-      "order": 2,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "images",
-          "type": "IMAGE",
-          "link": 1
-        }
-      ],
-      "outputs": [
-        {
-          "name": "images",
-          "type": "IMAGE",
-          "links": []
-        },
-        {
-          "name": "output_path",
-          "type": "STRING",
-          "links": []
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "AIInfluencerSaveImage"
-      },
-      "widgets_values": [
-        "",
-        "character_candidate",
-        "krea",
-        "Krea 2 Large",
-        "generate",
-        "",
-        "",
-        "1:1",
-        -1,
-        "fixed",
-        0,
-        "",
-        ""
-      ]
-    },
-    {
-      "id": 4,
-      "type": "PreviewImage",
-      "pos": [
-        620,
-        40
-      ],
-      "size": [
-        280,
-        280
-      ],
-      "flags": {},
-      "order": 3,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "images",
-          "type": "IMAGE",
-          "link": 2
-        }
-      ],
-      "outputs": [],
-      "properties": {
-        "Node name for S&R": "PreviewImage"
-      },
-      "widgets_values": []
-    },
-    {
-      "id": 5,
-      "type": "LoadImage",
-      "pos": [
-        1080,
-        40
-      ],
-      "size": [
-        300,
-        320
-      ],
-      "flags": {},
-      "order": 4,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "IMAGE",
-          "type": "IMAGE",
-          "links": [
-            3,
-            4,
-            5,
-            8,
-            11,
-            14,
-            17,
-            20
-          ]
-        },
-        {
-          "name": "MASK",
-          "type": "MASK",
-          "links": null
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "LoadImage"
-      },
-      "widgets_values": [
-        "front.png",
-        "image"
-      ],
-      "title": "Approved front reference (point at your pick)"
-    },
-    {
-      "id": 6,
-      "type": "AIInfluencerSaveImage",
-      "pos": [
-        1420,
-        40
-      ],
-      "size": [
-        320,
-        380
-      ],
-      "flags": {},
-      "order": 5,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "images",
-          "type": "IMAGE",
-          "link": 3
-        }
-      ],
-      "outputs": [
-        {
-          "name": "images",
-          "type": "IMAGE",
-          "links": []
-        },
-        {
-          "name": "output_path",
-          "type": "STRING",
-          "links": []
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "AIInfluencerSaveImage"
-      },
-      "widgets_values": [
-        "",
-        "character_canonical",
-        "krea",
-        "Krea 2 Large (approved)",
-        "generate",
-        "",
-        "",
-        "1:1",
-        -1,
-        "fixed",
-        0,
-        "",
-        ""
-      ]
-    },
-    {
-      "id": 7,
-      "type": "PreviewImage",
-      "pos": [
-        1780,
-        40
-      ],
-      "size": [
-        280,
-        280
-      ],
-      "flags": {},
-      "order": 6,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "images",
-          "type": "IMAGE",
-          "link": 4
-        }
-      ],
-      "outputs": [],
-      "properties": {
-        "Node name for S&R": "PreviewImage"
-      },
-      "widgets_values": []
-    },
-    {
-      "id": 8,
-      "type": "OpenAIGPTImageNodeV2",
-      "pos": [
-        2160,
-        -40
-      ],
-      "size": [
-        400,
-        460
-      ],
-      "flags": {},
-      "order": 7,
-      "mode": 0,
-      "inputs": [
-        {
-          "label": "image_1",
-          "name": "model.images.image_1",
-          "shape": 7,
-          "type": "IMAGE",
-          "link": 5
-        },
-        {
-          "name": "model.mask",
-          "shape": 7,
-          "type": "MASK",
-          "link": null
-        }
-      ],
-      "outputs": [
-        {
-          "name": "IMAGE",
-          "type": "IMAGE",
-          "links": [
-            6,
-            7
-          ]
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "OpenAIGPTImageNodeV2"
-      },
-      "widgets_values": [
-        "Generate the same person turned to a 3/4 left angle. Keep the exact same face, identity, hairstyle, skin tone and outfit. Neutral studio background, same lighting style, natural realistic photography, unedited skin texture.",
-        "gpt-image-2.5-flare",
-        "auto",
-        1024,
-        1024,
-        "auto",
-        "medium",
-        1,
-        0,
-        "randomize"
-      ],
-      "color": "#432",
-      "bgcolor": "#653"
-    },
-    {
-      "id": 9,
-      "type": "AIInfluencerSaveImage",
-      "pos": [
-        2620,
-        -40
-      ],
-      "size": [
-        320,
-        380
-      ],
-      "flags": {},
-      "order": 8,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "images",
-          "type": "IMAGE",
-          "link": 6
-        }
-      ],
-      "outputs": [
-        {
-          "name": "images",
-          "type": "IMAGE",
-          "links": []
-        },
-        {
-          "name": "output_path",
-          "type": "STRING",
-          "links": []
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "AIInfluencerSaveImage"
-      },
-      "widgets_values": [
-        "",
-        "character_canonical",
-        "openai_gpt_image",
-        "gpt-image-2.5-flare",
-        "edit",
-        "",
-        "medium",
-        "",
-        -1,
-        "fixed",
-        1,
-        "",
-        ""
-      ]
-    },
-    {
-      "id": 10,
-      "type": "PreviewImage",
-      "pos": [
-        3000,
-        -40
-      ],
-      "size": [
-        280,
-        280
-      ],
-      "flags": {},
-      "order": 9,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "images",
-          "type": "IMAGE",
-          "link": 7
-        }
-      ],
-      "outputs": [],
-      "properties": {
-        "Node name for S&R": "PreviewImage"
-      },
-      "widgets_values": []
-    },
-    {
-      "id": 11,
-      "type": "OpenAIGPTImageNodeV2",
-      "pos": [
-        2160,
-        440
-      ],
-      "size": [
-        400,
-        460
-      ],
-      "flags": {},
-      "order": 10,
-      "mode": 0,
-      "inputs": [
-        {
-          "label": "image_1",
-          "name": "model.images.image_1",
-          "shape": 7,
-          "type": "IMAGE",
-          "link": 8
-        },
-        {
-          "name": "model.mask",
-          "shape": 7,
-          "type": "MASK",
-          "link": null
-        }
-      ],
-      "outputs": [
-        {
-          "name": "IMAGE",
-          "type": "IMAGE",
-          "links": [
-            9,
-            10
-          ]
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "OpenAIGPTImageNodeV2"
-      },
-      "widgets_values": [
-        "Generate the same person turned to a 3/4 right angle. Keep the exact same face, identity, hairstyle, skin tone and outfit. Neutral studio background, same lighting style, natural realistic photography, unedited skin texture.",
-        "gpt-image-2.5-flare",
-        "auto",
-        1024,
-        1024,
-        "auto",
-        "medium",
-        1,
-        0,
-        "randomize"
-      ],
-      "color": "#432",
-      "bgcolor": "#653"
-    },
-    {
-      "id": 12,
-      "type": "AIInfluencerSaveImage",
-      "pos": [
-        2620,
-        440
-      ],
-      "size": [
-        320,
-        380
-      ],
-      "flags": {},
-      "order": 11,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "images",
-          "type": "IMAGE",
-          "link": 9
-        }
-      ],
-      "outputs": [
-        {
-          "name": "images",
-          "type": "IMAGE",
-          "links": []
-        },
-        {
-          "name": "output_path",
-          "type": "STRING",
-          "links": []
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "AIInfluencerSaveImage"
-      },
-      "widgets_values": [
-        "",
-        "character_canonical",
-        "openai_gpt_image",
-        "gpt-image-2.5-flare",
-        "edit",
-        "",
-        "medium",
-        "",
-        -1,
-        "fixed",
-        1,
-        "",
-        ""
-      ]
-    },
-    {
-      "id": 13,
-      "type": "PreviewImage",
-      "pos": [
-        3000,
-        440
-      ],
-      "size": [
-        280,
-        280
-      ],
-      "flags": {},
-      "order": 12,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "images",
-          "type": "IMAGE",
-          "link": 10
-        }
-      ],
-      "outputs": [],
-      "properties": {
-        "Node name for S&R": "PreviewImage"
-      },
-      "widgets_values": []
-    },
-    {
-      "id": 14,
-      "type": "OpenAIGPTImageNodeV2",
-      "pos": [
-        2160,
-        920
-      ],
-      "size": [
-        400,
-        460
-      ],
-      "flags": {},
-      "order": 13,
-      "mode": 0,
-      "inputs": [
-        {
-          "label": "image_1",
-          "name": "model.images.image_1",
-          "shape": 7,
-          "type": "IMAGE",
-          "link": 11
-        },
-        {
-          "name": "model.mask",
-          "shape": 7,
-          "type": "MASK",
-          "link": null
-        }
-      ],
-      "outputs": [
-        {
-          "name": "IMAGE",
-          "type": "IMAGE",
-          "links": [
-            12,
-            13
-          ]
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "OpenAIGPTImageNodeV2"
-      },
-      "widgets_values": [
-        "Generate the same person in full profile (90 degree side view). Keep the exact same face, identity, hairstyle, skin tone and outfit. Neutral studio background, natural realistic photography, unedited skin texture.",
-        "gpt-image-2.5-flare",
-        "auto",
-        1024,
-        1024,
-        "auto",
-        "medium",
-        1,
-        0,
-        "randomize"
-      ],
-      "color": "#432",
-      "bgcolor": "#653"
-    },
-    {
-      "id": 15,
-      "type": "AIInfluencerSaveImage",
-      "pos": [
-        2620,
-        920
-      ],
-      "size": [
-        320,
-        380
-      ],
-      "flags": {},
-      "order": 14,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "images",
-          "type": "IMAGE",
-          "link": 12
-        }
-      ],
-      "outputs": [
-        {
-          "name": "images",
-          "type": "IMAGE",
-          "links": []
-        },
-        {
-          "name": "output_path",
-          "type": "STRING",
-          "links": []
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "AIInfluencerSaveImage"
-      },
-      "widgets_values": [
-        "",
-        "character_canonical",
-        "openai_gpt_image",
-        "gpt-image-2.5-flare",
-        "edit",
-        "",
-        "medium",
-        "",
-        -1,
-        "fixed",
-        1,
-        "",
-        ""
-      ]
-    },
-    {
-      "id": 16,
-      "type": "PreviewImage",
-      "pos": [
-        3000,
-        920
-      ],
-      "size": [
-        280,
-        280
-      ],
-      "flags": {},
-      "order": 15,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "images",
-          "type": "IMAGE",
-          "link": 13
-        }
-      ],
-      "outputs": [],
-      "properties": {
-        "Node name for S&R": "PreviewImage"
-      },
-      "widgets_values": []
-    },
-    {
-      "id": 17,
-      "type": "OpenAIGPTImageNodeV2",
-      "pos": [
-        2160,
-        1400
-      ],
-      "size": [
-        400,
-        460
-      ],
-      "flags": {},
-      "order": 16,
-      "mode": 0,
-      "inputs": [
-        {
-          "label": "image_1",
-          "name": "model.images.image_1",
-          "shape": 7,
-          "type": "IMAGE",
-          "link": 14
-        },
-        {
-          "name": "model.mask",
-          "shape": 7,
-          "type": "MASK",
-          "link": null
-        }
-      ],
-      "outputs": [
-        {
-          "name": "IMAGE",
-          "type": "IMAGE",
-          "links": [
-            15,
-            16
-          ]
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "OpenAIGPTImageNodeV2"
-      },
-      "widgets_values": [
-        "Generate the same person, front-facing, giving a natural relaxed smile. Keep the exact same face, identity, hairstyle, skin tone and outfit. Neutral studio background, natural realistic photography.",
-        "gpt-image-2.5-flare",
-        "auto",
-        1024,
-        1024,
-        "auto",
-        "medium",
-        1,
-        0,
-        "randomize"
-      ],
-      "color": "#432",
-      "bgcolor": "#653"
-    },
-    {
-      "id": 18,
-      "type": "AIInfluencerSaveImage",
-      "pos": [
-        2620,
-        1400
-      ],
-      "size": [
-        320,
-        380
-      ],
-      "flags": {},
-      "order": 17,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "images",
-          "type": "IMAGE",
-          "link": 15
-        }
-      ],
-      "outputs": [
-        {
-          "name": "images",
-          "type": "IMAGE",
-          "links": []
-        },
-        {
-          "name": "output_path",
-          "type": "STRING",
-          "links": []
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "AIInfluencerSaveImage"
-      },
-      "widgets_values": [
-        "",
-        "character_canonical",
-        "openai_gpt_image",
-        "gpt-image-2.5-flare",
-        "edit",
-        "",
-        "medium",
-        "",
-        -1,
-        "fixed",
-        1,
-        "",
-        ""
-      ]
-    },
-    {
-      "id": 19,
-      "type": "PreviewImage",
-      "pos": [
-        3000,
-        1400
-      ],
-      "size": [
-        280,
-        280
-      ],
-      "flags": {},
-      "order": 18,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "images",
-          "type": "IMAGE",
-          "link": 16
-        }
-      ],
-      "outputs": [],
-      "properties": {
-        "Node name for S&R": "PreviewImage"
-      },
-      "widgets_values": []
-    },
-    {
-      "id": 20,
-      "type": "OpenAIGPTImageNodeV2",
-      "pos": [
-        2160,
-        1880
-      ],
-      "size": [
-        400,
-        460
-      ],
-      "flags": {},
-      "order": 19,
-      "mode": 0,
-      "inputs": [
-        {
-          "label": "image_1",
-          "name": "model.images.image_1",
-          "shape": 7,
-          "type": "IMAGE",
-          "link": 17
-        },
-        {
-          "name": "model.mask",
-          "shape": 7,
-          "type": "MASK",
-          "link": null
-        }
-      ],
-      "outputs": [
-        {
-          "name": "IMAGE",
-          "type": "IMAGE",
-          "links": [
-            18,
-            19
-          ]
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "OpenAIGPTImageNodeV2"
-      },
-      "widgets_values": [
-        "Generate the same person from the waist up, arms relaxed at the sides, front-facing. Keep the exact same face, identity, hairstyle, skin tone and outfit. Neutral studio background, natural realistic photography.",
-        "gpt-image-2.5-flare",
-        "auto",
-        1024,
-        1024,
-        "auto",
-        "medium",
-        1,
-        0,
-        "randomize"
-      ],
-      "color": "#432",
-      "bgcolor": "#653"
-    },
-    {
-      "id": 21,
-      "type": "AIInfluencerSaveImage",
-      "pos": [
-        2620,
-        1880
-      ],
-      "size": [
-        320,
-        380
-      ],
-      "flags": {},
-      "order": 20,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "images",
-          "type": "IMAGE",
-          "link": 18
-        }
-      ],
-      "outputs": [
-        {
-          "name": "images",
-          "type": "IMAGE",
-          "links": []
-        },
-        {
-          "name": "output_path",
-          "type": "STRING",
-          "links": []
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "AIInfluencerSaveImage"
-      },
-      "widgets_values": [
-        "",
-        "character_canonical",
-        "openai_gpt_image",
-        "gpt-image-2.5-flare",
-        "edit",
-        "",
-        "medium",
-        "",
-        -1,
-        "fixed",
-        1,
-        "",
-        ""
-      ]
-    },
-    {
-      "id": 22,
-      "type": "PreviewImage",
-      "pos": [
-        3000,
-        1880
-      ],
-      "size": [
-        280,
-        280
-      ],
-      "flags": {},
-      "order": 21,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "images",
-          "type": "IMAGE",
-          "link": 19
-        }
-      ],
-      "outputs": [],
-      "properties": {
-        "Node name for S&R": "PreviewImage"
-      },
-      "widgets_values": []
-    },
-    {
-      "id": 23,
-      "type": "OpenAIGPTImageNodeV2",
-      "pos": [
-        2160,
-        2360
-      ],
-      "size": [
-        400,
-        460
-      ],
-      "flags": {},
-      "order": 22,
-      "mode": 0,
-      "inputs": [
-        {
-          "label": "image_1",
-          "name": "model.images.image_1",
-          "shape": 7,
-          "type": "IMAGE",
-          "link": 20
-        },
-        {
-          "name": "model.mask",
-          "shape": 7,
-          "type": "MASK",
-          "link": null
-        }
-      ],
-      "outputs": [
-        {
-          "name": "IMAGE",
-          "type": "IMAGE",
-          "links": [
-            21,
-            22
-          ]
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "OpenAIGPTImageNodeV2"
-      },
-      "widgets_values": [
-        "Generate the same person full body, standing naturally, front-facing. Keep the exact same face, identity, hairstyle, skin tone and outfit. Neutral studio background, natural realistic photography, correct anatomy and proportions.",
-        "gpt-image-2.5-flare",
-        "auto",
-        1024,
-        1024,
-        "auto",
-        "medium",
-        1,
-        0,
-        "randomize"
-      ],
-      "color": "#432",
-      "bgcolor": "#653"
-    },
-    {
-      "id": 24,
-      "type": "AIInfluencerSaveImage",
-      "pos": [
-        2620,
-        2360
-      ],
-      "size": [
-        320,
-        380
-      ],
-      "flags": {},
-      "order": 23,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "images",
-          "type": "IMAGE",
-          "link": 21
-        }
-      ],
-      "outputs": [
-        {
-          "name": "images",
-          "type": "IMAGE",
-          "links": []
-        },
-        {
-          "name": "output_path",
-          "type": "STRING",
-          "links": []
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "AIInfluencerSaveImage"
-      },
-      "widgets_values": [
-        "",
-        "character_canonical",
-        "openai_gpt_image",
-        "gpt-image-2.5-flare",
-        "edit",
-        "",
-        "medium",
-        "",
-        -1,
-        "fixed",
-        1,
-        "",
-        ""
-      ]
-    },
-    {
-      "id": 25,
-      "type": "PreviewImage",
-      "pos": [
-        3000,
-        2360
-      ],
-      "size": [
-        280,
-        280
-      ],
-      "flags": {},
-      "order": 24,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "images",
-          "type": "IMAGE",
-          "link": 22
-        }
-      ],
-      "outputs": [],
-      "properties": {
-        "Node name for S&R": "PreviewImage"
-      },
-      "widgets_values": []
+     "name": "model.mask",
+     "shape": 7,
+     "type": "MASK",
+     "link": null
     }
-  ],
-  "links": [
-    [
+   ],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [
       1,
-      2,
-      0,
-      3,
-      0,
-      "IMAGE"
-    ],
-    [
-      2,
-      2,
-      0,
-      4,
-      0,
-      "IMAGE"
-    ],
-    [
-      3,
-      5,
-      0,
-      6,
-      0,
-      "IMAGE"
-    ],
-    [
-      4,
-      5,
-      0,
-      7,
-      0,
-      "IMAGE"
-    ],
-    [
-      5,
-      5,
-      0,
-      8,
-      0,
-      "IMAGE"
-    ],
-    [
-      6,
-      8,
-      0,
-      9,
-      0,
-      "IMAGE"
-    ],
-    [
-      7,
-      8,
-      0,
-      10,
-      0,
-      "IMAGE"
-    ],
-    [
-      8,
-      5,
-      0,
-      11,
-      0,
-      "IMAGE"
-    ],
-    [
-      9,
-      11,
-      0,
-      12,
-      0,
-      "IMAGE"
-    ],
-    [
-      10,
-      11,
-      0,
-      13,
-      0,
-      "IMAGE"
-    ],
-    [
-      11,
-      5,
-      0,
-      14,
-      0,
-      "IMAGE"
-    ],
-    [
-      12,
-      14,
-      0,
-      15,
-      0,
-      "IMAGE"
-    ],
-    [
-      13,
-      14,
-      0,
-      16,
-      0,
-      "IMAGE"
-    ],
-    [
-      14,
-      5,
-      0,
-      17,
-      0,
-      "IMAGE"
-    ],
-    [
-      15,
-      17,
-      0,
-      18,
-      0,
-      "IMAGE"
-    ],
-    [
-      16,
-      17,
-      0,
-      19,
-      0,
-      "IMAGE"
-    ],
-    [
-      17,
-      5,
-      0,
-      20,
-      0,
-      "IMAGE"
-    ],
-    [
-      18,
-      20,
-      0,
-      21,
-      0,
-      "IMAGE"
-    ],
-    [
-      19,
-      20,
-      0,
-      22,
-      0,
-      "IMAGE"
-    ],
-    [
-      20,
-      5,
-      0,
-      23,
-      0,
-      "IMAGE"
-    ],
-    [
-      21,
-      23,
-      0,
-      24,
-      0,
-      "IMAGE"
-    ],
-    [
-      22,
-      23,
-      0,
-      25,
-      0,
-      "IMAGE"
-    ]
-  ],
-  "groups": [
-    {
-      "id": 1,
-      "title": "01 CHARACTER DESCRIPTION -> KREA SEED CANDIDATES",
-      "bounding": [
-        -220,
-        -40,
-        1000,
-        480
-      ],
-      "color": "#3f789e",
-      "flags": {}
-    },
-    {
-      "id": 2,
-      "title": "04 APPROVED FRONT REFERENCE (manual)",
-      "bounding": [
-        1060,
-        -40,
-        800,
-        480
-      ],
-      "color": "#a1309b",
-      "flags": {}
-    },
-    {
-      "id": 3,
-      "title": "05 ANGLE VARIANTS - GPT IMAGE 2.5 EDIT (identity-locked on front reference)",
-      "bounding": [
-        2120,
-        -80,
-        1300,
-        2840
-      ],
-      "color": "#3f9e5e",
-      "flags": {}
-    },
-    {
-      "id": 4,
-      "title": "06 SAVE CANONICAL SET",
-      "bounding": [
-        2540,
-        -80,
-        500,
-        2840
-      ],
-      "color": "#9e7f3f",
-      "flags": {}
+      2
+     ],
+     "slot_index": 0
     }
-  ],
-  "config": {},
-  "extra": {
-    "ds": {
-      "scale": 0.65,
-      "offset": [
-        200,
-        200
-      ]
-    },
-    "frontendVersion": "1.52.7"
+   ],
+   "properties": {
+    "Node name for S&R": "OpenAIGPTImageNodeV2"
+   },
+   "widgets_values": [
+    "Photo of a fictional adult: DESCRIBE THE CHARACTER HERE - gender, age, build, face shape, eyes, hair, skin, distinguishing marks. Front-facing head and shoulders portrait, looking straight into the camera, relaxed neutral expression, mouth closed. Plain white t-shirt. Plain light grey wall. Eye level, 50mm. Soft window light. Natural unretouched photo with real skin texture.",
+    "gpt-image-2.5-flare",
+    "1024x1536",
+    1024,
+    1024,
+    "auto",
+    "medium",
+    4,
+    0,
+    "fixed"
+   ],
+   "title": "WHO SHE IS + 4 candidates per call (change the seed for 4 new ones)",
+   "color": "#432",
+   "bgcolor": "#653"
   },
-  "version": 0.4
+  {
+   "id": 2,
+   "type": "AIInfluencerSaveImage",
+   "pos": [
+    480,
+    60
+   ],
+   "size": [
+    360,
+    420
+   ],
+   "flags": {},
+   "order": 1,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "images",
+     "type": "IMAGE",
+     "link": 1
+    },
+    {
+     "name": "prompt_text",
+     "type": "STRING",
+     "link": null
+    }
+   ],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [],
+     "slot_index": 0
+    },
+    {
+     "name": "output_path",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 1
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerSaveImage"
+   },
+   "widgets_values": [
+    "",
+    "character_candidate",
+    "openai_gpt_image",
+    "gpt-image-2.5-flare",
+    "generate",
+    "",
+    "medium",
+    "1024x1536",
+    -1,
+    "fixed",
+    0,
+    "",
+    "",
+    ""
+   ]
+  },
+  {
+   "id": 3,
+   "type": "LoadImage",
+   "pos": [
+    30,
+    580
+   ],
+   "size": [
+    400,
+    380
+   ],
+   "flags": {},
+   "order": 2,
+   "mode": 4,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [
+      3
+     ],
+     "slot_index": 0
+    },
+    {
+     "name": "MASK",
+     "type": "MASK",
+     "links": [],
+     "slot_index": 1
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "LoadImage"
+   },
+   "widgets_values": [
+    "example.png",
+    "image"
+   ],
+   "title": "OR your own front photo (Ctrl+B to switch it on)"
+  },
+  {
+   "id": 4,
+   "type": "AIInfluencerPickCandidate",
+   "pos": [
+    480,
+    580
+   ],
+   "size": [
+    360,
+    110
+   ],
+   "flags": {},
+   "order": 3,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "candidates",
+     "type": "IMAGE",
+     "link": 2
+    },
+    {
+     "name": "own_image",
+     "type": "IMAGE",
+     "link": 3
+    }
+   ],
+   "outputs": [
+    {
+     "name": "image",
+     "type": "IMAGE",
+     "links": [
+      4,
+      5,
+      10,
+      16,
+      22,
+      28,
+      35,
+      42,
+      48,
+      54,
+      61,
+      65,
+      69,
+      73
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerPickCandidate"
+   },
+   "widgets_values": [
+    0
+   ],
+   "title": "PICK: 0 = just show them. Then 1-4 and queue again"
+  },
+  {
+   "id": 5,
+   "type": "PreviewImage",
+   "pos": [
+    880,
+    580
+   ],
+   "size": [
+    400,
+    380
+   ],
+   "flags": {},
+   "order": 4,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "images",
+     "type": "IMAGE",
+     "link": 4
+    }
+   ],
+   "outputs": [],
+   "properties": {
+    "Node name for S&R": "PreviewImage"
+   },
+   "widgets_values": [],
+   "title": "Picture 1 of every request below"
+  },
+  {
+   "id": 6,
+   "type": "AIInfluencerSheetPrompt",
+   "pos": [
+    30,
+    1100
+   ],
+   "size": [
+    420,
+    110
+   ],
+   "flags": {},
+   "order": 5,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "prompt",
+     "type": "STRING",
+     "links": [
+      6,
+      9
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerSheetPrompt"
+   },
+   "widgets_values": [
+    "face-turnaround",
+    "character-sheet-studio/.claude/skills/character-sheet-studio/templates"
+   ],
+   "title": "face-turnaround"
+  },
+  {
+   "id": 7,
+   "type": "OpenAIGPTImageNodeV2",
+   "pos": [
+    30,
+    1240
+   ],
+   "size": [
+    420,
+    460
+   ],
+   "flags": {},
+   "order": 6,
+   "mode": 0,
+   "inputs": [
+    {
+     "label": "image_1",
+     "name": "model.images.image_1",
+     "shape": 7,
+     "type": "IMAGE",
+     "link": 5
+    },
+    {
+     "label": "image_2",
+     "name": "model.images.image_2",
+     "shape": 7,
+     "type": "IMAGE",
+     "link": null
+    },
+    {
+     "name": "model.mask",
+     "shape": 7,
+     "type": "MASK",
+     "link": null
+    },
+    {
+     "name": "prompt",
+     "type": "STRING",
+     "link": 6,
+     "widget": {
+      "name": "prompt"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [
+      7,
+      8,
+      11,
+      17,
+      23,
+      29,
+      36,
+      43,
+      49,
+      55,
+      62,
+      66,
+      70,
+      74
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "OpenAIGPTImageNodeV2"
+   },
+   "widgets_values": [
+    "",
+    "gpt-image-2.5-flare",
+    "3840x2160",
+    1024,
+    1024,
+    "auto",
+    "medium",
+    1,
+    0,
+    "fixed"
+   ],
+   "title": "face-turnaround (1 picture of her)",
+   "color": "#432",
+   "bgcolor": "#653"
+  },
+  {
+   "id": 8,
+   "type": "AIInfluencerSaveImage",
+   "pos": [
+    480,
+    1100
+   ],
+   "size": [
+    360,
+    420
+   ],
+   "flags": {},
+   "order": 7,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "images",
+     "type": "IMAGE",
+     "link": 7
+    },
+    {
+     "name": "prompt_text",
+     "type": "STRING",
+     "link": null
+    }
+   ],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [],
+     "slot_index": 0
+    },
+    {
+     "name": "output_path",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 1
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerSaveImage"
+   },
+   "widgets_values": [
+    "",
+    "character_sheet",
+    "openai_gpt_image",
+    "gpt-image-2.5-flare",
+    "edit",
+    "",
+    "medium",
+    "3840x2160",
+    -1,
+    "fixed",
+    1,
+    "",
+    "",
+    "face-turnaround"
+   ]
+  },
+  {
+   "id": 9,
+   "type": "AIInfluencerSliceSheet",
+   "pos": [
+    480,
+    1560
+   ],
+   "size": [
+    400,
+    380
+   ],
+   "flags": {},
+   "order": 8,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "sheet_image",
+     "type": "IMAGE",
+     "link": 8
+    },
+    {
+     "name": "template",
+     "type": "STRING",
+     "link": 9
+    }
+   ],
+   "outputs": [
+    {
+     "name": "crops",
+     "type": "IMAGE",
+     "links": [],
+     "slot_index": 0,
+     "shape": 6
+    },
+    {
+     "name": "captions",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 1,
+     "shape": 6
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerSliceSheet"
+   },
+   "widgets_values": [
+    "",
+    "",
+    "plain grey studio background",
+    0.09,
+    0.05
+   ],
+   "title": "Slice into one picture per view"
+  },
+  {
+   "id": 10,
+   "type": "AIInfluencerSheetPrompt",
+   "pos": [
+    910,
+    1100
+   ],
+   "size": [
+    420,
+    110
+   ],
+   "flags": {},
+   "order": 9,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "prompt",
+     "type": "STRING",
+     "links": [
+      12,
+      15
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerSheetPrompt"
+   },
+   "widgets_values": [
+    "full-body-360",
+    "character-sheet-studio/.claude/skills/character-sheet-studio/templates"
+   ],
+   "title": "full-body-360"
+  },
+  {
+   "id": 11,
+   "type": "OpenAIGPTImageNodeV2",
+   "pos": [
+    910,
+    1240
+   ],
+   "size": [
+    420,
+    460
+   ],
+   "flags": {},
+   "order": 10,
+   "mode": 0,
+   "inputs": [
+    {
+     "label": "image_1",
+     "name": "model.images.image_1",
+     "shape": 7,
+     "type": "IMAGE",
+     "link": 10
+    },
+    {
+     "label": "image_2",
+     "name": "model.images.image_2",
+     "shape": 7,
+     "type": "IMAGE",
+     "link": 11
+    },
+    {
+     "label": "image_3",
+     "name": "model.images.image_3",
+     "shape": 7,
+     "type": "IMAGE",
+     "link": null
+    },
+    {
+     "name": "model.mask",
+     "shape": 7,
+     "type": "MASK",
+     "link": null
+    },
+    {
+     "name": "prompt",
+     "type": "STRING",
+     "link": 12,
+     "widget": {
+      "name": "prompt"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [
+      13,
+      14,
+      30,
+      37,
+      56,
+      63,
+      67,
+      71,
+      75
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "OpenAIGPTImageNodeV2"
+   },
+   "widgets_values": [
+    "",
+    "gpt-image-2.5-flare",
+    "3840x2160",
+    1024,
+    1024,
+    "auto",
+    "medium",
+    1,
+    0,
+    "fixed"
+   ],
+   "title": "full-body-360 (2 pictures of her)",
+   "color": "#432",
+   "bgcolor": "#653"
+  },
+  {
+   "id": 12,
+   "type": "AIInfluencerSaveImage",
+   "pos": [
+    1360,
+    1100
+   ],
+   "size": [
+    360,
+    420
+   ],
+   "flags": {},
+   "order": 11,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "images",
+     "type": "IMAGE",
+     "link": 13
+    },
+    {
+     "name": "prompt_text",
+     "type": "STRING",
+     "link": null
+    }
+   ],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [],
+     "slot_index": 0
+    },
+    {
+     "name": "output_path",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 1
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerSaveImage"
+   },
+   "widgets_values": [
+    "",
+    "character_sheet",
+    "openai_gpt_image",
+    "gpt-image-2.5-flare",
+    "edit",
+    "",
+    "medium",
+    "3840x2160",
+    -1,
+    "fixed",
+    2,
+    "",
+    "",
+    "full-body-360"
+   ]
+  },
+  {
+   "id": 13,
+   "type": "AIInfluencerSliceSheet",
+   "pos": [
+    1360,
+    1560
+   ],
+   "size": [
+    400,
+    380
+   ],
+   "flags": {},
+   "order": 12,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "sheet_image",
+     "type": "IMAGE",
+     "link": 14
+    },
+    {
+     "name": "template",
+     "type": "STRING",
+     "link": 15
+    }
+   ],
+   "outputs": [
+    {
+     "name": "crops",
+     "type": "IMAGE",
+     "links": [],
+     "slot_index": 0,
+     "shape": 6
+    },
+    {
+     "name": "captions",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 1,
+     "shape": 6
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerSliceSheet"
+   },
+   "widgets_values": [
+    "",
+    "",
+    "plain grey studio background",
+    0.09,
+    0.05
+   ],
+   "title": "Slice into one picture per view"
+  },
+  {
+   "id": 14,
+   "type": "AIInfluencerSheetPrompt",
+   "pos": [
+    1790,
+    1100
+   ],
+   "size": [
+    420,
+    110
+   ],
+   "flags": {},
+   "order": 13,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "prompt",
+     "type": "STRING",
+     "links": [
+      18,
+      21
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerSheetPrompt"
+   },
+   "widgets_values": [
+    "expression-grid",
+    "character-sheet-studio/.claude/skills/character-sheet-studio/templates"
+   ],
+   "title": "expression-grid"
+  },
+  {
+   "id": 15,
+   "type": "OpenAIGPTImageNodeV2",
+   "pos": [
+    1790,
+    1240
+   ],
+   "size": [
+    420,
+    460
+   ],
+   "flags": {},
+   "order": 14,
+   "mode": 0,
+   "inputs": [
+    {
+     "label": "image_1",
+     "name": "model.images.image_1",
+     "shape": 7,
+     "type": "IMAGE",
+     "link": 16
+    },
+    {
+     "label": "image_2",
+     "name": "model.images.image_2",
+     "shape": 7,
+     "type": "IMAGE",
+     "link": 17
+    },
+    {
+     "label": "image_3",
+     "name": "model.images.image_3",
+     "shape": 7,
+     "type": "IMAGE",
+     "link": null
+    },
+    {
+     "name": "model.mask",
+     "shape": 7,
+     "type": "MASK",
+     "link": null
+    },
+    {
+     "name": "prompt",
+     "type": "STRING",
+     "link": 18,
+     "widget": {
+      "name": "prompt"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [
+      19,
+      20
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "OpenAIGPTImageNodeV2"
+   },
+   "widgets_values": [
+    "",
+    "gpt-image-2.5-flare",
+    "3840x2160",
+    1024,
+    1024,
+    "auto",
+    "medium",
+    1,
+    0,
+    "fixed"
+   ],
+   "title": "expression-grid (2 pictures of her)",
+   "color": "#432",
+   "bgcolor": "#653"
+  },
+  {
+   "id": 16,
+   "type": "AIInfluencerSaveImage",
+   "pos": [
+    2240,
+    1100
+   ],
+   "size": [
+    360,
+    420
+   ],
+   "flags": {},
+   "order": 15,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "images",
+     "type": "IMAGE",
+     "link": 19
+    },
+    {
+     "name": "prompt_text",
+     "type": "STRING",
+     "link": null
+    }
+   ],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [],
+     "slot_index": 0
+    },
+    {
+     "name": "output_path",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 1
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerSaveImage"
+   },
+   "widgets_values": [
+    "",
+    "character_sheet",
+    "openai_gpt_image",
+    "gpt-image-2.5-flare",
+    "edit",
+    "",
+    "medium",
+    "3840x2160",
+    -1,
+    "fixed",
+    2,
+    "",
+    "",
+    "expression-grid"
+   ]
+  },
+  {
+   "id": 17,
+   "type": "AIInfluencerSliceSheet",
+   "pos": [
+    2240,
+    1560
+   ],
+   "size": [
+    400,
+    380
+   ],
+   "flags": {},
+   "order": 16,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "sheet_image",
+     "type": "IMAGE",
+     "link": 20
+    },
+    {
+     "name": "template",
+     "type": "STRING",
+     "link": 21
+    }
+   ],
+   "outputs": [
+    {
+     "name": "crops",
+     "type": "IMAGE",
+     "links": [],
+     "slot_index": 0,
+     "shape": 6
+    },
+    {
+     "name": "captions",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 1,
+     "shape": 6
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerSliceSheet"
+   },
+   "widgets_values": [
+    "",
+    "",
+    "plain grey studio background",
+    0.09,
+    0.05
+   ],
+   "title": "Slice into one picture per view"
+  },
+  {
+   "id": 18,
+   "type": "AIInfluencerSheetPrompt",
+   "pos": [
+    2670,
+    1100
+   ],
+   "size": [
+    420,
+    110
+   ],
+   "flags": {},
+   "order": 17,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "prompt",
+     "type": "STRING",
+     "links": [
+      24,
+      27
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerSheetPrompt"
+   },
+   "widgets_values": [
+    "upper-body",
+    "character-sheet-studio/.claude/skills/character-sheet-studio/templates"
+   ],
+   "title": "upper-body"
+  },
+  {
+   "id": 19,
+   "type": "OpenAIGPTImageNodeV2",
+   "pos": [
+    2670,
+    1240
+   ],
+   "size": [
+    420,
+    460
+   ],
+   "flags": {},
+   "order": 18,
+   "mode": 0,
+   "inputs": [
+    {
+     "label": "image_1",
+     "name": "model.images.image_1",
+     "shape": 7,
+     "type": "IMAGE",
+     "link": 22
+    },
+    {
+     "label": "image_2",
+     "name": "model.images.image_2",
+     "shape": 7,
+     "type": "IMAGE",
+     "link": 23
+    },
+    {
+     "label": "image_3",
+     "name": "model.images.image_3",
+     "shape": 7,
+     "type": "IMAGE",
+     "link": null
+    },
+    {
+     "name": "model.mask",
+     "shape": 7,
+     "type": "MASK",
+     "link": null
+    },
+    {
+     "name": "prompt",
+     "type": "STRING",
+     "link": 24,
+     "widget": {
+      "name": "prompt"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [
+      25,
+      26
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "OpenAIGPTImageNodeV2"
+   },
+   "widgets_values": [
+    "",
+    "gpt-image-2.5-flare",
+    "3840x2160",
+    1024,
+    1024,
+    "auto",
+    "medium",
+    1,
+    0,
+    "fixed"
+   ],
+   "title": "upper-body (2 pictures of her)",
+   "color": "#432",
+   "bgcolor": "#653"
+  },
+  {
+   "id": 20,
+   "type": "AIInfluencerSaveImage",
+   "pos": [
+    3120,
+    1100
+   ],
+   "size": [
+    360,
+    420
+   ],
+   "flags": {},
+   "order": 19,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "images",
+     "type": "IMAGE",
+     "link": 25
+    },
+    {
+     "name": "prompt_text",
+     "type": "STRING",
+     "link": null
+    }
+   ],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [],
+     "slot_index": 0
+    },
+    {
+     "name": "output_path",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 1
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerSaveImage"
+   },
+   "widgets_values": [
+    "",
+    "character_sheet",
+    "openai_gpt_image",
+    "gpt-image-2.5-flare",
+    "edit",
+    "",
+    "medium",
+    "3840x2160",
+    -1,
+    "fixed",
+    2,
+    "",
+    "",
+    "upper-body"
+   ]
+  },
+  {
+   "id": 21,
+   "type": "AIInfluencerSliceSheet",
+   "pos": [
+    3120,
+    1560
+   ],
+   "size": [
+    400,
+    380
+   ],
+   "flags": {},
+   "order": 20,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "sheet_image",
+     "type": "IMAGE",
+     "link": 26
+    },
+    {
+     "name": "template",
+     "type": "STRING",
+     "link": 27
+    }
+   ],
+   "outputs": [
+    {
+     "name": "crops",
+     "type": "IMAGE",
+     "links": [],
+     "slot_index": 0,
+     "shape": 6
+    },
+    {
+     "name": "captions",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 1,
+     "shape": 6
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerSliceSheet"
+   },
+   "widgets_values": [
+    "",
+    "",
+    "plain grey studio background",
+    0.09,
+    0.05
+   ],
+   "title": "Slice into one picture per view"
+  },
+  {
+   "id": 22,
+   "type": "AIInfluencerSheetPrompt",
+   "pos": [
+    30,
+    2000
+   ],
+   "size": [
+    420,
+    110
+   ],
+   "flags": {},
+   "order": 21,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "prompt",
+     "type": "STRING",
+     "links": [
+      31,
+      34
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerSheetPrompt"
+   },
+   "widgets_values": [
+    "outfit-grid",
+    "character-sheet-studio/.claude/skills/character-sheet-studio/templates"
+   ],
+   "title": "outfit-grid"
+  },
+  {
+   "id": 23,
+   "type": "OpenAIGPTImageNodeV2",
+   "pos": [
+    30,
+    2140
+   ],
+   "size": [
+    420,
+    460
+   ],
+   "flags": {},
+   "order": 22,
+   "mode": 0,
+   "inputs": [
+    {
+     "label": "image_1",
+     "name": "model.images.image_1",
+     "shape": 7,
+     "type": "IMAGE",
+     "link": 28
+    },
+    {
+     "label": "image_2",
+     "name": "model.images.image_2",
+     "shape": 7,
+     "type": "IMAGE",
+     "link": 29
+    },
+    {
+     "label": "image_3",
+     "name": "model.images.image_3",
+     "shape": 7,
+     "type": "IMAGE",
+     "link": 30
+    },
+    {
+     "label": "image_4",
+     "name": "model.images.image_4",
+     "shape": 7,
+     "type": "IMAGE",
+     "link": null
+    },
+    {
+     "name": "model.mask",
+     "shape": 7,
+     "type": "MASK",
+     "link": null
+    },
+    {
+     "name": "prompt",
+     "type": "STRING",
+     "link": 31,
+     "widget": {
+      "name": "prompt"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [
+      32,
+      33
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "OpenAIGPTImageNodeV2"
+   },
+   "widgets_values": [
+    "",
+    "gpt-image-2.5-flare",
+    "3840x2160",
+    1024,
+    1024,
+    "auto",
+    "medium",
+    1,
+    0,
+    "fixed"
+   ],
+   "title": "outfit-grid (3 pictures of her)",
+   "color": "#432",
+   "bgcolor": "#653"
+  },
+  {
+   "id": 24,
+   "type": "AIInfluencerSaveImage",
+   "pos": [
+    480,
+    2000
+   ],
+   "size": [
+    360,
+    420
+   ],
+   "flags": {},
+   "order": 23,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "images",
+     "type": "IMAGE",
+     "link": 32
+    },
+    {
+     "name": "prompt_text",
+     "type": "STRING",
+     "link": null
+    }
+   ],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [],
+     "slot_index": 0
+    },
+    {
+     "name": "output_path",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 1
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerSaveImage"
+   },
+   "widgets_values": [
+    "",
+    "character_sheet",
+    "openai_gpt_image",
+    "gpt-image-2.5-flare",
+    "edit",
+    "",
+    "medium",
+    "3840x2160",
+    -1,
+    "fixed",
+    3,
+    "",
+    "",
+    "outfit-grid"
+   ]
+  },
+  {
+   "id": 25,
+   "type": "AIInfluencerSliceSheet",
+   "pos": [
+    480,
+    2460
+   ],
+   "size": [
+    400,
+    380
+   ],
+   "flags": {},
+   "order": 24,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "sheet_image",
+     "type": "IMAGE",
+     "link": 33
+    },
+    {
+     "name": "template",
+     "type": "STRING",
+     "link": 34
+    }
+   ],
+   "outputs": [
+    {
+     "name": "crops",
+     "type": "IMAGE",
+     "links": [],
+     "slot_index": 0,
+     "shape": 6
+    },
+    {
+     "name": "captions",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 1,
+     "shape": 6
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerSliceSheet"
+   },
+   "widgets_values": [
+    "",
+    "",
+    "plain grey studio background",
+    0.09,
+    0.05
+   ],
+   "title": "Slice into one picture per view"
+  },
+  {
+   "id": 26,
+   "type": "AIInfluencerSheetPrompt",
+   "pos": [
+    910,
+    2000
+   ],
+   "size": [
+    420,
+    110
+   ],
+   "flags": {},
+   "order": 25,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "prompt",
+     "type": "STRING",
+     "links": [
+      38,
+      41
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerSheetPrompt"
+   },
+   "widgets_values": [
+    "pose-grid",
+    "character-sheet-studio/.claude/skills/character-sheet-studio/templates"
+   ],
+   "title": "pose-grid"
+  },
+  {
+   "id": 27,
+   "type": "OpenAIGPTImageNodeV2",
+   "pos": [
+    910,
+    2140
+   ],
+   "size": [
+    420,
+    460
+   ],
+   "flags": {},
+   "order": 26,
+   "mode": 0,
+   "inputs": [
+    {
+     "label": "image_1",
+     "name": "model.images.image_1",
+     "shape": 7,
+     "type": "IMAGE",
+     "link": 35
+    },
+    {
+     "label": "image_2",
+     "name": "model.images.image_2",
+     "shape": 7,
+     "type": "IMAGE",
+     "link": 36
+    },
+    {
+     "label": "image_3",
+     "name": "model.images.image_3",
+     "shape": 7,
+     "type": "IMAGE",
+     "link": 37
+    },
+    {
+     "label": "image_4",
+     "name": "model.images.image_4",
+     "shape": 7,
+     "type": "IMAGE",
+     "link": null
+    },
+    {
+     "name": "model.mask",
+     "shape": 7,
+     "type": "MASK",
+     "link": null
+    },
+    {
+     "name": "prompt",
+     "type": "STRING",
+     "link": 38,
+     "widget": {
+      "name": "prompt"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [
+      39,
+      40
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "OpenAIGPTImageNodeV2"
+   },
+   "widgets_values": [
+    "",
+    "gpt-image-2.5-flare",
+    "3840x2160",
+    1024,
+    1024,
+    "auto",
+    "medium",
+    1,
+    0,
+    "fixed"
+   ],
+   "title": "pose-grid (3 pictures of her)",
+   "color": "#432",
+   "bgcolor": "#653"
+  },
+  {
+   "id": 28,
+   "type": "AIInfluencerSaveImage",
+   "pos": [
+    1360,
+    2000
+   ],
+   "size": [
+    360,
+    420
+   ],
+   "flags": {},
+   "order": 27,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "images",
+     "type": "IMAGE",
+     "link": 39
+    },
+    {
+     "name": "prompt_text",
+     "type": "STRING",
+     "link": null
+    }
+   ],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [],
+     "slot_index": 0
+    },
+    {
+     "name": "output_path",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 1
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerSaveImage"
+   },
+   "widgets_values": [
+    "",
+    "character_sheet",
+    "openai_gpt_image",
+    "gpt-image-2.5-flare",
+    "edit",
+    "",
+    "medium",
+    "3840x2160",
+    -1,
+    "fixed",
+    3,
+    "",
+    "",
+    "pose-grid"
+   ]
+  },
+  {
+   "id": 29,
+   "type": "AIInfluencerSliceSheet",
+   "pos": [
+    1360,
+    2460
+   ],
+   "size": [
+    400,
+    380
+   ],
+   "flags": {},
+   "order": 28,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "sheet_image",
+     "type": "IMAGE",
+     "link": 40
+    },
+    {
+     "name": "template",
+     "type": "STRING",
+     "link": 41
+    }
+   ],
+   "outputs": [
+    {
+     "name": "crops",
+     "type": "IMAGE",
+     "links": [],
+     "slot_index": 0,
+     "shape": 6
+    },
+    {
+     "name": "captions",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 1,
+     "shape": 6
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerSliceSheet"
+   },
+   "widgets_values": [
+    "",
+    "",
+    "plain grey studio background",
+    0.09,
+    0.05
+   ],
+   "title": "Slice into one picture per view"
+  },
+  {
+   "id": 30,
+   "type": "AIInfluencerSheetPrompt",
+   "pos": [
+    1790,
+    2000
+   ],
+   "size": [
+    420,
+    110
+   ],
+   "flags": {},
+   "order": 29,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "prompt",
+     "type": "STRING",
+     "links": [
+      44,
+      47
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerSheetPrompt"
+   },
+   "widgets_values": [
+    "lighting-grid",
+    "character-sheet-studio/.claude/skills/character-sheet-studio/templates"
+   ],
+   "title": "lighting-grid"
+  },
+  {
+   "id": 31,
+   "type": "OpenAIGPTImageNodeV2",
+   "pos": [
+    1790,
+    2140
+   ],
+   "size": [
+    420,
+    460
+   ],
+   "flags": {},
+   "order": 30,
+   "mode": 0,
+   "inputs": [
+    {
+     "label": "image_1",
+     "name": "model.images.image_1",
+     "shape": 7,
+     "type": "IMAGE",
+     "link": 42
+    },
+    {
+     "label": "image_2",
+     "name": "model.images.image_2",
+     "shape": 7,
+     "type": "IMAGE",
+     "link": 43
+    },
+    {
+     "label": "image_3",
+     "name": "model.images.image_3",
+     "shape": 7,
+     "type": "IMAGE",
+     "link": null
+    },
+    {
+     "name": "model.mask",
+     "shape": 7,
+     "type": "MASK",
+     "link": null
+    },
+    {
+     "name": "prompt",
+     "type": "STRING",
+     "link": 44,
+     "widget": {
+      "name": "prompt"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [
+      45,
+      46
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "OpenAIGPTImageNodeV2"
+   },
+   "widgets_values": [
+    "",
+    "gpt-image-2.5-flare",
+    "3840x2160",
+    1024,
+    1024,
+    "auto",
+    "medium",
+    1,
+    0,
+    "fixed"
+   ],
+   "title": "lighting-grid (2 pictures of her)",
+   "color": "#432",
+   "bgcolor": "#653"
+  },
+  {
+   "id": 32,
+   "type": "AIInfluencerSaveImage",
+   "pos": [
+    2240,
+    2000
+   ],
+   "size": [
+    360,
+    420
+   ],
+   "flags": {},
+   "order": 31,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "images",
+     "type": "IMAGE",
+     "link": 45
+    },
+    {
+     "name": "prompt_text",
+     "type": "STRING",
+     "link": null
+    }
+   ],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [],
+     "slot_index": 0
+    },
+    {
+     "name": "output_path",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 1
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerSaveImage"
+   },
+   "widgets_values": [
+    "",
+    "character_sheet",
+    "openai_gpt_image",
+    "gpt-image-2.5-flare",
+    "edit",
+    "",
+    "medium",
+    "3840x2160",
+    -1,
+    "fixed",
+    2,
+    "",
+    "",
+    "lighting-grid"
+   ]
+  },
+  {
+   "id": 33,
+   "type": "AIInfluencerSliceSheet",
+   "pos": [
+    2240,
+    2460
+   ],
+   "size": [
+    400,
+    380
+   ],
+   "flags": {},
+   "order": 32,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "sheet_image",
+     "type": "IMAGE",
+     "link": 46
+    },
+    {
+     "name": "template",
+     "type": "STRING",
+     "link": 47
+    }
+   ],
+   "outputs": [
+    {
+     "name": "crops",
+     "type": "IMAGE",
+     "links": [],
+     "slot_index": 0,
+     "shape": 6
+    },
+    {
+     "name": "captions",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 1,
+     "shape": 6
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerSliceSheet"
+   },
+   "widgets_values": [
+    "",
+    "",
+    "plain grey studio background",
+    0.09,
+    0.05
+   ],
+   "title": "Slice into one picture per view"
+  },
+  {
+   "id": 34,
+   "type": "AIInfluencerSheetPrompt",
+   "pos": [
+    2670,
+    2000
+   ],
+   "size": [
+    420,
+    110
+   ],
+   "flags": {},
+   "order": 33,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "prompt",
+     "type": "STRING",
+     "links": [
+      50,
+      53
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerSheetPrompt"
+   },
+   "widgets_values": [
+    "expression-grid-extra",
+    "character-sheet-studio/.claude/skills/character-sheet-studio/templates"
+   ],
+   "title": "expression-grid-extra"
+  },
+  {
+   "id": 35,
+   "type": "OpenAIGPTImageNodeV2",
+   "pos": [
+    2670,
+    2140
+   ],
+   "size": [
+    420,
+    460
+   ],
+   "flags": {},
+   "order": 34,
+   "mode": 0,
+   "inputs": [
+    {
+     "label": "image_1",
+     "name": "model.images.image_1",
+     "shape": 7,
+     "type": "IMAGE",
+     "link": 48
+    },
+    {
+     "label": "image_2",
+     "name": "model.images.image_2",
+     "shape": 7,
+     "type": "IMAGE",
+     "link": 49
+    },
+    {
+     "label": "image_3",
+     "name": "model.images.image_3",
+     "shape": 7,
+     "type": "IMAGE",
+     "link": null
+    },
+    {
+     "name": "model.mask",
+     "shape": 7,
+     "type": "MASK",
+     "link": null
+    },
+    {
+     "name": "prompt",
+     "type": "STRING",
+     "link": 50,
+     "widget": {
+      "name": "prompt"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [
+      51,
+      52
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "OpenAIGPTImageNodeV2"
+   },
+   "widgets_values": [
+    "",
+    "gpt-image-2.5-flare",
+    "3840x2160",
+    1024,
+    1024,
+    "auto",
+    "medium",
+    1,
+    0,
+    "fixed"
+   ],
+   "title": "expression-grid-extra (2 pictures of her)",
+   "color": "#432",
+   "bgcolor": "#653"
+  },
+  {
+   "id": 36,
+   "type": "AIInfluencerSaveImage",
+   "pos": [
+    3120,
+    2000
+   ],
+   "size": [
+    360,
+    420
+   ],
+   "flags": {},
+   "order": 35,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "images",
+     "type": "IMAGE",
+     "link": 51
+    },
+    {
+     "name": "prompt_text",
+     "type": "STRING",
+     "link": null
+    }
+   ],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [],
+     "slot_index": 0
+    },
+    {
+     "name": "output_path",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 1
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerSaveImage"
+   },
+   "widgets_values": [
+    "",
+    "character_sheet",
+    "openai_gpt_image",
+    "gpt-image-2.5-flare",
+    "edit",
+    "",
+    "medium",
+    "3840x2160",
+    -1,
+    "fixed",
+    2,
+    "",
+    "",
+    "expression-grid-extra"
+   ]
+  },
+  {
+   "id": 37,
+   "type": "AIInfluencerSliceSheet",
+   "pos": [
+    3120,
+    2460
+   ],
+   "size": [
+    400,
+    380
+   ],
+   "flags": {},
+   "order": 36,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "sheet_image",
+     "type": "IMAGE",
+     "link": 52
+    },
+    {
+     "name": "template",
+     "type": "STRING",
+     "link": 53
+    }
+   ],
+   "outputs": [
+    {
+     "name": "crops",
+     "type": "IMAGE",
+     "links": [],
+     "slot_index": 0,
+     "shape": 6
+    },
+    {
+     "name": "captions",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 1,
+     "shape": 6
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerSliceSheet"
+   },
+   "widgets_values": [
+    "",
+    "",
+    "plain grey studio background",
+    0.09,
+    0.05
+   ],
+   "title": "Slice into one picture per view"
+  },
+  {
+   "id": 38,
+   "type": "AIInfluencerCustomSheet",
+   "pos": [
+    30,
+    2940
+   ],
+   "size": [
+    420,
+    560
+   ],
+   "flags": {},
+   "order": 37,
+   "mode": 2,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "template",
+     "type": "STRING",
+     "links": [
+      57,
+      60
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerCustomSheet"
+   },
+   "widgets_values": [
+    "Outfit Variations",
+    "seen straight from the front, standing, the whole person visible from the top of the head to both feet, wearing the same clothes as in the reference images, neutral expression",
+    "seen straight from the front, standing, the whole person visible, wearing a red raincoat and rubber boots\nseen straight from the front, standing, the whole person visible, wearing a ski jacket and ski pants\nseen straight from the front, standing, the whole person visible, wearing a white linen shirt and beige shorts\nseen straight from the front, standing, the whole person visible, wearing a black leather jacket and dark jeans",
+    "Soft grey seamless studio background, the same grey behind every view.\nFlat even softbox lighting, no hard shadows.\nEye level, identical framing and scale.\nKeep the face and identity exactly as in the reference images.\nNo text, no labels, no watermark.",
+    "No borders and no drop shadows between the panels.\nLeave a clear strip of empty grey background between neighbouring panels; no figure overlaps another panel.\nDo not crop the person at a panel edge.",
+    ""
+   ],
+   "title": "Custom Character Sheet"
+  },
+  {
+   "id": 39,
+   "type": "OpenAIGPTImageNodeV2",
+   "pos": [
+    480,
+    2940
+   ],
+   "size": [
+    420,
+    460
+   ],
+   "flags": {},
+   "order": 38,
+   "mode": 2,
+   "inputs": [
+    {
+     "label": "image_1",
+     "name": "model.images.image_1",
+     "shape": 7,
+     "type": "IMAGE",
+     "link": 54
+    },
+    {
+     "label": "image_2",
+     "name": "model.images.image_2",
+     "shape": 7,
+     "type": "IMAGE",
+     "link": 55
+    },
+    {
+     "label": "image_3",
+     "name": "model.images.image_3",
+     "shape": 7,
+     "type": "IMAGE",
+     "link": 56
+    },
+    {
+     "label": "image_4",
+     "name": "model.images.image_4",
+     "shape": 7,
+     "type": "IMAGE",
+     "link": null
+    },
+    {
+     "name": "model.mask",
+     "shape": 7,
+     "type": "MASK",
+     "link": null
+    },
+    {
+     "name": "prompt",
+     "type": "STRING",
+     "link": 57,
+     "widget": {
+      "name": "prompt"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [
+      58,
+      59
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "OpenAIGPTImageNodeV2"
+   },
+   "widgets_values": [
+    "",
+    "gpt-image-2.5-flare",
+    "3840x2160",
+    1024,
+    1024,
+    "auto",
+    "medium",
+    1,
+    0,
+    "fixed"
+   ],
+   "title": "your sheet (3 pictures of the person)",
+   "color": "#432",
+   "bgcolor": "#653"
+  },
+  {
+   "id": 40,
+   "type": "AIInfluencerSaveImage",
+   "pos": [
+    480,
+    3420
+   ],
+   "size": [
+    360,
+    420
+   ],
+   "flags": {},
+   "order": 39,
+   "mode": 2,
+   "inputs": [
+    {
+     "name": "images",
+     "type": "IMAGE",
+     "link": 58
+    },
+    {
+     "name": "prompt_text",
+     "type": "STRING",
+     "link": null
+    }
+   ],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [],
+     "slot_index": 0
+    },
+    {
+     "name": "output_path",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 1
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerSaveImage"
+   },
+   "widgets_values": [
+    "",
+    "character_sheet",
+    "openai_gpt_image",
+    "gpt-image-2.5-flare",
+    "edit",
+    "",
+    "medium",
+    "3840x2160",
+    -1,
+    "fixed",
+    3,
+    "",
+    "",
+    "custom"
+   ]
+  },
+  {
+   "id": 41,
+   "type": "AIInfluencerSliceSheet",
+   "pos": [
+    480,
+    3460
+   ],
+   "size": [
+    400,
+    380
+   ],
+   "flags": {},
+   "order": 40,
+   "mode": 2,
+   "inputs": [
+    {
+     "name": "sheet_image",
+     "type": "IMAGE",
+     "link": 59
+    },
+    {
+     "name": "template",
+     "type": "STRING",
+     "link": 60
+    }
+   ],
+   "outputs": [
+    {
+     "name": "crops",
+     "type": "IMAGE",
+     "links": [],
+     "slot_index": 0,
+     "shape": 6
+    },
+    {
+     "name": "captions",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 1,
+     "shape": 6
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerSliceSheet"
+   },
+   "widgets_values": [
+    "",
+    "",
+    "plain grey studio background",
+    0.09,
+    0.05
+   ],
+   "title": "Slice into one picture per view"
+  },
+  {
+   "id": 42,
+   "type": "OpenAIGPTImageNodeV2",
+   "pos": [
+    30,
+    3880
+   ],
+   "size": [
+    420,
+    460
+   ],
+   "flags": {},
+   "order": 41,
+   "mode": 0,
+   "inputs": [
+    {
+     "label": "image_1",
+     "name": "model.images.image_1",
+     "shape": 7,
+     "type": "IMAGE",
+     "link": 61
+    },
+    {
+     "label": "image_2",
+     "name": "model.images.image_2",
+     "shape": 7,
+     "type": "IMAGE",
+     "link": 62
+    },
+    {
+     "label": "image_3",
+     "name": "model.images.image_3",
+     "shape": 7,
+     "type": "IMAGE",
+     "link": 63
+    },
+    {
+     "label": "image_4",
+     "name": "model.images.image_4",
+     "shape": 7,
+     "type": "IMAGE",
+     "link": null
+    },
+    {
+     "name": "model.mask",
+     "shape": 7,
+     "type": "MASK",
+     "link": null
+    }
+   ],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [
+      64
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "OpenAIGPTImageNodeV2"
+   },
+   "widgets_values": [
+    "Photo of the person: close-up of the face, facing the camera, natural smile showing the upper teeth. Clothing: the same clothes as in picture 1. Setting: small bright kitchen. Camera: eye level, phone camera. Light: morning daylight from a window. Picture 1 is the person; every attached picture shows the same person. Keep their face, bone structure, hair, skin tone, marks and body exactly as in the pictures. Do not beautify or change the face. Natural unretouched photo with real skin texture.",
+    "gpt-image-2.5-flare",
+    "1024x1536",
+    1024,
+    1024,
+    "auto",
+    "medium",
+    1,
+    0,
+    "fixed"
+   ],
+   "title": "Example 1",
+   "color": "#432",
+   "bgcolor": "#653"
+  },
+  {
+   "id": 43,
+   "type": "AIInfluencerSaveImage",
+   "pos": [
+    480,
+    3880
+   ],
+   "size": [
+    360,
+    420
+   ],
+   "flags": {},
+   "order": 42,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "images",
+     "type": "IMAGE",
+     "link": 64
+    },
+    {
+     "name": "prompt_text",
+     "type": "STRING",
+     "link": null
+    }
+   ],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [],
+     "slot_index": 0
+    },
+    {
+     "name": "output_path",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 1
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerSaveImage"
+   },
+   "widgets_values": [
+    "",
+    "character_canonical",
+    "openai_gpt_image",
+    "gpt-image-2.5-flare",
+    "edit",
+    "",
+    "medium",
+    "1024x1536",
+    -1,
+    "fixed",
+    3,
+    "",
+    "",
+    "reference_set"
+   ]
+  },
+  {
+   "id": 44,
+   "type": "OpenAIGPTImageNodeV2",
+   "pos": [
+    910,
+    3880
+   ],
+   "size": [
+    420,
+    460
+   ],
+   "flags": {},
+   "order": 43,
+   "mode": 0,
+   "inputs": [
+    {
+     "label": "image_1",
+     "name": "model.images.image_1",
+     "shape": 7,
+     "type": "IMAGE",
+     "link": 65
+    },
+    {
+     "label": "image_2",
+     "name": "model.images.image_2",
+     "shape": 7,
+     "type": "IMAGE",
+     "link": 66
+    },
+    {
+     "label": "image_3",
+     "name": "model.images.image_3",
+     "shape": 7,
+     "type": "IMAGE",
+     "link": 67
+    },
+    {
+     "label": "image_4",
+     "name": "model.images.image_4",
+     "shape": 7,
+     "type": "IMAGE",
+     "link": null
+    },
+    {
+     "name": "model.mask",
+     "shape": 7,
+     "type": "MASK",
+     "link": null
+    }
+   ],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [
+      68
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "OpenAIGPTImageNodeV2"
+   },
+   "widgets_values": [
+    "Photo of the person: from the waist up, facing the camera, arms relaxed. Clothing: grey hoodie. Setting: city sidewalk, daytime. Camera: eye level, phone camera. Light: overcast daylight. Picture 1 is the person; every attached picture shows the same person. Keep their face, bone structure, hair, skin tone, marks and body exactly as in the pictures. Do not beautify or change the face. Natural unretouched photo with real skin texture.",
+    "gpt-image-2.5-flare",
+    "1024x1536",
+    1024,
+    1024,
+    "auto",
+    "medium",
+    1,
+    0,
+    "fixed"
+   ],
+   "title": "Example 2",
+   "color": "#432",
+   "bgcolor": "#653"
+  },
+  {
+   "id": 45,
+   "type": "AIInfluencerSaveImage",
+   "pos": [
+    1360,
+    3880
+   ],
+   "size": [
+    360,
+    420
+   ],
+   "flags": {},
+   "order": 44,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "images",
+     "type": "IMAGE",
+     "link": 68
+    },
+    {
+     "name": "prompt_text",
+     "type": "STRING",
+     "link": null
+    }
+   ],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [],
+     "slot_index": 0
+    },
+    {
+     "name": "output_path",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 1
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerSaveImage"
+   },
+   "widgets_values": [
+    "",
+    "character_canonical",
+    "openai_gpt_image",
+    "gpt-image-2.5-flare",
+    "edit",
+    "",
+    "medium",
+    "1024x1536",
+    -1,
+    "fixed",
+    3,
+    "",
+    "",
+    "reference_set"
+   ]
+  },
+  {
+   "id": 46,
+   "type": "OpenAIGPTImageNodeV2",
+   "pos": [
+    1790,
+    3880
+   ],
+   "size": [
+    420,
+    460
+   ],
+   "flags": {},
+   "order": 45,
+   "mode": 0,
+   "inputs": [
+    {
+     "label": "image_1",
+     "name": "model.images.image_1",
+     "shape": 7,
+     "type": "IMAGE",
+     "link": 69
+    },
+    {
+     "label": "image_2",
+     "name": "model.images.image_2",
+     "shape": 7,
+     "type": "IMAGE",
+     "link": 70
+    },
+    {
+     "label": "image_3",
+     "name": "model.images.image_3",
+     "shape": 7,
+     "type": "IMAGE",
+     "link": 71
+    },
+    {
+     "label": "image_4",
+     "name": "model.images.image_4",
+     "shape": 7,
+     "type": "IMAGE",
+     "link": null
+    },
+    {
+     "name": "model.mask",
+     "shape": 7,
+     "type": "MASK",
+     "link": null
+    }
+   ],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [
+      72
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "OpenAIGPTImageNodeV2"
+   },
+   "widgets_values": [
+    "Photo of the person: full body from the top of the head to the feet, standing, facing the camera, both feet visible. Clothing: black t-shirt, blue jeans, white sneakers. Setting: park path. Camera: eye level, 28mm phone camera. Light: late afternoon sun. Picture 1 is the person; every attached picture shows the same person. Keep their face, bone structure, hair, skin tone, marks and body exactly as in the pictures. Do not beautify or change the face. Natural unretouched photo with real skin texture.",
+    "gpt-image-2.5-flare",
+    "1024x1536",
+    1024,
+    1024,
+    "auto",
+    "medium",
+    1,
+    0,
+    "fixed"
+   ],
+   "title": "Example 3",
+   "color": "#432",
+   "bgcolor": "#653"
+  },
+  {
+   "id": 47,
+   "type": "AIInfluencerSaveImage",
+   "pos": [
+    2240,
+    3880
+   ],
+   "size": [
+    360,
+    420
+   ],
+   "flags": {},
+   "order": 46,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "images",
+     "type": "IMAGE",
+     "link": 72
+    },
+    {
+     "name": "prompt_text",
+     "type": "STRING",
+     "link": null
+    }
+   ],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [],
+     "slot_index": 0
+    },
+    {
+     "name": "output_path",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 1
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerSaveImage"
+   },
+   "widgets_values": [
+    "",
+    "character_canonical",
+    "openai_gpt_image",
+    "gpt-image-2.5-flare",
+    "edit",
+    "",
+    "medium",
+    "1024x1536",
+    -1,
+    "fixed",
+    3,
+    "",
+    "",
+    "reference_set"
+   ]
+  },
+  {
+   "id": 48,
+   "type": "OpenAIGPTImageNodeV2",
+   "pos": [
+    2670,
+    3880
+   ],
+   "size": [
+    420,
+    460
+   ],
+   "flags": {},
+   "order": 47,
+   "mode": 0,
+   "inputs": [
+    {
+     "label": "image_1",
+     "name": "model.images.image_1",
+     "shape": 7,
+     "type": "IMAGE",
+     "link": 73
+    },
+    {
+     "label": "image_2",
+     "name": "model.images.image_2",
+     "shape": 7,
+     "type": "IMAGE",
+     "link": 74
+    },
+    {
+     "label": "image_3",
+     "name": "model.images.image_3",
+     "shape": 7,
+     "type": "IMAGE",
+     "link": 75
+    },
+    {
+     "label": "image_4",
+     "name": "model.images.image_4",
+     "shape": 7,
+     "type": "IMAGE",
+     "link": null
+    },
+    {
+     "name": "model.mask",
+     "shape": 7,
+     "type": "MASK",
+     "link": null
+    }
+   ],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [
+      76
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "OpenAIGPTImageNodeV2"
+   },
+   "widgets_values": [
+    "Photo of the person: sitting at a cafe table, looking out of the window, laughing. Clothing: cream knit sweater. Setting: cafe interior. Camera: slightly above eye level, phone camera. Light: warm indoor light. Picture 1 is the person; every attached picture shows the same person. Keep their face, bone structure, hair, skin tone, marks and body exactly as in the pictures. Do not beautify or change the face. Natural unretouched photo with real skin texture.",
+    "gpt-image-2.5-flare",
+    "1024x1536",
+    1024,
+    1024,
+    "auto",
+    "medium",
+    1,
+    0,
+    "fixed"
+   ],
+   "title": "Example 4",
+   "color": "#432",
+   "bgcolor": "#653"
+  },
+  {
+   "id": 49,
+   "type": "AIInfluencerSaveImage",
+   "pos": [
+    3120,
+    3880
+   ],
+   "size": [
+    360,
+    420
+   ],
+   "flags": {},
+   "order": 48,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "images",
+     "type": "IMAGE",
+     "link": 76
+    },
+    {
+     "name": "prompt_text",
+     "type": "STRING",
+     "link": null
+    }
+   ],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [],
+     "slot_index": 0
+    },
+    {
+     "name": "output_path",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 1
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerSaveImage"
+   },
+   "widgets_values": [
+    "",
+    "character_canonical",
+    "openai_gpt_image",
+    "gpt-image-2.5-flare",
+    "edit",
+    "",
+    "medium",
+    "1024x1536",
+    -1,
+    "fixed",
+    3,
+    "",
+    "",
+    "reference_set"
+   ]
+  },
+  {
+   "id": 50,
+   "type": "MarkdownNote",
+   "pos": [
+    1360,
+    0
+   ],
+   "size": [
+    780,
+    1100
+   ],
+   "flags": {},
+   "order": 49,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [],
+   "properties": {
+    "Node name for S&R": "MarkdownNote"
+   },
+   "widgets_values": [
+    "# 01 Character creation (GPT Image 2.5)\n\nMakes character sheets and a few example photos to train the character's LoRA on. From then on the\n**local** workflows (08-12) make everything else. Everything below can be changed on the canvas --\nsee **Make it yours** at the end.\n\n**1. Queue.** Describe the character in the first node (the only place they are ever described in\nwords): it makes **4 front portraits in one call** (`n`). *PICK* is 0, so everything after it is\nskipped and you only see the candidates (saved to `outputs/images/candidates/`).\n\n**2. Pick.** Set *PICK* to the one you want and queue again. The candidates call is **not**\nrepeated: its inputs didn't change, so ComfyUI reuses it (that's why its seed is `fixed` -- GPT\nignores the seed, it only tells ComfyUI \"new call\"; change it by hand for new candidates). Already\nhave a front photo? Ctrl+B *OR your own front photo*, load it, and it wins over the candidates.\n\n**3. The rest runs by itself**, each request carrying the pictures that pin the character down:\n\n| Sheet | Shows | Pictures it sees |\n|---|---|---|\n| face-turnaround | 7 head angles | front portrait |\n| full-body-360 | 7 body angles | front + face-turnaround |\n| expression-grid | 9 expressions | front + face-turnaround |\n| upper-body | 7 torso angles | front + face-turnaround |\n| outfit-grid | 7 outfits | front + face + full-body sheets |\n| pose-grid | 9 poses | front + face + full-body sheets |\n| lighting-grid | 7 lights | front + face-turnaround |\n| expression-grid-extra | 9 more expressions | front + face-turnaround |\n| 4 example photos | outfit, place and light changes | front + face + full-body sheets |\n\nThe first four sheets are Character Sheet Studio's templates, the other four ship with the node\npack; all are sent unchanged. After the first node nothing describes the person in words -- the\nstudio's rule: extra words compete with the pictures and cause drift.\n\n**Slicing.** A LoRA trained on whole sheets learns to draw sheets. *Slice into one picture per\nview* cuts each sheet into its panels (it finds each figure on the grey background, so a hand over\na panel line stays whole) and writes one caption per crop: the trigger word from character.json\nplus that panel's own wording (\"lit by a warm tungsten table lamp\", \"wearing a grey sports\nhoodie\"...), so the LoRA learns the light, outfit or pose as a variable, not as the person. ~60\ncrops per character, in `outputs/images/sheet_crops/<sheet>_<time>/`. Grid panels are about\n640x1080. Look at them before copying into `input/ai_influencer/<project>/dataset/` -- the captions\nassume GPT kept the panel order. Sheets made earlier: `tools/slice_sheets.py`.\n\n**No blur, no camera pass here, on purpose:** these are training and reference pictures. Grain or a\nblurred background in the dataset gets learned by the LoRA.\n\n**Cost at medium quality** (see each node's price badge): 4 candidates \u2248 $0.06, 8 sheets \u2248 $0.55,\n4 examples \u2248 $0.24 -- about **$0.85 per character**. Slicing is free (local, CPU).\n\n## Make it yours\n- **Which sheets:** any *Character Sheet Prompt* can be switched to another sheet in its dropdown.\n  Don't want one? Select its GPT node and Ctrl+M (mute): its save and slicer are skipped too.\n- **Your own sheet:** group 02b. Type a title, the large view, and **one panel per line** (outfits,\n  poses, lights, props, hairstyles... describe what changes, not the person), then select the\n  group's nodes and Ctrl+M to switch it on. Fill *save_as* to keep it as a template: it appears in\n  every sheet dropdown (press R) and in `user/ai_influencer/sheet_templates/`. A file there with the\n  same name as a built-in sheet replaces it -- that's how you edit the built-in outfit list.\n- **Which pictures a sheet sees:** rewire its `image_1..` inputs (up to 16; each one is billed).\n- **Quality, size, count:** on each GPT node (`quality`, `size`, `n`). Sheets at `2048x1152` cost\n  ~$0.02 less each, but the sliced panels get half as big.\n- **Example photos:** edit their prompts; copy an *Example* + its Save node for more.\n- **Captions:** *caption_prefix* (default: the trigger word), *caption_suffix*, and *threshold* /\n  *padding* for how tightly figures are cut, on each slicer.\n\n**Account risk.** This is a partner API: proxied through Comfy, billed to your account, moderated\nby OpenAI. Keep it to ordinary clothed pictures of a fictional adult. Anything else belongs on the\nlocal pipeline (README, \"Responsible use and account risk\")."
+   ]
+  }
+ ],
+ "links": [
+  [
+   1,
+   1,
+   0,
+   2,
+   0,
+   "IMAGE"
+  ],
+  [
+   2,
+   1,
+   0,
+   4,
+   0,
+   "IMAGE"
+  ],
+  [
+   3,
+   3,
+   0,
+   4,
+   1,
+   "IMAGE"
+  ],
+  [
+   4,
+   4,
+   0,
+   5,
+   0,
+   "IMAGE"
+  ],
+  [
+   5,
+   4,
+   0,
+   7,
+   0,
+   "IMAGE"
+  ],
+  [
+   6,
+   6,
+   0,
+   7,
+   3,
+   "STRING"
+  ],
+  [
+   7,
+   7,
+   0,
+   8,
+   0,
+   "IMAGE"
+  ],
+  [
+   8,
+   7,
+   0,
+   9,
+   0,
+   "IMAGE"
+  ],
+  [
+   9,
+   6,
+   0,
+   9,
+   1,
+   "STRING"
+  ],
+  [
+   10,
+   4,
+   0,
+   11,
+   0,
+   "IMAGE"
+  ],
+  [
+   11,
+   7,
+   0,
+   11,
+   1,
+   "IMAGE"
+  ],
+  [
+   12,
+   10,
+   0,
+   11,
+   4,
+   "STRING"
+  ],
+  [
+   13,
+   11,
+   0,
+   12,
+   0,
+   "IMAGE"
+  ],
+  [
+   14,
+   11,
+   0,
+   13,
+   0,
+   "IMAGE"
+  ],
+  [
+   15,
+   10,
+   0,
+   13,
+   1,
+   "STRING"
+  ],
+  [
+   16,
+   4,
+   0,
+   15,
+   0,
+   "IMAGE"
+  ],
+  [
+   17,
+   7,
+   0,
+   15,
+   1,
+   "IMAGE"
+  ],
+  [
+   18,
+   14,
+   0,
+   15,
+   4,
+   "STRING"
+  ],
+  [
+   19,
+   15,
+   0,
+   16,
+   0,
+   "IMAGE"
+  ],
+  [
+   20,
+   15,
+   0,
+   17,
+   0,
+   "IMAGE"
+  ],
+  [
+   21,
+   14,
+   0,
+   17,
+   1,
+   "STRING"
+  ],
+  [
+   22,
+   4,
+   0,
+   19,
+   0,
+   "IMAGE"
+  ],
+  [
+   23,
+   7,
+   0,
+   19,
+   1,
+   "IMAGE"
+  ],
+  [
+   24,
+   18,
+   0,
+   19,
+   4,
+   "STRING"
+  ],
+  [
+   25,
+   19,
+   0,
+   20,
+   0,
+   "IMAGE"
+  ],
+  [
+   26,
+   19,
+   0,
+   21,
+   0,
+   "IMAGE"
+  ],
+  [
+   27,
+   18,
+   0,
+   21,
+   1,
+   "STRING"
+  ],
+  [
+   28,
+   4,
+   0,
+   23,
+   0,
+   "IMAGE"
+  ],
+  [
+   29,
+   7,
+   0,
+   23,
+   1,
+   "IMAGE"
+  ],
+  [
+   30,
+   11,
+   0,
+   23,
+   2,
+   "IMAGE"
+  ],
+  [
+   31,
+   22,
+   0,
+   23,
+   5,
+   "STRING"
+  ],
+  [
+   32,
+   23,
+   0,
+   24,
+   0,
+   "IMAGE"
+  ],
+  [
+   33,
+   23,
+   0,
+   25,
+   0,
+   "IMAGE"
+  ],
+  [
+   34,
+   22,
+   0,
+   25,
+   1,
+   "STRING"
+  ],
+  [
+   35,
+   4,
+   0,
+   27,
+   0,
+   "IMAGE"
+  ],
+  [
+   36,
+   7,
+   0,
+   27,
+   1,
+   "IMAGE"
+  ],
+  [
+   37,
+   11,
+   0,
+   27,
+   2,
+   "IMAGE"
+  ],
+  [
+   38,
+   26,
+   0,
+   27,
+   5,
+   "STRING"
+  ],
+  [
+   39,
+   27,
+   0,
+   28,
+   0,
+   "IMAGE"
+  ],
+  [
+   40,
+   27,
+   0,
+   29,
+   0,
+   "IMAGE"
+  ],
+  [
+   41,
+   26,
+   0,
+   29,
+   1,
+   "STRING"
+  ],
+  [
+   42,
+   4,
+   0,
+   31,
+   0,
+   "IMAGE"
+  ],
+  [
+   43,
+   7,
+   0,
+   31,
+   1,
+   "IMAGE"
+  ],
+  [
+   44,
+   30,
+   0,
+   31,
+   4,
+   "STRING"
+  ],
+  [
+   45,
+   31,
+   0,
+   32,
+   0,
+   "IMAGE"
+  ],
+  [
+   46,
+   31,
+   0,
+   33,
+   0,
+   "IMAGE"
+  ],
+  [
+   47,
+   30,
+   0,
+   33,
+   1,
+   "STRING"
+  ],
+  [
+   48,
+   4,
+   0,
+   35,
+   0,
+   "IMAGE"
+  ],
+  [
+   49,
+   7,
+   0,
+   35,
+   1,
+   "IMAGE"
+  ],
+  [
+   50,
+   34,
+   0,
+   35,
+   4,
+   "STRING"
+  ],
+  [
+   51,
+   35,
+   0,
+   36,
+   0,
+   "IMAGE"
+  ],
+  [
+   52,
+   35,
+   0,
+   37,
+   0,
+   "IMAGE"
+  ],
+  [
+   53,
+   34,
+   0,
+   37,
+   1,
+   "STRING"
+  ],
+  [
+   54,
+   4,
+   0,
+   39,
+   0,
+   "IMAGE"
+  ],
+  [
+   55,
+   7,
+   0,
+   39,
+   1,
+   "IMAGE"
+  ],
+  [
+   56,
+   11,
+   0,
+   39,
+   2,
+   "IMAGE"
+  ],
+  [
+   57,
+   38,
+   0,
+   39,
+   5,
+   "STRING"
+  ],
+  [
+   58,
+   39,
+   0,
+   40,
+   0,
+   "IMAGE"
+  ],
+  [
+   59,
+   39,
+   0,
+   41,
+   0,
+   "IMAGE"
+  ],
+  [
+   60,
+   38,
+   0,
+   41,
+   1,
+   "STRING"
+  ],
+  [
+   61,
+   4,
+   0,
+   42,
+   0,
+   "IMAGE"
+  ],
+  [
+   62,
+   7,
+   0,
+   42,
+   1,
+   "IMAGE"
+  ],
+  [
+   63,
+   11,
+   0,
+   42,
+   2,
+   "IMAGE"
+  ],
+  [
+   64,
+   42,
+   0,
+   43,
+   0,
+   "IMAGE"
+  ],
+  [
+   65,
+   4,
+   0,
+   44,
+   0,
+   "IMAGE"
+  ],
+  [
+   66,
+   7,
+   0,
+   44,
+   1,
+   "IMAGE"
+  ],
+  [
+   67,
+   11,
+   0,
+   44,
+   2,
+   "IMAGE"
+  ],
+  [
+   68,
+   44,
+   0,
+   45,
+   0,
+   "IMAGE"
+  ],
+  [
+   69,
+   4,
+   0,
+   46,
+   0,
+   "IMAGE"
+  ],
+  [
+   70,
+   7,
+   0,
+   46,
+   1,
+   "IMAGE"
+  ],
+  [
+   71,
+   11,
+   0,
+   46,
+   2,
+   "IMAGE"
+  ],
+  [
+   72,
+   46,
+   0,
+   47,
+   0,
+   "IMAGE"
+  ],
+  [
+   73,
+   4,
+   0,
+   48,
+   0,
+   "IMAGE"
+  ],
+  [
+   74,
+   7,
+   0,
+   48,
+   1,
+   "IMAGE"
+  ],
+  [
+   75,
+   11,
+   0,
+   48,
+   2,
+   "IMAGE"
+  ],
+  [
+   76,
+   48,
+   0,
+   49,
+   0,
+   "IMAGE"
+  ]
+ ],
+ "groups": [
+  {
+   "id": 1,
+   "title": "01 FRONT PORTRAIT CANDIDATES \u2014 GPT Image 2.5 (queue this first)",
+   "bounding": [
+    0,
+    0,
+    1320,
+    1000
+   ],
+   "color": "#b58b2a",
+   "font_size": 24,
+   "flags": {}
+  },
+  {
+   "id": 2,
+   "title": "02 CHARACTER SHEETS (16:9, 4K) -> sliced into one picture per view, captioned, for the LoRA",
+   "bounding": [
+    0,
+    1040,
+    3540,
+    1820
+   ],
+   "color": "#a1309b",
+   "font_size": 24,
+   "flags": {}
+  },
+  {
+   "id": 3,
+   "title": "02b YOUR OWN SHEET (muted: select its nodes, Ctrl+M to switch on)",
+   "bounding": [
+    0,
+    2880,
+    900,
+    860
+   ],
+   "color": "#a1309b",
+   "font_size": 24,
+   "flags": {}
+  },
+  {
+   "id": 4,
+   "title": "03 EXAMPLE PHOTOS FOR THE LORA \u2014 each sees the front portrait + face and full-body sheets",
+   "bounding": [
+    0,
+    3820,
+    3540,
+    620
+   ],
+   "color": "#3f789e",
+   "font_size": 24,
+   "flags": {}
+  }
+ ],
+ "config": {},
+ "extra": {
+  "ds": {
+   "scale": 0.6,
+   "offset": [
+    0,
+    0
+   ]
+  }
+ },
+ "version": 0.4
 }

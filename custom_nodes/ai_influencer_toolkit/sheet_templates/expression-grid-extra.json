@@ -1,0 +1,60 @@
+{
+  "task": "More Expressions, one single canvas, 16:9",
+  "identity": {
+    "source": "the attached reference images only",
+    "rule": "The person is the person in the reference images. Only the views described below change."
+  },
+  "layout": {
+    "hero": {
+      "position": "left half",
+      "content": "seen straight from the front, the head not turned, framed as a head-and-shoulders portrait, neutral expression with the mouth closed"
+    },
+    "grid": {
+      "position": "right half",
+      "rows": 2,
+      "cols": 4,
+      "reading_order": "left to right, top to bottom",
+      "cells": [
+        {
+          "view": "seen straight from the front, the head not turned, framed as a head-and-shoulders portrait, laughing hard with the eyes squeezed shut and the mouth wide open"
+        },
+        {
+          "view": "seen straight from the front, the head not turned, framed as a head-and-shoulders portrait, a shy closed-mouth smile, the eyes looking down"
+        },
+        {
+          "view": "seen straight from the front, the head not turned, framed as a head-and-shoulders portrait, thinking, the lips pressed together and the eyes looking up and to the side"
+        },
+        {
+          "view": "seen straight from the front, the head not turned, framed as a head-and-shoulders portrait, sad, the corners of the mouth turned down and the brows raised in the middle"
+        },
+        {
+          "view": "seen straight from the front, the head not turned, framed as a head-and-shoulders portrait, annoyed, the eyes narrowed and the mouth pulled to one side"
+        },
+        {
+          "view": "seen straight from the front, the head not turned, framed as a head-and-shoulders portrait, talking mid-sentence, the mouth half open, relaxed brows"
+        },
+        {
+          "view": "seen straight from the front, the head not turned, framed as a head-and-shoulders portrait, a skeptical look, one corner of the mouth raised and the head tilted slightly"
+        },
+        {
+          "view": "seen straight from the front, the head not turned, framed as a head-and-shoulders portrait, yawning, the mouth wide open and the eyes half closed"
+        }
+      ]
+    }
+  },
+  "locks": {
+    "background_grey": "Soft grey seamless studio background, the same grey behind every view.",
+    "identity_close_person": "Keep the face and identity exactly as in the reference images.",
+    "no_text": "No text, no labels, no watermark.",
+    "lighting_flat": "Flat even softbox lighting, no hard shadows.",
+    "camera_eye_50": "Eye level, 50mm, identical framing and scale.",
+    "same_clothes": "The same clothes as in the reference images in every view.",
+    "hair_clear_of_ears": "Hair falls behind both shoulders so both ears and the jawline stay visible."
+  },
+  "consistency": "Every panel shows the same head at the same size, framed identically, with the eyes on the same horizontal line across the whole sheet. Only the expression differs between panels and no two panels repeat the same expression.",
+  "must_avoid": [
+    "No borders and no drop shadows between the panels.",
+    "Leave a clear strip of empty grey background between neighbouring panels; no figure overlaps another panel.",
+    "Do not crop any head at a panel edge."
+  ]
+}

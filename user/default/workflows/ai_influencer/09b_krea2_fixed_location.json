@@ -1,6 +1,6 @@
 {
- "last_node_id": 40,
- "last_link_id": 58,
+ "last_node_id": 43,
+ "last_link_id": 70,
  "nodes": [
   {
    "id": 1,
@@ -249,7 +249,8 @@
       23,
       49,
       51,
-      52
+      52,
+      59
      ],
      "slot_index": 0
     }
@@ -348,8 +349,7 @@
      "name": "prompt",
      "type": "STRING",
      "links": [
-      5,
-      16
+      60
      ],
      "slot_index": 0
     }
@@ -420,7 +420,7 @@
      "widget": {
       "name": "prompt"
      },
-     "link": 5
+     "link": 64
     }
    ],
    "outputs": [
@@ -551,6 +551,14 @@
      "name": "latent_image",
      "type": "LATENT",
      "link": 22
+    },
+    {
+     "name": "seed",
+     "type": "INT",
+     "link": 66,
+     "widget": {
+      "name": "seed"
+     }
     }
    ],
    "outputs": [
@@ -568,14 +576,14 @@
    },
    "widgets_values": [
     42,
-    "randomize",
+    "fixed",
     8,
     1.0,
     "euler",
     "simple",
     1.0
    ],
-   "title": "Sampler (denoise 1.0 - pose comes from the skeleton, not the latent)"
+   "title": "Sampler (seed comes from Placement & Angle; denoise 1.0 - pose comes from the skeleton)"
   },
   {
    "id": 13,
@@ -642,9 +650,33 @@
     {
      "name": "prompt_text",
      "type": "STRING",
-     "link": 16,
+     "link": 65,
      "widget": {
       "name": "prompt_text"
+     }
+    },
+    {
+     "name": "seed",
+     "type": "INT",
+     "link": 67,
+     "widget": {
+      "name": "seed"
+     }
+    },
+    {
+     "name": "notes",
+     "type": "STRING",
+     "link": 68,
+     "widget": {
+      "name": "notes"
+     }
+    },
+    {
+     "name": "subfolder",
+     "type": "STRING",
+     "link": 69,
+     "widget": {
+      "name": "subfolder"
      }
     }
    ],
@@ -667,7 +699,7 @@
    },
    "widgets_values": [
     "",
-    "local_final",
+    "local_candidate",
     "local_krea2",
     "Krea 2 Turbo + LoRA + image refs (fixed-location inpaint) + bg blur + camera",
     "generate",
@@ -677,6 +709,7 @@
     -1,
     "fixed",
     0,
+    "",
     "",
     ""
    ]
@@ -1240,8 +1273,7 @@
      "name": "keypoints",
      "type": "POSE_KEYPOINT",
      "links": [
-      37,
-      54
+      61
      ],
      "slot_index": 0
     }
@@ -1271,7 +1303,7 @@
     {
      "name": "keypoints",
      "type": "POSE_KEYPOINT",
-     "link": 37
+     "link": 63
     }
    ],
    "outputs": [
@@ -1632,7 +1664,7 @@
     {
      "name": "pose_keypoints",
      "type": "POSE_KEYPOINT",
-     "link": 54
+     "link": 62
     },
     {
      "name": "plate_keypoints",
@@ -1669,6 +1701,14 @@
       58
      ],
      "slot_index": 2
+    },
+    {
+     "name": "keypoints",
+     "type": "POSE_KEYPOINT",
+     "links": [
+      63
+     ],
+     "slot_index": 3
     }
    ],
    "properties": {
@@ -1743,6 +1783,165 @@
    },
    "widgets_values": [],
    "title": "Which method"
+  },
+  {
+   "id": 41,
+   "type": "AIInfluencerPlacementVariations",
+   "pos": [
+    2470,
+    1600
+   ],
+   "size": [
+    380,
+    400
+   ],
+   "flags": {},
+   "order": 39,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "plate",
+     "type": "IMAGE",
+     "link": 59
+    },
+    {
+     "name": "prompt",
+     "type": "STRING",
+     "link": 60
+    },
+    {
+     "name": "pose_keypoints",
+     "type": "POSE_KEYPOINT",
+     "link": 61
+    }
+   ],
+   "outputs": [
+    {
+     "name": "keypoints",
+     "type": "POSE_KEYPOINT",
+     "links": [
+      62
+     ],
+     "slot_index": 0,
+     "shape": 6
+    },
+    {
+     "name": "prompt",
+     "type": "STRING",
+     "links": [
+      64,
+      65
+     ],
+     "slot_index": 1,
+     "shape": 6
+    },
+    {
+     "name": "seed",
+     "type": "INT",
+     "links": [
+      66,
+      67
+     ],
+     "slot_index": 2,
+     "shape": 6
+    },
+    {
+     "name": "folder",
+     "type": "STRING",
+     "links": [
+      69
+     ],
+     "slot_index": 3,
+     "shape": 6
+    },
+    {
+     "name": "label",
+     "type": "STRING",
+     "links": [
+      68,
+      70
+     ],
+     "slot_index": 4,
+     "shape": 6
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerPlacementVariations"
+   },
+   "widgets_values": [
+    0,
+    "randomize",
+    4,
+    "placement + angle",
+    "new angle per seed",
+    0.15,
+    0.85,
+    0.45,
+    0.7,
+    0.35,
+    "0: the body facing the camera\n35: the body turned slightly toward frame-right, face toward the camera\n-35: the body turned slightly toward frame-left, face toward the camera\n65: three-quarter view, the body turned toward frame-right, head turned back toward the camera\n-65: three-quarter view, the body turned toward frame-left, head turned back toward the camera\n90: seen in profile, facing frame-right\n-90: seen in profile, facing frame-left\n160: seen from behind, looking back over the shoulder toward the camera"
+   ],
+   "title": "Placement & Angle per Seed (the seed of the whole queue)"
+  },
+  {
+   "id": 42,
+   "type": "PreviewAny",
+   "pos": [
+    2470,
+    2040
+   ],
+   "size": [
+    380,
+    460
+   ],
+   "flags": {},
+   "order": 40,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "source",
+     "type": "*",
+     "link": 70
+    }
+   ],
+   "outputs": [
+    {
+     "name": "STRING",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "PreviewAny"
+   },
+   "widgets_values": [],
+   "title": "What each candidate got"
+  },
+  {
+   "id": 43,
+   "type": "MarkdownNote",
+   "pos": [
+    2900,
+    1540
+   ],
+   "size": [
+    520,
+    560
+   ],
+   "flags": {},
+   "order": 41,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [],
+   "properties": {
+    "Node name for S&R": "MarkdownNote"
+   },
+   "widgets_values": [
+    "# Several candidates per queue\n\n*Placement & Angle per Seed* (group 05c) turns one queue into **4 candidates** (`candidates`),\neach with its own seed, **its own place** in the location photo and **its own body angle**. No two\ncandidates of a queue share a spot or an angle; the angle is drawn into the skeleton (picture 3)\nand written into the prompt, so the two never disagree.\n\n- `pose` = **new angle per seed**: a fresh standing skeleton per candidate (front, three-quarter,\n  profile, back over the shoulder, to either side), so the pose photo in group 07 is not used.\n  **reference pose**: keep the pose photo's skeleton; it is only moved, rescaled and mirrored.\n- `vary` = **off** restores the old behaviour: same place and pose, only the seed changes.\n- `angles`: the angles to draw from, one per line (`degrees: words for the prompt`; 0 = facing the\n  camera, positive = toward frame-right). Delete the ones you don't want, add your own.\n- `x_min`/`x_max`, `size_min`/`size_max`, `horizon`: the part of the photo she may stand in, how\n  big (near/far), and the photo's eye-level line -- her eyes are put on it.\n- A **painted mask** still wins: every candidate stands where you painted (angle still varies).\n  A **person already in the plate** is replaced in place, the same way.\n\nThey are saved together in `outputs/images/candidates/9b_<seed>/`, each logged with its label.\nHeld for the pod with batch count 10? That's 10 folders. **Workflow 13** picks the winner of a\nfolder into `outputs/images/final/` -- on this PC, no GPU.\n\nEach candidate is a full generation: 4 candidates take 4x as long as 1."
+   ],
+   "color": "#222",
+   "bgcolor": "#000"
   }
  ],
  "links": [
@@ -1777,14 +1976,6 @@
    9,
    0,
    "CLIP"
-  ],
-  [
-   5,
-   8,
-   0,
-   9,
-   5,
-   "STRING"
   ],
   [
    6,
@@ -1849,14 +2040,6 @@
    13,
    1,
    "VAE"
-  ],
-  [
-   16,
-   8,
-   0,
-   14,
-   1,
-   "STRING"
   ],
   [
    17,
@@ -2003,14 +2186,6 @@
    "IMAGE"
   ],
   [
-   37,
-   29,
-   0,
-   30,
-   0,
-   "POSE_KEYPOINT"
-  ],
-  [
    38,
    30,
    0,
@@ -2131,14 +2306,6 @@
    "MASK"
   ],
   [
-   54,
-   29,
-   0,
-   38,
-   2,
-   "POSE_KEYPOINT"
-  ],
-  [
    55,
    36,
    0,
@@ -2167,6 +2334,102 @@
    38,
    2,
    40,
+   0,
+   "STRING"
+  ],
+  [
+   59,
+   6,
+   0,
+   41,
+   0,
+   "IMAGE"
+  ],
+  [
+   60,
+   8,
+   0,
+   41,
+   1,
+   "STRING"
+  ],
+  [
+   61,
+   29,
+   0,
+   41,
+   2,
+   "POSE_KEYPOINT"
+  ],
+  [
+   62,
+   41,
+   0,
+   38,
+   2,
+   "POSE_KEYPOINT"
+  ],
+  [
+   63,
+   38,
+   3,
+   30,
+   0,
+   "POSE_KEYPOINT"
+  ],
+  [
+   64,
+   41,
+   1,
+   9,
+   5,
+   "STRING"
+  ],
+  [
+   65,
+   41,
+   1,
+   14,
+   1,
+   "STRING"
+  ],
+  [
+   66,
+   41,
+   2,
+   12,
+   4,
+   "INT"
+  ],
+  [
+   67,
+   41,
+   2,
+   14,
+   2,
+   "INT"
+  ],
+  [
+   68,
+   41,
+   4,
+   14,
+   3,
+   "STRING"
+  ],
+  [
+   69,
+   41,
+   3,
+   14,
+   4,
+   "STRING"
+  ],
+  [
+   70,
+   41,
+   4,
+   42,
    0,
    "STRING"
   ]
@@ -2285,6 +2548,19 @@
     620
    ],
    "color": "#a1309b",
+   "font_size": 24,
+   "flags": {}
+  },
+  {
+   "id": 10,
+   "title": "05c CANDIDATES \u2014 a new place and angle per seed",
+   "bounding": [
+    2450,
+    1540,
+    420,
+    1000
+   ],
+   "color": "#8A8",
    "font_size": 24,
    "flags": {}
   }

@@ -1,0 +1,14 @@
+{
+  "provider": "wavespeed",
+  "model": "gpt-image-2",
+  "resolution": "4k",
+  "aspect_ratio": "16:9",
+  "_available_models": {
+    "gpt-image-2": "openai/gpt-image-2/edit",
+    "nano-banana-pro": "google/nano-banana-pro/edit",
+    "nano-banana-2": "google/nano-banana-2/edit",
+    "seedream": "bytedance/seedream-v4.5/edit",
+    "seedream-v5-pro": "bytedance/seedream-v5.0-pro/edit"
+  },
+  "_note": "Change \"model\" to any name from _available_models, or just tell Claude: 'use nano-banana-pro'. Claude edits this file for you."
+}

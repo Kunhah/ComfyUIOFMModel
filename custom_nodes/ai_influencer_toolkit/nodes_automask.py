@@ -12,6 +12,10 @@ image, in this order:
                  has in the pose photo;
   4. fixed    -- no usable pose either: a person-sized area at `fixed_position`.
 
+It also outputs the pose skeleton *where the mask put it* (fitted into a painted mask, moved onto
+the person being replaced, or unchanged), so the skeleton the model is conditioned on and the area
+it may paint always agree -- this is what lets the Placement & Angle node move her per seed.
+
 The body shape is drawn from the 18 OpenPose keypoints (limbs as thick strokes, a torso polygon,
 a head ellipse) with widths relative to the body's size, then grown by `margin` so the model has
 room. GrowMask after it still feathers the seam. Everything is cheap tensor/PIL work on the CPU.
@@ -106,6 +110,28 @@ def _fixed(w: int, h: int, position: str, margin_px: float) -> np.ndarray:
     return np.asarray(canvas, dtype=np.float32) / 255.0
 
 
+_KP_KEYS = ("pose_keypoints_2d", "foot_keypoints_2d", "face_keypoints_2d", "hand_right_keypoints_2d", "hand_left_keypoints_2d")
+
+
+def _moved_frame(keypoints, w: int, h: int, fn) -> list[dict]:
+    """The pose reference's best person with fn(xy) applied to every detected point, on a w x h canvas."""
+    frame = keypoints[0]
+    people = frame.get("people", [])
+    best = max(people, key=lambda p: int((np.asarray(p.get("pose_keypoints_2d") or [0] * 54, np.float32)
+                                          .reshape(-1, 3)[:, 2] >= SCORE).sum()))
+    out = {}
+    for k in _KP_KEYS:
+        flat = best.get(k)
+        if not flat:
+            continue
+        arr = np.asarray(flat, dtype=np.float32).reshape(-1, 3).copy()
+        ok = (arr[:, 2] >= SCORE) & (arr[:, 0] >= 0) & (arr[:, 1] >= 0)
+        arr[ok, :2] = fn(arr[ok, :2])
+        arr[~ok, :2] = -1.0
+        out[k] = arr.reshape(-1).tolist()
+    return [{"canvas_width": w, "canvas_height": h, "people": [out]}]
+
+
 def _resize_mask(mask: torch.Tensor, w: int, h: int) -> torch.Tensor:
     m = mask[0] if mask.dim() == 3 else mask
     return F.interpolate(m[None, None].float(), size=(h, w), mode="bilinear", align_corners=False)[0, 0]
@@ -145,6 +171,8 @@ class AIInfluencerAutoMask(IO.ComfyNode):
                 IO.Mask.Output(display_name="mask"),
                 IO.Image.Output(display_name="preview", tooltip="The plate with the mask in red, to check it."),
                 IO.String.Output(display_name="method"),
+                IO.Custom("POSE_KEYPOINT").Output(display_name="keypoints",
+                                                  tooltip="The pose skeleton moved to where the mask is, for the skeleton drawer."),
             ],
         )
 
@@ -161,6 +189,23 @@ class AIInfluencerAutoMask(IO.ComfyNode):
                 mask, method = pm, "painted"
 
         pose = _best_person(pose_keypoints)
+        placed = pose_keypoints or []
+        if pose is not None:
+            qcw, qch = pose[2], pose[3]
+            to_plate = np.array([w / qcw, h / qch], dtype=np.float32)
+            placed = _moved_frame(pose_keypoints, w, h, lambda xy: xy * to_plate)
+        if mask is not None and pose is not None:
+            # stand the skeleton inside what was painted: feet at its bottom, centred, 92% of its height
+            ys, xs = torch.nonzero(mask > 0.5, as_tuple=True)
+            top, bottom = float(ys.min()), float(ys.max())
+            cx_m = float(xs.float().mean())
+            qxy, qvalid = pose[0] * to_plate, pose[1]
+            q_top, q_bottom = float(qxy[qvalid, 1].min()), float(qxy[qvalid, 1].max())
+            s = 0.92 * (bottom - top) / max(q_bottom - q_top, 1.0)
+            q_cx = float(qxy[qvalid, 0].mean())
+            placed = _moved_frame(pose_keypoints, w, h, lambda xy: np.stack([
+                (xy[:, 0] * to_plate[0] - q_cx) * s + cx_m,
+                (xy[:, 1] * to_plate[1] - q_bottom) * s + bottom - 0.02 * (bottom - top)], axis=1))
         person = _best_person(plate_keypoints)
         subject = _resize_mask(plate_subject, w, h) if plate_subject is not None else None
         if person is not None:
@@ -183,10 +228,16 @@ class AIInfluencerAutoMask(IO.ComfyNode):
                 qxy, qvalid, qcw, qch = pose
                 qxy = qxy * np.array([w / qcw, h / qch], dtype=np.float32)
                 ps, qs = _shoulders(pxy, pvalid), _shoulders(qxy, qvalid)
-                scale = (ps / qs) if ps and qs else _body_size(pxy, pvalid) / _body_size(qxy, qvalid)
+                bp, bq = _body_size(pxy, pvalid), _body_size(qxy, qvalid)
+                # shoulder width is the steadier yardstick, unless one of the two is turned sideways
+                # (a profile's shoulders are a few pixels apart and would blow the scale up)
+                square = ps and qs and (qs / bq) > 0.6 * (ps / bp) and (ps / bp) > 0.6 * (qs / bq)
+                scale = (ps / qs) if square else bp / bq
                 anchor_p = pxy[1] if pvalid[1] else pxy[pvalid].mean(0)
                 anchor_q = qxy[1] if qvalid[1] else qxy[qvalid].mean(0)
                 new = torch.from_numpy(_draw_body((qxy - anchor_q) * scale + anchor_p, qvalid, w, h, margin_px))
+                placed = _moved_frame(pose_keypoints, w, h,
+                                      lambda xy: (xy * np.array([w / qcw, h / qch], dtype=np.float32) - anchor_q) * scale + anchor_p)
             mask = torch.maximum(_grow(old, int(margin_px)), new)
             method = "replace person" + (" + pose" if pose is not None else "")
 
@@ -204,4 +255,4 @@ class AIInfluencerAutoMask(IO.ComfyNode):
         img = plate[0].float().cpu()
         red = torch.tensor([1.0, 0.1, 0.1])
         preview = img * (1 - 0.45 * mask[..., None]) + red * (0.45 * mask[..., None])
-        return IO.NodeOutput(mask[None], preview[None], f"{method}: {mask.mean().item() * 100:.0f}% of the image")
+        return IO.NodeOutput(mask[None], preview[None], f"{method}: {mask.mean().item() * 100:.0f}% of the image", placed)
