@@ -1,6 +1,6 @@
 {
- "last_node_id": 35,
- "last_link_id": 46,
+ "last_node_id": 40,
+ "last_link_id": 58,
  "nodes": [
   {
    "id": 1,
@@ -204,7 +204,7 @@
      "name": "MASK",
      "type": "MASK",
      "links": [
-      19
+      53
      ],
      "slot_index": 1
     }
@@ -216,7 +216,7 @@
     "ai_influencer/MyCharacter/dataset/62.png",
     "image"
    ],
-   "title": "LOCATION plate (mask this one)"
+   "title": "LOCATION plate (painting a mask is optional)"
   },
   {
    "id": 6,
@@ -246,7 +246,10 @@
      "links": [
       7,
       17,
-      23
+      23,
+      49,
+      51,
+      52
      ],
      "slot_index": 0
     }
@@ -887,7 +890,7 @@
     "Node name for S&R": "MarkdownNote"
    },
    "widgets_values": [
-    "# 09b Fixed location + pose + references\n\nThree things come from three separate places, each one contributing **only** what it is for:\n\n| What | Where it comes from | Why nothing else leaks in |\n|---|---|---|\n| **Background** | group 02, the location photo | `ImageCompositeMasked` pastes the generation back *inside the mask only*, so every pixel outside is bit-identical to your photo |\n| **Pose** | group 07, the pose photo | the photo is reduced to an OpenPose **stick-figure skeleton** first, so there is no face, clothing, lighting or background left to copy |\n| **Her** | group 01 character LoRA + group 06 reference photos | the LoRA holds the face, the references hold hair, make-up and clothes |\n\n## Use it\n1. **Group 02**: load the location photo. Right-click it -> **Open in MaskEditor** and paint where\n   she should appear (her whole body plus a little room). Save.\n2. **Group 07**: load any photo of anyone in the pose you want. Look at *Check the skeleton* after\n   the first run to confirm it was detected.\n3. **Group 06**: a clear photo of her in *Reference 1*. Ctrl+B on *Reference 2* to add an outfit\n   shot or a second angle.\n4. **Group 03**: describe the scene. Leave the pose out of `subject_action` -- the skeleton is in\n   charge of it. Keep `environment` matching the real photo so the lighting agrees. The\n   `extra` field holds the standing \"Picture 1 is her, Picture 3 is the skeleton\" instruction;\n   keep it. You never write the \"don't look AI\" wording: the Prompt Builder appends it to every\n   prompt by itself.\n5. **Queue.** Group 08 runs by itself: the background is blurred, then the camera pass adds ISO\n   grain, corner fringing, corner falloff and a white balance drift, and the result is saved to\n   `outputs/images/final/`. Nothing to set -- that is the whole point of it being here.\n\nSet once, then leave alone: groups 01, 04, 05, 08. Per picture you touch **02** (location +\nmask), **03** (prompt), and **06/07** when the reference or pose changes.\n\n## Knobs\n- **Picture numbers are fixed to the slots**, so Picture 3 is always the skeleton even when\n  Reference 2 is bypassed. Safe to refer to them in the prompt.\n- **Denoise is 1.0**: the masked area is built from scratch. Pose no longer needs to survive from\n  the latent, so nothing of the location photo's original contents bleeds into her.\n- **Grow mask** feathers the seam by 12px. Raise it if you see an outline, lower it if the\n  background gets eaten.\n- **Wrong scale?** Paint the mask the size you want her to be -- the model fills the shape.\n- **Skeleton too literal / not detected?** Ctrl+B the *Skeleton* node to drop the pose reference\n  entirely; the rest of the workflow keeps working.\n- **No references at all?** Also Ctrl+B the *Krea 2 image reference LoRA* in group 01 and the\n  Reference loaders, and it falls back to prompt-only inpainting.\n- **Grain too strong / too clean?** `iso_grain` on *Camera Imperfections*: 0.015 clean daylight,\n  0.025 ordinary phone photo, 0.05+ pushed high ISO. 0 turns it off.\n- **Same picture, different grain?** Set the *Sampler*'s control to `fixed` and queue again: only\n  the filters re-run (the generation is cached), so you get another grain roll in seconds."
+    "# 09b Fixed location + pose + references\n\nThree things come from three separate places, each one contributing **only** what it is for:\n\n| What | Where it comes from | Why nothing else leaks in |\n|---|---|---|\n| **Background** | group 02, the location photo | `ImageCompositeMasked` pastes the generation back *inside the mask only*, so every pixel outside is bit-identical to your photo |\n| **Pose** | group 07, the pose photo | the photo is reduced to an OpenPose **stick-figure skeleton** first, so there is no face, clothing, lighting or background left to copy |\n| **Her** | group 01 character LoRA + group 06 reference photos | the LoRA holds the face, the references hold hair, make-up and clothes |\n\n## Use it\n1. **Group 02**: load the location photo. Nothing to paint: the **Auto Mask** (group 05b) decides\n   where she goes. If the photo already has a person, she replaces them (in the new pose, at their\n   size); if it's empty, she stands where the person in the pose photo stands. *Check the mask*\n   shows it in red. To choose the spot yourself, right-click the photo -> **Open in MaskEditor**,\n   paint, save: a painted mask always wins.\n2. **Group 07**: load any photo of anyone in the pose you want. Look at *Check the skeleton* after\n   the first run to confirm it was detected.\n3. **Group 06**: a clear photo of her in *Reference 1*. Ctrl+B on *Reference 2* to add an outfit\n   shot or a second angle.\n4. **Group 03**: describe the scene. Leave the pose out of `subject_action` -- the skeleton is in\n   charge of it. Keep `environment` matching the real photo so the lighting agrees. The\n   `extra` field holds the standing \"Picture 1 is her, Picture 3 is the skeleton\" instruction;\n   keep it. You never write the \"don't look AI\" wording: the Prompt Builder appends it to every\n   prompt by itself.\n5. **Queue.** Group 08 runs by itself: the background is blurred, then the camera pass adds ISO\n   grain, corner fringing, corner falloff and a white balance drift, and the result is saved to\n   `outputs/images/final/`. Nothing to set -- that is the whole point of it being here.\n\nSet once, then leave alone: groups 01, 04, 05, 08. Per picture you touch **02** (location +\nmask), **03** (prompt), and **06/07** when the reference or pose changes.\n\n## Knobs\n- **Picture numbers are fixed to the slots**, so Picture 3 is always the skeleton even when\n  Reference 2 is bypassed. Safe to refer to them in the prompt.\n- **Denoise is 1.0**: the masked area is built from scratch. Pose no longer needs to survive from\n  the latent, so nothing of the location photo's original contents bleeds into her.\n- **Grow mask** feathers the seam by 12px. Raise it if you see an outline, lower it if the\n  background gets eaten.\n- **Wrong scale?** Paint the mask the size you want her to be -- the model fills the shape.\n- **Skeleton too literal / not detected?** Ctrl+B the *Skeleton* node to drop the pose reference\n  entirely; the rest of the workflow keeps working.\n- **No references at all?** Also Ctrl+B the *Krea 2 image reference LoRA* in group 01 and the\n  Reference loaders, and it falls back to prompt-only inpainting.\n- **Grain too strong / too clean?** `iso_grain` on *Camera Imperfections*: 0.015 clean daylight,\n  0.025 ordinary phone photo, 0.05+ pushed high ISO. 0 turns it off.\n- **Same picture, different grain?** Set the *Sampler*'s control to `fixed` and queue again: only\n  the filters re-run (the generation is cached), so you get another grain roll in seconds."
    ],
    "color": "#222",
    "bgcolor": "#000"
@@ -1119,7 +1122,8 @@
      "name": "MODEL",
      "type": "MODEL",
      "links": [
-      34
+      34,
+      47
      ],
      "slot_index": 0
     },
@@ -1133,7 +1137,8 @@
      "name": "VAE",
      "type": "VAE",
      "links": [
-      35
+      35,
+      48
      ],
      "slot_index": 2
     }
@@ -1235,7 +1240,8 @@
      "name": "keypoints",
      "type": "POSE_KEYPOINT",
      "links": [
-      37
+      37,
+      54
      ],
      "slot_index": 0
     }
@@ -1342,7 +1348,8 @@
      "name": "bg_model",
      "type": "BACKGROUND_REMOVAL",
      "links": [
-      40
+      40,
+      50
      ],
      "slot_index": 0
     }
@@ -1500,6 +1507,242 @@
     0.3
    ],
    "title": "Camera Imperfections"
+  },
+  {
+   "id": 36,
+   "type": "SDPoseKeypointExtractor",
+   "pos": [
+    1540,
+    1500
+   ],
+   "size": [
+    320,
+    160
+   ],
+   "flags": {},
+   "order": 34,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "model",
+     "type": "MODEL",
+     "link": 47
+    },
+    {
+     "name": "vae",
+     "type": "VAE",
+     "link": 48
+    },
+    {
+     "name": "image",
+     "type": "IMAGE",
+     "link": 49
+    },
+    {
+     "name": "bboxes",
+     "type": "BOUNDING_BOX",
+     "link": null
+    }
+   ],
+   "outputs": [
+    {
+     "name": "keypoints",
+     "type": "POSE_KEYPOINT",
+     "links": [
+      55
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "SDPoseKeypointExtractor"
+   },
+   "widgets_values": [
+    16
+   ],
+   "title": "Person already in the plate?"
+  },
+  {
+   "id": 37,
+   "type": "RemoveBackground",
+   "pos": [
+    1540,
+    1700
+   ],
+   "size": [
+    320,
+    50
+   ],
+   "flags": {},
+   "order": 35,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "bg_removal_model",
+     "type": "BACKGROUND_REMOVAL",
+     "link": 50
+    },
+    {
+     "name": "image",
+     "type": "IMAGE",
+     "link": 51
+    }
+   ],
+   "outputs": [
+    {
+     "name": "mask",
+     "type": "MASK",
+     "links": [
+      56
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "RemoveBackground"
+   },
+   "widgets_values": [],
+   "title": "Their cut-out"
+  },
+  {
+   "id": 38,
+   "type": "AIInfluencerAutoMask",
+   "pos": [
+    1900,
+    1500
+   ],
+   "size": [
+    340,
+    230
+   ],
+   "flags": {},
+   "order": 36,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "plate",
+     "type": "IMAGE",
+     "link": 52
+    },
+    {
+     "name": "painted_mask",
+     "type": "MASK",
+     "link": 53
+    },
+    {
+     "name": "pose_keypoints",
+     "type": "POSE_KEYPOINT",
+     "link": 54
+    },
+    {
+     "name": "plate_keypoints",
+     "type": "POSE_KEYPOINT",
+     "link": 55
+    },
+    {
+     "name": "plate_subject",
+     "type": "MASK",
+     "link": 56
+    }
+   ],
+   "outputs": [
+    {
+     "name": "mask",
+     "type": "MASK",
+     "links": [
+      19
+     ],
+     "slot_index": 0
+    },
+    {
+     "name": "preview",
+     "type": "IMAGE",
+     "links": [
+      57
+     ],
+     "slot_index": 1
+    },
+    {
+     "name": "method",
+     "type": "STRING",
+     "links": [
+      58
+     ],
+     "slot_index": 2
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerAutoMask"
+   },
+   "widgets_values": [
+    "auto",
+    4.0,
+    "center"
+   ],
+   "title": "Auto Mask"
+  },
+  {
+   "id": 39,
+   "type": "PreviewImage",
+   "pos": [
+    1900,
+    1760
+   ],
+   "size": [
+    340,
+    280
+   ],
+   "flags": {},
+   "order": 37,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "images",
+     "type": "IMAGE",
+     "link": 57
+    }
+   ],
+   "outputs": [],
+   "properties": {
+    "Node name for S&R": "PreviewImage"
+   },
+   "widgets_values": [],
+   "title": "Check the mask (red = where she goes)"
+  },
+  {
+   "id": 40,
+   "type": "PreviewAny",
+   "pos": [
+    2260,
+    1500
+   ],
+   "size": [
+    150,
+    120
+   ],
+   "flags": {},
+   "order": 38,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "source",
+     "type": "*",
+     "link": 58
+    }
+   ],
+   "outputs": [
+    {
+     "name": "STRING",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "PreviewAny"
+   },
+   "widgets_values": [],
+   "title": "Which method"
   }
  ],
  "links": [
@@ -1633,8 +1876,8 @@
   ],
   [
    19,
-   5,
-   1,
+   38,
+   0,
    17,
    0,
    "MASK"
@@ -1830,6 +2073,102 @@
    14,
    0,
    "IMAGE"
+  ],
+  [
+   47,
+   28,
+   0,
+   36,
+   0,
+   "MODEL"
+  ],
+  [
+   48,
+   28,
+   2,
+   36,
+   1,
+   "VAE"
+  ],
+  [
+   49,
+   6,
+   0,
+   36,
+   2,
+   "IMAGE"
+  ],
+  [
+   50,
+   32,
+   0,
+   37,
+   0,
+   "BACKGROUND_REMOVAL"
+  ],
+  [
+   51,
+   6,
+   0,
+   37,
+   1,
+   "IMAGE"
+  ],
+  [
+   52,
+   6,
+   0,
+   38,
+   0,
+   "IMAGE"
+  ],
+  [
+   53,
+   5,
+   1,
+   38,
+   1,
+   "MASK"
+  ],
+  [
+   54,
+   29,
+   0,
+   38,
+   2,
+   "POSE_KEYPOINT"
+  ],
+  [
+   55,
+   36,
+   0,
+   38,
+   3,
+   "POSE_KEYPOINT"
+  ],
+  [
+   56,
+   37,
+   0,
+   38,
+   4,
+   "MASK"
+  ],
+  [
+   57,
+   38,
+   1,
+   39,
+   0,
+   "IMAGE"
+  ],
+  [
+   58,
+   38,
+   2,
+   40,
+   0,
+   "STRING"
   ]
  ],
  "groups": [
@@ -1848,7 +2187,7 @@
   },
   {
    "id": 2,
-   "title": "02 LOCATION PHOTO (paint the mask here)",
+   "title": "02 LOCATION PHOTO (mask: automatic - paint only to override)",
    "bounding": [
     430,
     0,
@@ -1931,6 +2270,19 @@
     700,
     420,
     810
+   ],
+   "color": "#a1309b",
+   "font_size": 24,
+   "flags": {}
+  },
+  {
+   "id": 9,
+   "title": "05b AUTO MASK (where she goes - nothing to paint)",
+   "bounding": [
+    1520,
+    1440,
+    900,
+    620
    ],
    "color": "#a1309b",
    "font_size": 24,

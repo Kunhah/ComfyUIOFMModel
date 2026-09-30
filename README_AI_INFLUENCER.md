@@ -282,9 +282,25 @@ Workflows 01-06 keep running on your own machine (they only call cloud APIs).
 
 `tools/comfy_pod.py launch` does the whole rental end to end (rent → bootstrap → print the ComfyUI
 URL → auto-destroy). Add **`--with-minimax`** for Workflow 11: the bootstrap then also pulls the
-five MiniMax H3 files (~45 GB), and the offer search switches to a Blackwell GPU with a 200 GB disk
-(`--gpu RTX_5090 --vram 31 --disk 200 --max-price 1.20`). Any of those you pass yourself wins, so
-`--with-minimax --gpu RTX_4090` is a valid, slower, cheaper choice. Everything that runs on the pod
+five MiniMax H3 files (~45 GB).
+
+**The GPU is chosen automatically for each job** (`tools/gpu_select.py`). Each job has hard
+requirements, and every vast.ai offer that meets them is ranked by *estimated total cost*: $/hr ×
+(time to download the models on that host's line + job time scaled by the card's speed), so a
+fast card on a fast line often beats a cheaper slow one.
+
+| Job | Command | Requirements |
+|---|---|---|
+| LoRA training (Krea 2 RAW, AI Toolkit) | `vast_pod.py launch` | 32 GB+ VRAM, Ampere or newer, 150 GB disk |
+| Krea 2 generation (07-10, 09b, 12) | `comfy_pod.py launch` | 24 GB+ VRAM, Ampere or newer, 60 GB disk |
+| MiniMax H3 video (11) + Krea 2 | `comfy_pod.py launch --with-minimax` | 32 GB+ VRAM, Blackwell (nvfp4), 200 GB disk |
+
+See the ranking before renting anything with `vast_pod.py search`, `comfy_pod.py search` or
+`comfy_pod.py search --with-minimax`; each line shows the GPU, $/hr, speed, line speed and the
+estimated hours and dollars. Every limit can be overridden (`--vram`, `--disk`, `--max-price`,
+`--min-inet`, `--min-cc`), and `--gpu RTX_4090` pins one model, which also lifts the Blackwell
+requirement: `--with-minimax --gpu RTX_4090` is a valid, slower choice. The Pod queue uses the same
+selection. Everything that runs on the pod
 is local open weights, so nothing generated there is sent to a provider to be moderated.
 
 ## Local Krea 2 pipeline (character LoRA)
@@ -544,6 +560,12 @@ that needs it. The node pack adds a **Pod queue** pill at the bottom right of th
      is still there as a backstop.
 4. Finished jobs leave the list. Failed ones stay, so you can fix them and run again.
 
+To run the held jobs on this PC instead, press **Run here**. It sends each one to this ComfyUI's
+normal queue (Hold doesn't affect it), with no pod, kit upload or download involved. A job leaves
+the list as soon as ComfyUI accepts it. After that, its progress and any error show in ComfyUI's
+own queue. A job ComfyUI rejects, for example because a model file isn't on this PC, stays in the
+list and the panel shows the reason.
+
 Untick **Hold for the pod** to run things on this PC normally again. The setting is saved
 separately for each address you open ComfyUI at, so it is off on the pod's own ComfyUI.
 
@@ -753,9 +775,9 @@ python custom_nodes/ai_influencer_toolkit/tools/comfy_pod.py url
 python custom_nodes/ai_influencer_toolkit/tools/comfy_pod.py watch --idle-minutes 25
 ```
 
-`--with-minimax` rents a Blackwell-class GPU (H3's text encoder ships in nvfp4, which needs compute
-capability ≥ 10; it still *runs* on a 3090/4090, dequantising every layer, several times slower),
-asks for a 200 GB disk, and downloads the five H3 files during bootstrap. Clips stay on the pod —
+`--with-minimax` makes the GPU search consider only Blackwell cards with 32 GB+ (H3's text encoder
+ships in nvfp4, which needs compute capability ≥ 10; it still *runs* on a 3090/4090 pinned with
+`--gpu`, dequantising every layer, several times slower), asks for a 200 GB disk, and downloads the five H3 files during bootstrap. Clips stay on the pod —
 pull them out of `output/projects/<project>/outputs/videos/` before `destroy`.
 
 **Uncensored by construction.** Nothing in this workflow filters anything: every node is local

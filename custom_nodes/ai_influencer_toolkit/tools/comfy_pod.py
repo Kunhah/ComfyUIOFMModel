@@ -32,6 +32,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 sys.path.insert(0, os.path.dirname(__file__))
 
 import env_config  # noqa: E402
+import gpu_select  # noqa: E402
 import logging_util  # noqa: E402
 from vast_pod import destroy_instance, instance_info, load_state, save_state, search, vast  # noqa: E402
 
@@ -92,6 +93,19 @@ def comfy_url(info: dict) -> str | None:
     return None
 
 
+def profile_of(args) -> gpu_select.Profile:
+    return gpu_select.PROFILES["minimax" if args.with_minimax else "krea2"]
+
+
+def cmd_search(args) -> int:
+    profile = profile_of(args)
+    offers = search(args, profile)
+    print(f"{profile.label}: {len(offers)} offers qualify, best estimated total first")
+    for o in offers[: args.limit]:
+        print(gpu_select.describe(o))
+    return 0
+
+
 def cmd_launch(args) -> int:
     project = logging_util.sanitize_project_name(args.project)
     env_config.require_cli("VAST_API_KEY", "HF_TOKEN")
@@ -99,9 +113,11 @@ def cmd_launch(args) -> int:
         raise SystemExit("No character LoRA to load: pass --lora-path or set AI_INFLUENCER_LORA_PATH "
                          "(python custom_nodes/ai_influencer_toolkit/tools/configure.py).")
     args.hf_repo = args.hf_repo or env_config.hf_repo(project)
-    offers = search(args)
+    offers = search(args, profile_of(args))
     if not offers:
         raise SystemExit("No offers matched. Loosen --max-price / --gpu / --min-inet.")
+    for o in offers[:3]:
+        print("  candidate " + gpu_select.describe(o))
     offer = next((o for o in offers if o["id"] == args.offer), offers[0]) if args.offer else offers[0]
     hourly = offer["dph_total"]
     print(f"offer {offer['id']}: {offer['gpu_name']} {offer['gpu_ram']/1024:.0f}GB ${hourly:.3f}/hr, "
@@ -220,15 +236,9 @@ def cmd_watch(args) -> int:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("command", choices=["launch", "url", "status", "destroy", "watch"])
+    ap.add_argument("command", choices=["search", "launch", "url", "status", "destroy", "watch"])
     ap.add_argument("--project", default=env_config.get("AI_INFLUENCER_DEFAULT_PROJECT"))
-    ap.add_argument("--gpu", default="RTX_3090")
-    ap.add_argument("--vram", type=int, default=23)
-    ap.add_argument("--disk", type=int, default=60)
-    ap.add_argument("--min-inet", type=int, default=700)
-    ap.add_argument("--min-cuda", type=float, default=12.9)
-    ap.add_argument("--max-price", type=float, default=0.30)
-    ap.add_argument("--limit", type=int, default=8)
+    gpu_select.add_arguments(ap)
     ap.add_argument("--offer", type=int)
     ap.add_argument("--hours", type=float, default=2.0)
     ap.add_argument("--hf-repo", default=env_config.get("AI_INFLUENCER_HF_REPO"),
@@ -238,24 +248,19 @@ def main() -> int:
     ap.add_argument("--idle-minutes", type=int, default=25)
     ap.add_argument("--interval", type=int, default=120)
     ap.add_argument("--with-minimax", action="store_true",
-                    help="Also install the MiniMax H3 models for Workflow 11 (~45 GB) and default to a "
-                         "Blackwell GPU with a bigger disk, since H3's text encoder ships in nvfp4.")
+                    help="Also install the MiniMax H3 models for Workflow 11 (~45 GB); the GPU search then "
+                         "only considers Blackwell cards with 32 GB+, since H3's text encoder ships in nvfp4.")
     ap.add_argument("--with-upscale", action="store_true",
                     help="Also download SeedVR2 (~4 GB) for the upscale in Workflows 08/10 and held Pod queue jobs that use it.")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--yes", action="store_true")
     args = ap.parse_args()
 
-    if args.with_minimax:
-        # H3 is a different machine class from Krea 2: nvfp4 weights want compute capability >= 10
-        # (RTX 5090 / RTX PRO 6000 / B200), and the five model files are ~45 GB on top of Krea 2's ~12 GB.
-        for flag, default, minimax_default in (("gpu", "RTX_3090", "RTX_5090"), ("vram", 23, 31),
-                                               ("disk", 60, 200), ("max_price", 0.30, 1.20)):
-            if getattr(args, flag) == default:  # only if the user did not pass it explicitly
-                setattr(args, flag, minimax_default)
+    # Krea 2 alone fits a 24 GB Ampere card; MiniMax H3 needs Blackwell (see gpu_select.py).
+    gpu_select.apply_defaults(args, profile_of(args))
 
     env_config.load_env()  # the commands below read VAST_API_KEY / HF_TOKEN from os.environ
-    return {"launch": cmd_launch, "url": cmd_url, "status": cmd_status,
+    return {"search": cmd_search, "launch": cmd_launch, "url": cmd_url, "status": cmd_status,
             "destroy": cmd_destroy, "watch": cmd_watch}[args.command](args)
 
 

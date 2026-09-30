@@ -138,6 +138,39 @@ def _ancestors(prompt: dict, nid: str) -> set[str]:
     return {prompt[n]["class_type"] for n in seen}
 
 
+EMPTY_MASK = "no mask painted on "
+
+
+def mask_problems(prompt: dict) -> list[str]:
+    """Photos whose MASK output a job uses but that have nothing painted on them. ComfyUI's LoadImage
+    takes the mask from the photo's transparency; a JPEG, or a PNG nobody painted in MaskEditor, gives an
+    empty mask -- in Workflow 09b that means nothing is regenerated and the result is the plate itself."""
+    from PIL import Image
+
+    out = []
+    for nid, node in prompt.items():
+        if node.get("class_type") != "LoadImage":
+            continue
+        # used by something other than the Auto Mask (which falls back to its own mask when nothing is painted)
+        used = any(isinstance(v, list) and len(v) == 2 and str(v[0]) == str(nid) and v[1] == 1
+                   and n.get("class_type") != "AIInfluencerAutoMask"
+                   for n in prompt.values() for v in n.get("inputs", {}).values())
+        value = node.get("inputs", {}).get("image")
+        if not used or not isinstance(value, str):
+            continue
+        try:
+            with Image.open(folder_paths.get_annotated_filepath(value)) as im:
+                if im.mode == "P" and "transparency" in im.info:
+                    im = im.convert("RGBA")
+                painted = "A" in im.getbands() and im.getchannel("A").getextrema()[0] < 255
+        except Exception:
+            continue  # can't open it here; the pod will say so
+        if not painted:
+            out.append(f"{EMPTY_MASK}{os.path.basename(value.split(' [')[0])}: its mask is empty, so the result "
+                       "would be that photo unchanged (right-click it -> Open in MaskEditor, paint, save)")
+    return out
+
+
 def ensure_filters(prompt: dict) -> list[str]:
     """Makes every image a Save node writes pass through Blur Background and then, as the very last
     step, Camera Imperfections -- adding whichever is missing, with Workflow 08's defaults. Mutates
@@ -621,7 +654,7 @@ class Runner:
                 notes = ensure_filters(it["prompt"])
                 if any(n.startswith("added") for n in notes):
                     self.log(f"#{it['n']}: {'; '.join(notes)}")
-                problems = [f"{v} is not on the pod" for v in self._missing([it], info)] + [n for n in notes if n.startswith("no Save node")]
+                problems = [f"{v} is not on the pod" for v in self._missing([it], info)] + [n for n in notes if n.startswith("no Save node")] + mask_problems(it["prompt"])
                 if problems:
                     self.log(f"!! skipped #{it['n']} ({it['name']}): {'; '.join(problems[:4])}")
                 else:
@@ -811,7 +844,7 @@ async def pod_queue_add(request):
     with _store_lock:
         items = load_items()
         n = max((it.get("n", 0) for it in items), default=0) + 1
-        notes = ensure_filters(prompt)
+        notes = ensure_filters(prompt) + mask_problems(prompt)
         items.append({"id": uuid.uuid4().hex, "n": n, "name": str(body.get("name") or "workflow")[:80],
                       "summary": summarize(prompt), "added": time.time(), "prompt": prompt,
                       "workflow": body.get("workflow"), "notes": notes})
@@ -841,11 +874,58 @@ async def pod_queue_update(request):
         it = next((x for x in items if x["id"] == body.get("id")), None)
         if it is None:
             return web.json_response({"error": "That job is no longer in the list (did it run?)."}, status=404)
-        notes = ensure_filters(prompt)
+        old_prompt = it["prompt"]
+        notes = ensure_filters(prompt) + mask_problems(prompt)
         it.update(prompt=prompt, workflow=body.get("workflow") or it.get("workflow"),
                   summary=summarize(prompt), notes=notes, edited=time.time())
         save_items(items)
-    return web.json_response({**_listing(), "notes": notes})
+        # Load Image nodes whose file changed (e.g. a mask was painted, which saves a new clipspace file),
+        # and how many other held jobs still use the old file -- the panel offers to swap them all.
+        swaps = []
+        for nid, node in prompt.items():
+            before = old_prompt.get(nid, {})
+            if node.get("class_type") == "LoadImage" and before.get("class_type") == "LoadImage":
+                old, new = before.get("inputs", {}).get("image"), node.get("inputs", {}).get("image")
+                if isinstance(old, str) and isinstance(new, str) and old != new:
+                    others = sum(1 for x in items if x["id"] != it["id"] and _uses_value(x, old))
+                    if others:
+                        swaps.append({"old": old, "new": new, "others": others})
+    return web.json_response({**_listing(), "notes": notes, "swaps": swaps})
+
+
+def _uses_value(item: dict, value: str) -> bool:
+    return any(v == value for node in item["prompt"].values() for v in node.get("inputs", {}).values())
+
+
+@routes.post("/ai_influencer/pod_queue/replace_input")
+async def pod_queue_replace_input(request):
+    """Every held job that uses file `old` uses `new` instead (in the job and in its saved workflow)."""
+    if RUNNER.state.get("running"):
+        return web.json_response({"error": "A run is going. Edit after it has finished."}, status=409)
+    body = await request.json()
+    old, new = body.get("old"), body.get("new")
+    if not (isinstance(old, str) and isinstance(new, str) and old and new):
+        return web.json_response({"error": "need old and new"}, status=400)
+    changed = 0
+    with _store_lock:
+        items = load_items()
+        for it in items:
+            if not _uses_value(it, old):
+                continue
+            for node in it["prompt"].values():
+                ins = node.get("inputs", {})
+                for k, v in ins.items():
+                    if v == old:
+                        ins[k] = new
+            for node in (it.get("workflow") or {}).get("nodes", []):
+                wv = node.get("widgets_values")
+                if isinstance(wv, list):
+                    node["widgets_values"] = [new if v == old else v for v in wv]
+            it["notes"] = ensure_filters(it["prompt"]) + mask_problems(it["prompt"])
+            it["summary"] = summarize(it["prompt"])
+            changed += 1
+        save_items(items)
+    return web.json_response({**_listing(), "changed": changed})
 
 
 SEED_INPUTS = ("seed", "noise_seed")

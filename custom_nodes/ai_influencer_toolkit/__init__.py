@@ -10,6 +10,7 @@ from typing_extensions import override
 from comfy_api.latest import ComfyExtension, IO
 
 from .nodes_background import AIInfluencerBlurBackground
+from .nodes_automask import AIInfluencerAutoMask
 from .nodes_camera import AIInfluencerCameraImperfections
 from .nodes_character import AIInfluencerLoadCharacter, AIInfluencerPromptBuilder
 from .nodes_local_lora import AIInfluencerApplyCharacterLora, AIInfluencerLoraCheckpointTester
@@ -55,6 +56,7 @@ class AIInfluencerToolkitExtension(ComfyExtension):
             AIInfluencerApplyCharacterLora,
             AIInfluencerBlurBackground,
             AIInfluencerCameraImperfections,
+            AIInfluencerAutoMask,
             *_FAL_LORA_NODES,
         ]
 

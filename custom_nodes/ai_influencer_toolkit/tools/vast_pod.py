@@ -34,6 +34,7 @@ sys.path.insert(0, REPO_ROOT)
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 import env_config  # noqa: E402
+import gpu_select  # noqa: E402
 import logging_util  # noqa: E402
 
 IMAGE = "vastai/ostris-ai-toolkit:ef8110c-2026-09-17-cuda-12.9"
@@ -148,19 +149,17 @@ def save_state(project: str, data: dict) -> None:
     json.dump(data, open(p, "w", encoding="utf-8"), indent=2)
 
 
-def search(args) -> list[dict]:
-    q = (f"gpu_name={args.gpu} num_gpus=1 gpu_ram>={args.vram} disk_space>={args.disk} "
-         f"inet_down>={args.min_inet} rentable=true verified=true dph_total<={args.max_price} "
-         f"cuda_max_good>={args.min_cuda}")
-    offers = vast("search", "offers", q, "-o", "dph_total")
-    offers = offers if isinstance(offers, list) else []
-    return offers[: args.limit]
+def search(args, profile: gpu_select.Profile, work_hours: float | None = None) -> list[dict]:
+    """Every offer that meets the job's requirements, cheapest estimated total first (gpu_select.py)."""
+    offers = vast("search", "offers", gpu_select.query(args), "-o", "dph_total", "--limit", "300")
+    return gpu_select.rank(offers if isinstance(offers, list) else [], profile, work_hours)
 
 
 def cmd_search(args) -> int:
-    for o in search(args):
-        print(f"{o['id']:>10}  ${o['dph_total']:.3f}/hr  {o['gpu_name']:<12} {o.get('gpu_ram', 0)/1024:.0f}GB  "
-              f"disk {o.get('disk_space', 0):.0f}GB  net {o.get('inet_down', 0):.0f}Mbps  rel {o.get('reliability2', 0):.2f}")
+    offers = search(args, gpu_select.PROFILES["train"], args.est_train_hours)
+    print(f"{gpu_select.PROFILES['train'].label}: {len(offers)} offers qualify, best estimated total first")
+    for o in offers[: args.limit]:
+        print(gpu_select.describe(o))
     return 0
 
 
@@ -176,19 +175,11 @@ def cmd_launch(args) -> int:
     dataset_zip = args.dataset or find_one("*_dataset.zip")
     config_yaml = args.config or find_one("*.yaml")
 
-    offers = search(args)
+    offers = search(args, gpu_select.PROFILES["train"], args.est_train_hours)
     if not offers:
         raise SystemExit("No offers matched. Loosen --max-price / --min-inet / --gpu.")
-
-    def est_total(o: dict) -> float:
-        """Rent time isn't just training: you also pay while Krea 2's 62 GB downloads."""
-        dl_h = 62 * 8 * 1000 / max(o.get("inet_down", 1), 1) / 3600
-        return o["dph_total"] * (args.est_train_hours + dl_h)
-
-    offers.sort(key=est_total)
     for o in offers[:3]:
-        print(f"  candidate {o['id']}: ${o['dph_total']:.3f}/hr, {o.get('inet_down', 0):.0f}Mbps "
-              f"-> est ${est_total(o):.2f} for ~{args.est_train_hours}h training + download")
+        print("  candidate " + gpu_select.describe(o))
     offer = next((o for o in offers if o["id"] == args.offer), offers[0]) if args.offer else offers[0]
     hourly = offer["dph_total"]
     print(f"offer {offer['id']}: {offer['gpu_name']} ${hourly:.3f}/hr, net {offer.get('inet_down', 0):.0f}Mbps, "
@@ -351,16 +342,9 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("command", choices=["search", "launch", "status", "logs", "destroy", "watch"])
     ap.add_argument("--project", default=env_config.get("AI_INFLUENCER_DEFAULT_PROJECT"))
-    ap.add_argument("--gpu", default="RTX_5090")
-    ap.add_argument("--vram", type=int, default=30, help="Minimum GPU RAM in GB (the search API filters in GB).")
-    ap.add_argument("--disk", type=int, default=150)
-    ap.add_argument("--min-inet", type=int, default=700, help="Minimum download Mbps (you pay while Krea 2's 62 GB downloads).")
-    ap.add_argument("--max-price", type=float, default=0.60, help="Max $/hr.")
-    ap.add_argument("--limit", type=int, default=8)
-    ap.add_argument("--min-cuda", type=float, default=12.9,
-                     help="Host driver must support at least this CUDA version; otherwise the container "
-                          "dies with 'CUDA error 804: forward compatibility' and you pay for an unusable GPU.")
-    ap.add_argument("--est-train-hours", type=float, default=1.5, help="Used only to rank offers by estimated total cost.")
+    gpu_select.add_arguments(ap)
+    ap.add_argument("--est-train-hours", type=float, default=gpu_select.PROFILES["train"].work_hours,
+                    help="Training time on an RTX 5090; scaled by each GPU's speed to rank offers by total cost.")
     ap.add_argument("--offer", type=int, help="Specific offer id from `search`.")
     ap.add_argument("--hours", type=float, default=4.0, help="Hard limit; the pod destroys itself at this point.")
     ap.add_argument("--keep-checkpoints", type=int, default=6, help="How many of the last checkpoints to upload.")
@@ -373,6 +357,7 @@ def main() -> int:
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--yes", action="store_true")
     args = ap.parse_args()
+    gpu_select.apply_defaults(args, gpu_select.PROFILES["train"])
 
     env_config.load_env()  # the commands below read VAST_API_KEY / HF_TOKEN from os.environ
     return {"search": cmd_search, "launch": cmd_launch, "status": cmd_status,

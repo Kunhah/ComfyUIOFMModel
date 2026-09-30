@@ -104,6 +104,7 @@ function render() {
     </div>
     <div class="row">
       <button class="go" data-a="run" ${r.running || !items.length ? "disabled" : ""}>Start pod &amp; run all (${items.length})</button>
+      <button data-a="local" title="Queue every held job on this PC's ComfyUI instead" ${r.running || !items.length ? "disabled" : ""}>Run here (${items.length})</button>
       <button data-a="stop" ${r.running ? "" : "disabled"}>Stop</button>
       <span style="flex:1"></span>
       <button data-a="clear" ${r.running || !items.length ? "disabled" : ""}>Clear</button>
@@ -147,7 +148,32 @@ root.addEventListener("click", async e => {
     if (r.error) alert(r.error);
     refresh();
   }
+  else if (a === "local") await runLocally();
 });
+
+// Queues every held job on this PC's ComfyUI (bypassing "Hold"). A job leaves the list once ComfyUI
+// accepts it -- from then on it is in ComfyUI's own queue; rejected ones stay so they can be fixed.
+async function runLocally() {
+  const items = data.items || [];
+  if (!confirm(`Queue ${items.length} held job(s) on this PC's ComfyUI instead of a pod?\n\n`
+    + "Each job leaves this list once ComfyUI accepts it; rejected ones stay.")) return;
+  const queued = [], rejected = [];
+  for (const { id, n } of items) {
+    try {
+      const it = await (await api.fetchApi(`${BASE}/item?id=${encodeURIComponent(id)}`)).json();
+      if (it.error) throw new Error(it.error);
+      await originalQueuePrompt(0, { output: it.prompt, workflow: it.workflow });
+      queued.push(id);
+    } catch (e) {
+      rejected.push(`#${n}: ${String(e).slice(0, 400)}`);  // PromptExecutionError's toString lists the node errors
+    }
+  }
+  if (queued.length) data = await post("/remove", { ids: queued });
+  render();
+  toast("Queued on this PC", `${queued.length} job(s)` + (rejected.length ? `, ${rejected.length} rejected` : ""),
+    rejected.length ? "warn" : "info");
+  if (rejected.length) alert(`ComfyUI here rejected ${rejected.length} job(s); they stay in the list:\n\n${rejected.join("\n\n")}`);
+}
 root.addEventListener("change", e => {
   const a = e.target.dataset.a;
   if (a === "hold") {
@@ -192,8 +218,19 @@ async function saveEdit() {
   if (res.error) return alert(res.error);
   data = res;
   toast(`#${editing.n} updated`, (res.notes || []).join("; "), (res.notes || []).some(n => !n.startsWith("added")) ? "warn" : "info");
+  const n = editing.n;
   editing = null;
   render();
+  // e.g. a mask painted on the plate: offer the new file to every other job that used the old one
+  for (const sw of res.swaps || []) {
+    const short = v => v.split(" [")[0].split("/").pop();
+    if (!confirm(`#${n} now uses “${short(sw.new)}” instead of “${short(sw.old)}”.\n\n`
+      + `Use it in the other ${sw.others} held job(s) that still use “${short(sw.old)}” too?`)) continue;
+    const r = await post("/replace_input", { old: sw.old, new: sw.new });
+    if (r.error) { alert(r.error); continue; }
+    data = r; render();
+    toast("Updated the other jobs", `${r.changed} job(s) now use ${short(sw.new)}`);
+  }
 }
 
 async function refresh() {
