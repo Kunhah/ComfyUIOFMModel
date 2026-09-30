@@ -1,0 +1,96 @@
+#!/usr/bin/env python3
+"""Refuse commits that would publish a key or a character's private files.
+
+Turn on once per clone:   git config core.hooksPath .githooks
+
+Blocks a commit when a staged file
+  - is .env / .env.* (except .env.example), or lives in input/, output/, models/,
+    or is a dataset manifest other than datasets/example.json;
+  - is a new image, video, model weight or archive (the repo ships code and workflow JSON only;
+    files ComfyUI itself already tracks are left alone);
+  - contains any value from your .env whose name looks like a key/token/secret/password;
+  - contains something shaped like a Hugging Face, OpenAI, fal or Comfy key, or a KEY=/TOKEN= line
+    with a long value.
+Matched values are never printed. Check the named file, remove the key, `git add` it again.
+"""
+import os
+import re
+import subprocess
+import sys
+
+ROOT = subprocess.run(["git", "rev-parse", "--show-toplevel"], capture_output=True, text=True).stdout.strip()
+
+BLOCKED_PATHS = [
+    (re.compile(r"(^|/)\.env(\..+)?$"), "an environment file with keys"),
+    (re.compile(r"^input/(?!example\.png$)"), "a file from input/ (images and datasets)"),
+    (re.compile(r"^output/"), "generated output"),
+    (re.compile(r"^models/"), "a model file"),
+    (re.compile(r"^custom_nodes/ai_influencer_toolkit/datasets/(?!example\.json$).+\.json$"), "a private dataset manifest"),
+]
+ALLOWED_PATHS = {".env.example"}
+MEDIA = re.compile(r"\.(png|jpe?g|webp|gif|bmp|tiff?|heic|avif|mp4|webm|mov|mkv|avi|wav|mp3|flac|ogg|"
+                   r"safetensors|ckpt|pt|pth|bin|onnx|gguf|sft|zip|tar|gz|tgz|7z|rar)$", re.I)
+SECRET_NAME = re.compile(r"KEY|TOKEN|SECRET|PASSWORD", re.I)
+PATTERNS = [
+    (re.compile(rb"\bhf_[A-Za-z0-9]{30,}"), "a Hugging Face token"),
+    (re.compile(rb"\bsk-(proj-)?[A-Za-z0-9_-]{20,}"), "an OpenAI-style key"),
+    (re.compile(rb"\bcomfyui-[A-Za-z0-9]{20,}"), "a Comfy API key"),
+    (re.compile(rb"\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}:[0-9a-f]{32}\b"), "a fal.ai key"),
+    (re.compile(rb"(API_KEY|_TOKEN|SECRET|PASSWORD)[\"']?\s*[=:]\s*[\"']?[A-Za-z0-9_\-.:/+]{20,}"), "a key assignment"),
+]
+
+
+def env_secrets() -> list[tuple[str, bytes]]:
+    out = []
+    try:
+        with open(os.path.join(ROOT, ".env"), encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line.startswith("#") or "=" not in line:
+                    continue
+                name, value = line.split("=", 1)
+                name = name.strip().removeprefix("export ").strip()
+                value = value.strip().strip("'\"")
+                if SECRET_NAME.search(name) and len(value) >= 8:
+                    out.append((name, value.encode()))
+    except FileNotFoundError:
+        pass
+    return out
+
+
+def main() -> int:
+    staged = subprocess.run(["git", "diff", "--cached", "--name-only", "--diff-filter=ACMR", "-z"],
+                            capture_output=True, text=True, cwd=ROOT).stdout.split("\0")
+    added = set(subprocess.run(["git", "diff", "--cached", "--name-only", "--diff-filter=A", "-z"],
+                               capture_output=True, text=True, cwd=ROOT).stdout.split("\0"))
+    secrets = env_secrets()
+    problems = []
+    for path in filter(None, staged):
+        if path not in ALLOWED_PATHS:
+            hit = next((why for rx, why in BLOCKED_PATHS if rx.search(path)), None)
+            if not hit and path in added and MEDIA.search(path):
+                hit = "an image, video, model or archive"
+            if hit:
+                problems.append(f"{path}: {hit}, must not be committed")
+                continue
+        data = subprocess.run(["git", "show", f":{path}"], capture_output=True, cwd=ROOT).stdout
+        for name, value in secrets:
+            if value in data:
+                problems.append(f"{path}: contains your {name} from .env")
+        if path == ".githooks/pre-commit":
+            continue  # the patterns above describe keys, they aren't keys
+        for rx, why in PATTERNS:
+            if rx.search(data):
+                problems.append(f"{path}: contains what looks like {why}")
+    if not problems:
+        return 0
+    print("Commit blocked, it would publish secrets or private files:\n", file=sys.stderr)
+    for p in dict.fromkeys(problems):
+        print(f"  - {p}", file=sys.stderr)
+    print("\nUnstage with `git restore --staged <file>` or remove the value and `git add` again.\n"
+          "If a match is a false alarm you have checked yourself: git commit --no-verify", file=sys.stderr)
+    return 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

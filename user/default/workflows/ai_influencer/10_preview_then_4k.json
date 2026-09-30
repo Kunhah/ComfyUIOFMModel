@@ -1,0 +1,1776 @@
+{
+ "last_node_id": 31,
+ "last_link_id": 38,
+ "nodes": [
+  {
+   "id": 1,
+   "type": "UNETLoader",
+   "pos": [
+    30,
+    60
+   ],
+   "size": [
+    320,
+    120
+   ],
+   "flags": {},
+   "order": 0,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "MODEL",
+     "type": "MODEL",
+     "links": [
+      1
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "UNETLoader",
+    "models": [
+     {
+      "name": "krea2_turbo_fp8_scaled.safetensors",
+      "url": "https://huggingface.co/Comfy-Org/Krea-2/resolve/main/diffusion_models/krea2_turbo_fp8_scaled.safetensors",
+      "directory": "diffusion_models"
+     }
+    ]
+   },
+   "widgets_values": [
+    "krea2_turbo_fp8_scaled.safetensors",
+    "default"
+   ]
+  },
+  {
+   "id": 2,
+   "type": "CLIPLoader",
+   "pos": [
+    30,
+    210
+   ],
+   "size": [
+    320,
+    120
+   ],
+   "flags": {},
+   "order": 1,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "CLIP",
+     "type": "CLIP",
+     "links": [
+      3
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "CLIPLoader",
+    "models": [
+     {
+      "name": "qwen3vl_4b_fp8_scaled.safetensors",
+      "url": "https://huggingface.co/Comfy-Org/Krea-2/resolve/main/text_encoders/qwen3vl_4b_fp8_scaled.safetensors",
+      "directory": "text_encoders"
+     }
+    ]
+   },
+   "widgets_values": [
+    "qwen3vl_4b_fp8_scaled.safetensors",
+    "krea2",
+    "default"
+   ]
+  },
+  {
+   "id": 3,
+   "type": "VAELoader",
+   "pos": [
+    30,
+    360
+   ],
+   "size": [
+    320,
+    120
+   ],
+   "flags": {},
+   "order": 2,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "VAE",
+     "type": "VAE",
+     "links": [
+      13
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "VAELoader",
+    "models": [
+     {
+      "name": "qwen_image_vae.safetensors",
+      "url": "https://huggingface.co/Comfy-Org/Krea-2/resolve/main/vae/qwen_image_vae.safetensors",
+      "directory": "vae"
+     }
+    ]
+   },
+   "widgets_values": [
+    "qwen_image_vae.safetensors"
+   ]
+  },
+  {
+   "id": 4,
+   "type": "AIInfluencerApplyCharacterLora",
+   "pos": [
+    30,
+    510
+   ],
+   "size": [
+    320,
+    130
+   ],
+   "flags": {},
+   "order": 3,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "model",
+     "type": "MODEL",
+     "link": 1
+    }
+   ],
+   "outputs": [
+    {
+     "name": "MODEL",
+     "type": "MODEL",
+     "links": [
+      8
+     ],
+     "slot_index": 0
+    },
+    {
+     "name": "trigger",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 1
+    },
+    {
+     "name": "lora_name",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 2
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerApplyCharacterLora"
+   },
+   "widgets_values": [
+    "lina",
+    "(from character.json)",
+    -1.0
+   ]
+  },
+  {
+   "id": 5,
+   "type": "AIInfluencerLoadCharacter",
+   "pos": [
+    460,
+    60
+   ],
+   "size": [
+    320,
+    150
+   ],
+   "flags": {},
+   "order": 4,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "name",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 0
+    },
+    {
+     "name": "trigger",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 1
+    },
+    {
+     "name": "identity_prompt",
+     "type": "STRING",
+     "links": [
+      2
+     ],
+     "slot_index": 2
+    },
+    {
+     "name": "lora_url",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 3
+    },
+    {
+     "name": "character_json",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 4
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerLoadCharacter"
+   },
+   "widgets_values": [
+    "lina"
+   ]
+  },
+  {
+   "id": 6,
+   "type": "AIInfluencerPromptBuilder",
+   "pos": [
+    820,
+    60
+   ],
+   "size": [
+    400,
+    620
+   ],
+   "flags": {},
+   "order": 5,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "identity",
+     "type": "STRING",
+     "link": 2,
+     "widget": {
+      "name": "identity"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "name": "prompt",
+     "type": "STRING",
+     "links": [
+      4,
+      15,
+      37
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerPromptBuilder"
+   },
+   "widgets_values": [
+    "",
+    "candid photo taken on an iPhone",
+    "sitting on a windowsill, holding a coffee cup, smiling softly",
+    "oversized cream knit sweater",
+    "small bright apartment, plants in the background",
+    "85mm f/1.8 portrait lens, shallow depth of field, background strongly out of focus, creamy bokeh, eye level",
+    "soft morning window light",
+    "",
+    "",
+    ""
+   ]
+  },
+  {
+   "id": 7,
+   "type": "CLIPTextEncode",
+   "pos": [
+    1320,
+    60
+   ],
+   "size": [
+    320,
+    100
+   ],
+   "flags": {},
+   "order": 6,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "clip",
+     "type": "CLIP",
+     "link": 3
+    },
+    {
+     "name": "text",
+     "type": "STRING",
+     "link": 4,
+     "widget": {
+      "name": "text"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "name": "CONDITIONING",
+     "type": "CONDITIONING",
+     "links": [
+      5,
+      9
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "CLIPTextEncode"
+   },
+   "widgets_values": [
+    ""
+   ]
+  },
+  {
+   "id": 8,
+   "type": "ConditioningZeroOut",
+   "pos": [
+    1320,
+    200
+   ],
+   "size": [
+    320,
+    30
+   ],
+   "flags": {},
+   "order": 7,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "conditioning",
+     "type": "CONDITIONING",
+     "link": 5
+    }
+   ],
+   "outputs": [
+    {
+     "name": "CONDITIONING",
+     "type": "CONDITIONING",
+     "links": [
+      10
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "ConditioningZeroOut"
+   },
+   "widgets_values": []
+  },
+  {
+   "id": 9,
+   "type": "ResolutionSelector",
+   "pos": [
+    1320,
+    300
+   ],
+   "size": [
+    320,
+    130
+   ],
+   "flags": {},
+   "order": 8,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "width",
+     "type": "INT",
+     "links": [
+      6
+     ],
+     "slot_index": 0
+    },
+    {
+     "name": "height",
+     "type": "INT",
+     "links": [
+      7
+     ],
+     "slot_index": 1
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "ResolutionSelector"
+   },
+   "widgets_values": [
+    "3:4 (Portrait Standard)",
+    1,
+    8
+   ],
+   "title": "Preview size (lower megapixels = faster)"
+  },
+  {
+   "id": 10,
+   "type": "EmptyLatentImage",
+   "pos": [
+    1320,
+    470
+   ],
+   "size": [
+    320,
+    110
+   ],
+   "flags": {},
+   "order": 9,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "width",
+     "type": "INT",
+     "link": 6,
+     "widget": {
+      "name": "width"
+     }
+    },
+    {
+     "name": "height",
+     "type": "INT",
+     "link": 7,
+     "widget": {
+      "name": "height"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "name": "LATENT",
+     "type": "LATENT",
+     "links": [
+      11
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "EmptyLatentImage"
+   },
+   "widgets_values": [
+    1024,
+    1024,
+    4
+   ],
+   "title": "4 candidates per queue"
+  },
+  {
+   "id": 11,
+   "type": "KSampler",
+   "pos": [
+    1680,
+    60
+   ],
+   "size": [
+    320,
+    262
+   ],
+   "flags": {},
+   "order": 10,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "model",
+     "type": "MODEL",
+     "link": 8
+    },
+    {
+     "name": "positive",
+     "type": "CONDITIONING",
+     "link": 9
+    },
+    {
+     "name": "negative",
+     "type": "CONDITIONING",
+     "link": 10
+    },
+    {
+     "name": "latent_image",
+     "type": "LATENT",
+     "link": 11
+    }
+   ],
+   "outputs": [
+    {
+     "name": "LATENT",
+     "type": "LATENT",
+     "links": [
+      12
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "KSampler"
+   },
+   "widgets_values": [
+    42,
+    "randomize",
+    8,
+    1.0,
+    "euler",
+    "simple",
+    1.0
+   ],
+   "title": "Preview sampler"
+  },
+  {
+   "id": 12,
+   "type": "VAEDecode",
+   "pos": [
+    1680,
+    360
+   ],
+   "size": [
+    320,
+    50
+   ],
+   "flags": {},
+   "order": 11,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "samples",
+     "type": "LATENT",
+     "link": 12
+    },
+    {
+     "name": "vae",
+     "type": "VAE",
+     "link": 13
+    }
+   ],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [
+      14,
+      16
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "VAEDecode"
+   },
+   "widgets_values": []
+  },
+  {
+   "id": 13,
+   "type": "AIInfluencerSaveImage",
+   "pos": [
+    1680,
+    440
+   ],
+   "size": [
+    360,
+    420
+   ],
+   "flags": {},
+   "order": 12,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "images",
+     "type": "IMAGE",
+     "link": 14
+    },
+    {
+     "name": "prompt_text",
+     "type": "STRING",
+     "link": 15,
+     "widget": {
+      "name": "prompt_text"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [],
+     "slot_index": 0
+    },
+    {
+     "name": "output_path",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 1
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerSaveImage"
+   },
+   "widgets_values": [
+    "lina",
+    "local_candidate",
+    "local_krea2",
+    "Krea 2 Turbo + LoRA (preview)",
+    "generate",
+    "",
+    "",
+    "",
+    -1,
+    0,
+    "",
+    ""
+   ]
+  },
+  {
+   "id": 14,
+   "type": "PreviewImage",
+   "pos": [
+    2050,
+    60
+   ],
+   "size": [
+    340,
+    400
+   ],
+   "flags": {},
+   "order": 13,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "images",
+     "type": "IMAGE",
+     "link": 16
+    }
+   ],
+   "outputs": [],
+   "properties": {
+    "Node name for S&R": "PreviewImage"
+   },
+   "widgets_values": [],
+   "title": "Pick one of these"
+  },
+  {
+   "id": 15,
+   "type": "LoadImageOutput",
+   "pos": [
+    30,
+    860
+   ],
+   "size": [
+    340,
+    400
+   ],
+   "flags": {},
+   "order": 14,
+   "mode": 2,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [
+      17
+     ],
+     "slot_index": 0
+    },
+    {
+     "name": "MASK",
+     "type": "MASK",
+     "links": [],
+     "slot_index": 1
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "LoadImageOutput"
+   },
+   "widgets_values": [
+    "",
+    "image"
+   ],
+   "title": "The candidate you picked (refresh, then choose)"
+  },
+  {
+   "id": 16,
+   "type": "UNETLoader",
+   "pos": [
+    420,
+    860
+   ],
+   "size": [
+    320,
+    120
+   ],
+   "flags": {},
+   "order": 15,
+   "mode": 2,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "MODEL",
+     "type": "MODEL",
+     "links": [
+      21,
+      23
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "UNETLoader",
+    "models": [
+     {
+      "name": "seedvr2_3b_int8_convrot.safetensors",
+      "url": "https://huggingface.co/Comfy-Org/SeedVR2/resolve/main/diffusion_models/seedvr2_3b_int8_convrot.safetensors",
+      "directory": "diffusion_models"
+     }
+    ]
+   },
+   "widgets_values": [
+    "seedvr2_3b_int8_convrot.safetensors",
+    "default"
+   ]
+  },
+  {
+   "id": 17,
+   "type": "VAELoader",
+   "pos": [
+    420,
+    1010
+   ],
+   "size": [
+    320,
+    120
+   ],
+   "flags": {},
+   "order": 16,
+   "mode": 2,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "VAE",
+     "type": "VAE",
+     "links": [
+      20,
+      28
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "VAELoader",
+    "models": [
+     {
+      "name": "seedvr2_ema_vae_fp16.safetensors",
+      "url": "https://huggingface.co/Comfy-Org/SeedVR2/resolve/main/vae/seedvr2_ema_vae_fp16.safetensors",
+      "directory": "vae"
+     }
+    ]
+   },
+   "widgets_values": [
+    "seedvr2_ema_vae_fp16.safetensors"
+   ]
+  },
+  {
+   "id": 18,
+   "type": "ResizeImageMaskNode",
+   "pos": [
+    420,
+    1140
+   ],
+   "size": [
+    320,
+    110
+   ],
+   "flags": {},
+   "order": 17,
+   "mode": 2,
+   "inputs": [
+    {
+     "name": "input",
+     "type": "*",
+     "link": 17
+    }
+   ],
+   "outputs": [
+    {
+     "name": "resized",
+     "type": "IMAGE",
+     "links": [
+      18,
+      30
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "ResizeImageMaskNode"
+   },
+   "widgets_values": [
+    "scale by multiplier",
+    4.0,
+    "lanczos"
+   ],
+   "title": "Upscale factor"
+  },
+  {
+   "id": 19,
+   "type": "SeedVR2Preprocess",
+   "pos": [
+    780,
+    860
+   ],
+   "size": [
+    280,
+    30
+   ],
+   "flags": {},
+   "order": 18,
+   "mode": 2,
+   "inputs": [
+    {
+     "name": "resized_images",
+     "type": "IMAGE",
+     "link": 18
+    }
+   ],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [
+      19
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "SeedVR2Preprocess"
+   },
+   "widgets_values": []
+  },
+  {
+   "id": 20,
+   "type": "VAEEncodeTiled",
+   "pos": [
+    780,
+    940
+   ],
+   "size": [
+    280,
+    150
+   ],
+   "flags": {},
+   "order": 19,
+   "mode": 2,
+   "inputs": [
+    {
+     "name": "pixels",
+     "type": "IMAGE",
+     "link": 19
+    },
+    {
+     "name": "vae",
+     "type": "VAE",
+     "link": 20
+    }
+   ],
+   "outputs": [
+    {
+     "name": "LATENT",
+     "type": "LATENT",
+     "links": [
+      22,
+      26
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "VAEEncodeTiled"
+   },
+   "widgets_values": [
+    512,
+    128,
+    4096,
+    8
+   ]
+  },
+  {
+   "id": 21,
+   "type": "SeedVR2Conditioning",
+   "pos": [
+    780,
+    1130
+   ],
+   "size": [
+    280,
+    50
+   ],
+   "flags": {},
+   "order": 20,
+   "mode": 2,
+   "inputs": [
+    {
+     "name": "model",
+     "type": "MODEL",
+     "link": 21
+    },
+    {
+     "name": "vae_conditioning",
+     "type": "LATENT",
+     "link": 22
+    }
+   ],
+   "outputs": [
+    {
+     "name": "positive",
+     "type": "CONDITIONING",
+     "links": [
+      24
+     ],
+     "slot_index": 0
+    },
+    {
+     "name": "negative",
+     "type": "CONDITIONING",
+     "links": [
+      25
+     ],
+     "slot_index": 1
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "SeedVR2Conditioning"
+   },
+   "widgets_values": []
+  },
+  {
+   "id": 22,
+   "type": "KSampler",
+   "pos": [
+    1100,
+    860
+   ],
+   "size": [
+    320,
+    262
+   ],
+   "flags": {},
+   "order": 21,
+   "mode": 2,
+   "inputs": [
+    {
+     "name": "model",
+     "type": "MODEL",
+     "link": 23
+    },
+    {
+     "name": "positive",
+     "type": "CONDITIONING",
+     "link": 24
+    },
+    {
+     "name": "negative",
+     "type": "CONDITIONING",
+     "link": 25
+    },
+    {
+     "name": "latent_image",
+     "type": "LATENT",
+     "link": 26
+    }
+   ],
+   "outputs": [
+    {
+     "name": "LATENT",
+     "type": "LATENT",
+     "links": [
+      27
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "KSampler"
+   },
+   "widgets_values": [
+    42,
+    "fixed",
+    1,
+    1.0,
+    "euler",
+    "simple",
+    1.0
+   ],
+   "title": "SeedVR2 sampler"
+  },
+  {
+   "id": 23,
+   "type": "VAEDecodeTiled",
+   "pos": [
+    1100,
+    1160
+   ],
+   "size": [
+    320,
+    150
+   ],
+   "flags": {},
+   "order": 22,
+   "mode": 2,
+   "inputs": [
+    {
+     "name": "samples",
+     "type": "LATENT",
+     "link": 27
+    },
+    {
+     "name": "vae",
+     "type": "VAE",
+     "link": 28
+    }
+   ],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [
+      29
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "VAEDecodeTiled"
+   },
+   "widgets_values": [
+    512,
+    128,
+    4096,
+    8
+   ]
+  },
+  {
+   "id": 24,
+   "type": "SeedVR2PostProcessing",
+   "pos": [
+    1100,
+    1350
+   ],
+   "size": [
+    320,
+    80
+   ],
+   "flags": {},
+   "order": 23,
+   "mode": 2,
+   "inputs": [
+    {
+     "name": "images",
+     "type": "IMAGE",
+     "link": 29
+    },
+    {
+     "name": "original_resized_images",
+     "type": "IMAGE",
+     "link": 30
+    }
+   ],
+   "outputs": [
+    {
+     "name": "images",
+     "type": "IMAGE",
+     "links": [
+      32,
+      33
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "SeedVR2PostProcessing"
+   },
+   "widgets_values": [
+    "lab"
+   ]
+  },
+  {
+   "id": 25,
+   "type": "LoadBackgroundRemovalModel",
+   "pos": [
+    1320,
+    860
+   ],
+   "size": [
+    340,
+    60
+   ],
+   "flags": {},
+   "order": 24,
+   "mode": 2,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "bg_model",
+     "type": "BACKGROUND_REMOVAL",
+     "links": [
+      31
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "LoadBackgroundRemovalModel",
+    "models": [
+     {
+      "name": "birefnet.safetensors",
+      "url": "https://huggingface.co/Comfy-Org/BiRefNet/resolve/main/background_removal/birefnet.safetensors",
+      "directory": "background_removal"
+     }
+    ]
+   },
+   "widgets_values": [
+    "birefnet.safetensors"
+   ]
+  },
+  {
+   "id": 26,
+   "type": "RemoveBackground",
+   "pos": [
+    1320,
+    980
+   ],
+   "size": [
+    320,
+    50
+   ],
+   "flags": {},
+   "order": 25,
+   "mode": 2,
+   "inputs": [
+    {
+     "name": "bg_removal_model",
+     "type": "BACKGROUND_REMOVAL",
+     "link": 31
+    },
+    {
+     "name": "image",
+     "type": "IMAGE",
+     "link": 32
+    }
+   ],
+   "outputs": [
+    {
+     "name": "mask",
+     "type": "MASK",
+     "links": [
+      34
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "RemoveBackground"
+   },
+   "widgets_values": []
+  },
+  {
+   "id": 27,
+   "type": "AIInfluencerBlurBackground",
+   "pos": [
+    1320,
+    1080
+   ],
+   "size": [
+    340,
+    180
+   ],
+   "flags": {},
+   "order": 26,
+   "mode": 2,
+   "inputs": [
+    {
+     "name": "image",
+     "type": "IMAGE",
+     "link": 33
+    },
+    {
+     "name": "subject_mask",
+     "type": "MASK",
+     "link": 34
+    }
+   ],
+   "outputs": [
+    {
+     "name": "image",
+     "type": "IMAGE",
+     "links": [
+      35
+     ],
+     "slot_index": 0
+    },
+    {
+     "name": "mask_used",
+     "type": "MASK",
+     "links": [],
+     "slot_index": 1
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerBlurBackground"
+   },
+   "widgets_values": [
+    1.5,
+    0.4,
+    0.3,
+    0.0
+   ],
+   "title": "Blur Background"
+  },
+  {
+   "id": 28,
+   "type": "AIInfluencerCameraImperfections",
+   "pos": [
+    1320,
+    1320
+   ],
+   "size": [
+    340,
+    280
+   ],
+   "flags": {},
+   "order": 27,
+   "mode": 2,
+   "inputs": [
+    {
+     "name": "image",
+     "type": "IMAGE",
+     "link": 35
+    }
+   ],
+   "outputs": [
+    {
+     "name": "image",
+     "type": "IMAGE",
+     "links": [
+      36,
+      38
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerCameraImperfections"
+   },
+   "widgets_values": [
+    42,
+    "randomize",
+    0.025,
+    0.1,
+    0.35,
+    0.05,
+    0.15,
+    0.3
+   ],
+   "title": "Camera Imperfections"
+  },
+  {
+   "id": 29,
+   "type": "AIInfluencerSaveImage",
+   "pos": [
+    1680,
+    860
+   ],
+   "size": [
+    360,
+    420
+   ],
+   "flags": {},
+   "order": 28,
+   "mode": 2,
+   "inputs": [
+    {
+     "name": "images",
+     "type": "IMAGE",
+     "link": 36
+    },
+    {
+     "name": "prompt_text",
+     "type": "STRING",
+     "link": 37,
+     "widget": {
+      "name": "prompt_text"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [],
+     "slot_index": 0
+    },
+    {
+     "name": "output_path",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 1
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerSaveImage"
+   },
+   "widgets_values": [
+    "lina",
+    "local_final",
+    "local_krea2",
+    "Krea 2 Turbo + LoRA + SeedVR2 4x + bg blur + camera",
+    "refine",
+    "",
+    "",
+    "",
+    -1,
+    0,
+    "",
+    ""
+   ]
+  },
+  {
+   "id": 30,
+   "type": "PreviewImage",
+   "pos": [
+    1680,
+    1320
+   ],
+   "size": [
+    340,
+    160
+   ],
+   "flags": {},
+   "order": 29,
+   "mode": 2,
+   "inputs": [
+    {
+     "name": "images",
+     "type": "IMAGE",
+     "link": 38
+    }
+   ],
+   "outputs": [],
+   "properties": {
+    "Node name for S&R": "PreviewImage"
+   },
+   "widgets_values": [],
+   "title": "4K result"
+  },
+  {
+   "id": 31,
+   "type": "MarkdownNote",
+   "pos": [
+    2440,
+    0
+   ],
+   "size": [
+    560,
+    900
+   ],
+   "flags": {},
+   "order": 30,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [],
+   "properties": {
+    "Node name for S&R": "MarkdownNote"
+   },
+   "widgets_values": [
+    "# 10 Preview first, 4K after\n\nComfyUI has no \"pause and ask\" node, so this is two queues on one canvas.\n\n**1. Preview.** Queue as is: group 03 renders **4 small candidates** at ~1 MP (8 steps, no polish, no upscale, no blur \u2014 the cheap part). They are saved to `outputs/images/candidates/` and shown in *Pick one of these*. Queue again for 4 more. Lower the `megapixels` on *Preview size* for faster, rougher previews.\n\n**2. Confirm.** When you like one:\n- right-click group **03** \u2192 *Set Group Nodes to Never* (so it doesn't re-roll), and groups **04** and **05** \u2192 *Set Group Nodes to Always*;\n- in *The candidate you picked*, press the refresh button and select that candidate's file (it lists the output folder, newest first);\n- Queue. SeedVR2 upscales it **4x** \u2014 a ~1 MP preview (\u2248900x1200) becomes \u22483600x4800, i.e. comfortably 4K \u2014 then the background blur and the camera imperfections pass (ISO grain, lens fringing, corner falloff) run and it is saved to `outputs/images/final/`.\n\n**Why the 4K pass upscales the picture instead of re-generating it at 4K:** a diffusion model with the same seed at a different resolution gives a *different* picture \u2014 different pose, different framing. The only way \"the same image, bigger\" works is to take the pixels you approved and add detail to them. That is what SeedVR2 does here.\n\nWant the skin-polish pass as well? Workflow 08 has it (generate \u2192 polish \u2192 2x upscale \u2192 blur) in one queue; this workflow trades that for the preview/confirm split.\n\nThe preview PNGs carry the full workflow inside them, so you can drag one back onto the canvas to recover its exact seed and prompt.\n\n{MODELS_NOTE}"
+   ]
+  }
+ ],
+ "links": [
+  [
+   1,
+   1,
+   0,
+   4,
+   0,
+   "MODEL"
+  ],
+  [
+   2,
+   5,
+   2,
+   6,
+   0,
+   "STRING"
+  ],
+  [
+   3,
+   2,
+   0,
+   7,
+   0,
+   "CLIP"
+  ],
+  [
+   4,
+   6,
+   0,
+   7,
+   1,
+   "STRING"
+  ],
+  [
+   5,
+   7,
+   0,
+   8,
+   0,
+   "CONDITIONING"
+  ],
+  [
+   6,
+   9,
+   0,
+   10,
+   0,
+   "INT"
+  ],
+  [
+   7,
+   9,
+   1,
+   10,
+   1,
+   "INT"
+  ],
+  [
+   8,
+   4,
+   0,
+   11,
+   0,
+   "MODEL"
+  ],
+  [
+   9,
+   7,
+   0,
+   11,
+   1,
+   "CONDITIONING"
+  ],
+  [
+   10,
+   8,
+   0,
+   11,
+   2,
+   "CONDITIONING"
+  ],
+  [
+   11,
+   10,
+   0,
+   11,
+   3,
+   "LATENT"
+  ],
+  [
+   12,
+   11,
+   0,
+   12,
+   0,
+   "LATENT"
+  ],
+  [
+   13,
+   3,
+   0,
+   12,
+   1,
+   "VAE"
+  ],
+  [
+   14,
+   12,
+   0,
+   13,
+   0,
+   "IMAGE"
+  ],
+  [
+   15,
+   6,
+   0,
+   13,
+   1,
+   "STRING"
+  ],
+  [
+   16,
+   12,
+   0,
+   14,
+   0,
+   "IMAGE"
+  ],
+  [
+   17,
+   15,
+   0,
+   18,
+   0,
+   "IMAGE"
+  ],
+  [
+   18,
+   18,
+   0,
+   19,
+   0,
+   "IMAGE"
+  ],
+  [
+   19,
+   19,
+   0,
+   20,
+   0,
+   "IMAGE"
+  ],
+  [
+   20,
+   17,
+   0,
+   20,
+   1,
+   "VAE"
+  ],
+  [
+   21,
+   16,
+   0,
+   21,
+   0,
+   "MODEL"
+  ],
+  [
+   22,
+   20,
+   0,
+   21,
+   1,
+   "LATENT"
+  ],
+  [
+   23,
+   16,
+   0,
+   22,
+   0,
+   "MODEL"
+  ],
+  [
+   24,
+   21,
+   0,
+   22,
+   1,
+   "CONDITIONING"
+  ],
+  [
+   25,
+   21,
+   1,
+   22,
+   2,
+   "CONDITIONING"
+  ],
+  [
+   26,
+   20,
+   0,
+   22,
+   3,
+   "LATENT"
+  ],
+  [
+   27,
+   22,
+   0,
+   23,
+   0,
+   "LATENT"
+  ],
+  [
+   28,
+   17,
+   0,
+   23,
+   1,
+   "VAE"
+  ],
+  [
+   29,
+   23,
+   0,
+   24,
+   0,
+   "IMAGE"
+  ],
+  [
+   30,
+   18,
+   0,
+   24,
+   1,
+   "IMAGE"
+  ],
+  [
+   31,
+   25,
+   0,
+   26,
+   0,
+   "BACKGROUND_REMOVAL"
+  ],
+  [
+   32,
+   24,
+   0,
+   26,
+   1,
+   "IMAGE"
+  ],
+  [
+   33,
+   24,
+   0,
+   27,
+   0,
+   "IMAGE"
+  ],
+  [
+   34,
+   26,
+   0,
+   27,
+   1,
+   "MASK"
+  ],
+  [
+   35,
+   27,
+   0,
+   28,
+   0,
+   "IMAGE"
+  ],
+  [
+   36,
+   28,
+   0,
+   29,
+   0,
+   "IMAGE"
+  ],
+  [
+   37,
+   6,
+   0,
+   29,
+   1,
+   "STRING"
+  ],
+  [
+   38,
+   28,
+   0,
+   30,
+   0,
+   "IMAGE"
+  ]
+ ],
+ "groups": [
+  {
+   "id": 1,
+   "title": "01 MODELS + CHARACTER LORA",
+   "bounding": [
+    0,
+    0,
+    400,
+    680
+   ],
+   "color": "#3f789e",
+   "font_size": 24,
+   "flags": {}
+  },
+  {
+   "id": 2,
+   "title": "02 PROMPT",
+   "bounding": [
+    430,
+    0,
+    830,
+    700
+   ],
+   "color": "#b58b2a",
+   "font_size": 24,
+   "flags": {}
+  },
+  {
+   "id": 3,
+   "title": "03 PREVIEW \u2014 4 small candidates (queue this first)",
+   "bounding": [
+    1290,
+    0,
+    1120,
+    760
+   ],
+   "color": "#8A8",
+   "font_size": 24,
+   "flags": {}
+  },
+  {
+   "id": 4,
+   "title": "04 CONFIRM \u2192 4K (muted: unmute after picking)",
+   "bounding": [
+    0,
+    800,
+    1260,
+    700
+   ],
+   "color": "#a1309b",
+   "font_size": 24,
+   "flags": {}
+  },
+  {
+   "id": 5,
+   "title": "05 BACKGROUND BLUR + CAMERA + SAVE",
+   "bounding": [
+    1290,
+    800,
+    800,
+    940
+   ],
+   "color": "#444",
+   "font_size": 24,
+   "flags": {}
+  }
+ ],
+ "config": {},
+ "extra": {
+  "ds": {
+   "scale": 0.6,
+   "offset": [
+    0,
+    0
+   ]
+  }
+ },
+ "version": 0.4
+}

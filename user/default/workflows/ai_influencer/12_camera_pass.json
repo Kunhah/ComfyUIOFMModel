@@ -1,0 +1,473 @@
+{
+ "last_node_id": 8,
+ "last_link_id": 8,
+ "nodes": [
+  {
+   "id": 1,
+   "type": "LoadImageOutput",
+   "pos": [
+    30,
+    60
+   ],
+   "size": [
+    340,
+    400
+   ],
+   "flags": {},
+   "order": 0,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [
+      2,
+      3,
+      7
+     ],
+     "slot_index": 0
+    },
+    {
+     "name": "MASK",
+     "type": "MASK",
+     "links": [],
+     "slot_index": 1
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "LoadImageOutput"
+   },
+   "widgets_values": [
+    "",
+    "image"
+   ],
+   "title": "Pick one (refresh, newest first)"
+  },
+  {
+   "id": 2,
+   "type": "LoadBackgroundRemovalModel",
+   "pos": [
+    460,
+    60
+   ],
+   "size": [
+    340,
+    60
+   ],
+   "flags": {},
+   "order": 1,
+   "mode": 4,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "bg_model",
+     "type": "BACKGROUND_REMOVAL",
+     "links": [
+      1
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "LoadBackgroundRemovalModel",
+    "models": [
+     {
+      "name": "birefnet.safetensors",
+      "url": "https://huggingface.co/Comfy-Org/BiRefNet/resolve/main/background_removal/birefnet.safetensors",
+      "directory": "background_removal"
+     }
+    ]
+   },
+   "widgets_values": [
+    "birefnet.safetensors"
+   ]
+  },
+  {
+   "id": 3,
+   "type": "RemoveBackground",
+   "pos": [
+    460,
+    180
+   ],
+   "size": [
+    320,
+    50
+   ],
+   "flags": {},
+   "order": 2,
+   "mode": 4,
+   "inputs": [
+    {
+     "name": "bg_removal_model",
+     "type": "BACKGROUND_REMOVAL",
+     "link": 1
+    },
+    {
+     "name": "image",
+     "type": "IMAGE",
+     "link": 2
+    }
+   ],
+   "outputs": [
+    {
+     "name": "mask",
+     "type": "MASK",
+     "links": [
+      4
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "RemoveBackground"
+   },
+   "widgets_values": []
+  },
+  {
+   "id": 4,
+   "type": "AIInfluencerBlurBackground",
+   "pos": [
+    460,
+    280
+   ],
+   "size": [
+    340,
+    180
+   ],
+   "flags": {},
+   "order": 3,
+   "mode": 4,
+   "inputs": [
+    {
+     "name": "image",
+     "type": "IMAGE",
+     "link": 3
+    },
+    {
+     "name": "subject_mask",
+     "type": "MASK",
+     "link": 4
+    }
+   ],
+   "outputs": [
+    {
+     "name": "image",
+     "type": "IMAGE",
+     "links": [
+      5
+     ],
+     "slot_index": 0
+    },
+    {
+     "name": "mask_used",
+     "type": "MASK",
+     "links": [],
+     "slot_index": 1
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerBlurBackground"
+   },
+   "widgets_values": [
+    1.5,
+    0.4,
+    0.3,
+    0.0
+   ],
+   "title": "Blur Background"
+  },
+  {
+   "id": 5,
+   "type": "AIInfluencerCameraImperfections",
+   "pos": [
+    910,
+    60
+   ],
+   "size": [
+    340,
+    280
+   ],
+   "flags": {},
+   "order": 4,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "image",
+     "type": "IMAGE",
+     "link": 5
+    }
+   ],
+   "outputs": [
+    {
+     "name": "image",
+     "type": "IMAGE",
+     "links": [
+      6,
+      8
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerCameraImperfections"
+   },
+   "widgets_values": [
+    42,
+    "randomize",
+    0.025,
+    0.1,
+    0.35,
+    0.05,
+    0.15,
+    0.3
+   ],
+   "title": "Camera Imperfections"
+  },
+  {
+   "id": 6,
+   "type": "AIInfluencerSaveImage",
+   "pos": [
+    1360,
+    60
+   ],
+   "size": [
+    360,
+    420
+   ],
+   "flags": {},
+   "order": 5,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "images",
+     "type": "IMAGE",
+     "link": 6
+    },
+    {
+     "name": "prompt_text",
+     "type": "STRING",
+     "link": null
+    }
+   ],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [],
+     "slot_index": 0
+    },
+    {
+     "name": "output_path",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 1
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerSaveImage"
+   },
+   "widgets_values": [
+    "lina",
+    "local_final",
+    "local_krea2",
+    "camera pass",
+    "refine",
+    "",
+    "",
+    "",
+    -1,
+    0,
+    "",
+    ""
+   ]
+  },
+  {
+   "id": 7,
+   "type": "ImageCompare",
+   "pos": [
+    1750,
+    60
+   ],
+   "size": [
+    340,
+    400
+   ],
+   "flags": {},
+   "order": 6,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "image_a",
+     "type": "IMAGE",
+     "link": 7
+    },
+    {
+     "name": "image_b",
+     "type": "IMAGE",
+     "link": 8
+    }
+   ],
+   "outputs": [],
+   "properties": {
+    "Node name for S&R": "ImageCompare"
+   },
+   "widgets_values": [],
+   "title": "Before / after"
+  },
+  {
+   "id": 8,
+   "type": "MarkdownNote",
+   "pos": [
+    2160,
+    0
+   ],
+   "size": [
+    560,
+    520
+   ],
+   "flags": {},
+   "order": 7,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [],
+   "properties": {
+    "Node name for S&R": "MarkdownNote"
+   },
+   "widgets_values": [
+    "# 12 Camera pass on an existing image\n\nThe same *Camera Imperfections* node that Workflows 02-10 run at the end, on its own, for pictures\nthat were generated before it existed or that came from somewhere else. ISO grain, red/blue\nfringing towards the corners, corner falloff, and a white balance drift that changes with the seed.\n\n1. **01**: press refresh on the loader and pick any file in `output/`. For a picture that isn't in\n   the output folder, drop it in `input/` and swap this node for a normal *Load Image*.\n2. **02** is bypassed (Ctrl+B) because a final image from Workflow 08/09/10 already has its\n   background blurred. Un-bypass it for an image that doesn't.\n3. **03**: `iso_grain` 0.015 is a clean daylight shot, 0.025 an ordinary phone photo, 0.05+ pushed\n   high ISO. The seed changes the grain pattern and the white balance drift, so re-queueing gives a\n   different roll without touching anything else.\n4. **04** saves to `outputs/images/final/` and logs the pass, with a before/after slider.\n\nFor a whole folder at once, skip ComfyUI:\n\n    python custom_nodes/ai_influencer_toolkit/tools/camera_pass.py output/projects/lina/outputs/images/final\n\nIt runs the same code, gives each file its own grain from its name, and writes `<name>_camera.<ext>`\nnext to each input (`--in-place` to overwrite, `--out DIR` to collect them elsewhere)."
+   ]
+  }
+ ],
+ "links": [
+  [
+   1,
+   2,
+   0,
+   3,
+   0,
+   "BACKGROUND_REMOVAL"
+  ],
+  [
+   2,
+   1,
+   0,
+   3,
+   1,
+   "IMAGE"
+  ],
+  [
+   3,
+   1,
+   0,
+   4,
+   0,
+   "IMAGE"
+  ],
+  [
+   4,
+   3,
+   0,
+   4,
+   1,
+   "MASK"
+  ],
+  [
+   5,
+   4,
+   0,
+   5,
+   0,
+   "IMAGE"
+  ],
+  [
+   6,
+   5,
+   0,
+   6,
+   0,
+   "IMAGE"
+  ],
+  [
+   7,
+   1,
+   0,
+   7,
+   0,
+   "IMAGE"
+  ],
+  [
+   8,
+   5,
+   0,
+   7,
+   1,
+   "IMAGE"
+  ]
+ ],
+ "groups": [
+  {
+   "id": 1,
+   "title": "01 THE IMAGE YOU ALREADY HAVE",
+   "bounding": [
+    0,
+    0,
+    400,
+    520
+   ],
+   "color": "#b58b2a",
+   "font_size": 24,
+   "flags": {}
+  },
+  {
+   "id": 2,
+   "title": "02 BACKGROUND BLUR (bypassed: the image usually has it already)",
+   "bounding": [
+    430,
+    0,
+    420,
+    520
+   ],
+   "color": "#a1309b",
+   "font_size": 24,
+   "flags": {}
+  },
+  {
+   "id": 3,
+   "title": "03 CAMERA PASS",
+   "bounding": [
+    880,
+    0,
+    420,
+    520
+   ],
+   "color": "#8A8",
+   "font_size": 24,
+   "flags": {}
+  },
+  {
+   "id": 4,
+   "title": "04 OUTPUT",
+   "bounding": [
+    1330,
+    0,
+    800,
+    520
+   ],
+   "color": "#444",
+   "font_size": 24,
+   "flags": {}
+  }
+ ],
+ "config": {},
+ "extra": {
+  "ds": {
+   "scale": 0.6,
+   "offset": [
+    0,
+    0
+   ]
+  }
+ },
+ "version": 0.4
+}

@@ -1,0 +1,73 @@
+__pycache__/
+*.py[cod]
+/output/
+/input/
+!/input/example.png
+/models/
+/temp/
+/custom_nodes/
+!custom_nodes/example_node.py.example
+extra_model_paths.yaml
+/.vs
+.vscode/
+.idea/
+venv*/
+.venv/
+/web/extensions/*
+!/web/extensions/logging.js.example
+!/web/extensions/core/
+/tests-ui/data/object_info.json
+/user/
+*.log
+web_custom_versions/
+.DS_Store
+filtered-openapi.yaml
+uv.lock
+.comfy_environment
+
+# AI Influencer workstation (see README_AI_INFLUENCER.md)
+# Keys: every user sets their own in .env (tools/configure.py). Never commit it.
+.env
+.env.*
+!.env.example
+/logs/
+
+# Ship the toolkit and its workflows although upstream ignores custom_nodes/ and user/ ...
+!/custom_nodes/
+/custom_nodes/*
+!/custom_nodes/example_node.py.example
+!/custom_nodes/ai_influencer_toolkit/
+!/user/
+/user/*
+!/user/default/
+/user/default/*
+!/user/default/workflows/
+/user/default/workflows/*
+!/user/default/workflows/ai_influencer/
+# ... but no images, videos, models or archives: code and workflow JSON only.
+# (face_score.py downloads its two ONNX models on first use.)
+/custom_nodes/ai_influencer_toolkit/models/
+/custom_nodes/ai_influencer_toolkit/**/*.onnx
+/custom_nodes/ai_influencer_toolkit/**/*.safetensors
+/custom_nodes/ai_influencer_toolkit/**/*.ckpt
+/custom_nodes/ai_influencer_toolkit/**/*.pt
+/custom_nodes/ai_influencer_toolkit/**/*.pth
+/custom_nodes/ai_influencer_toolkit/**/*.bin
+/custom_nodes/ai_influencer_toolkit/**/*.gguf
+/custom_nodes/ai_influencer_toolkit/**/*.png
+/custom_nodes/ai_influencer_toolkit/**/*.jpg
+/custom_nodes/ai_influencer_toolkit/**/*.jpeg
+/custom_nodes/ai_influencer_toolkit/**/*.webp
+/custom_nodes/ai_influencer_toolkit/**/*.gif
+/custom_nodes/ai_influencer_toolkit/**/*.mp4
+/custom_nodes/ai_influencer_toolkit/**/*.webm
+/custom_nodes/ai_influencer_toolkit/**/*.mov
+/custom_nodes/ai_influencer_toolkit/**/*.zip
+/custom_nodes/ai_influencer_toolkit/**/*.tar.gz
+# ... and not your characters: dataset manifests stay local, only the template ships.
+/custom_nodes/ai_influencer_toolkit/datasets/*.json
+!/custom_nodes/ai_influencer_toolkit/datasets/example.json
+
+# Personal assistant rules for this checkout, not part of the product
+/CLAUDE.md
+/.claude/

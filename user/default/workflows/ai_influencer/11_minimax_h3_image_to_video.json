@@ -1,0 +1,1378 @@
+{
+  "id": "3f6a0f2a-3f6f-4b1b-9a01-000000000011",
+  "revision": 0,
+  "last_node_id": 43,
+  "last_link_id": 29,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "MarkdownNote",
+      "pos": [
+        -1720,
+        -460
+      ],
+      "size": [
+        620,
+        780
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "properties": {
+        "Node name for S&R": "MarkdownNote"
+      },
+      "widgets_values": [
+        "# 11 - MiniMax H3 (open weights) Image-to-Video\n\nTakes **one generated still** (workflow 08/09/10 output, or anything in `input/`) and animates it\ninto a ~5 s **1080p-class clip with native audio** - MiniMax H3 generates voice, SFX, and room tone\nin the same pass as the picture, so the clip comes out already sounded.\n\nUnlike workflow 04 (Seedance, cloud API), this is the **open-weights H3 running on a GPU you\nrented**: no partner API node, no provider account, no content moderation in the path, and no\nper-clip cost. It is heavy (the H3 DiT plus a Qwen3-VL-32B text encoder), so it runs on the\n**vast.ai pod**, never on the local GTX 1060.\n\n## Run it on vast.ai\n\nFrom the repo on this machine:\n\n```bash\npython custom_nodes/ai_influencer_toolkit/tools/comfy_pod.py launch     --with-minimax --hours 2          # rents a 5090-class pod, downloads the H3 models\npython custom_nodes/ai_influencer_toolkit/tools/comfy_pod.py url       # the ComfyUI link\npython custom_nodes/ai_influencer_toolkit/tools/comfy_pod.py watch --idle-minutes 25\n```\n\n`--with-minimax` picks a Blackwell GPU (the text encoder ships in nvfp4; it *runs* on a 3090/4090\nbut dequantises every layer, several times slower), asks for 200 GB of disk, and adds the five H3\nfiles to the pod bootstrap. Open the printed URL, load this workflow, generate. Clips stay on the\npod - download them from `output/projects/<project>/outputs/videos/` before `destroy`.\n\n## Uncensored\n\nNothing in this graph filters anything, by construction:\n\n- **No API nodes.** Every node here is local ComfyUI core plus this toolkit, so no request is\n  scored by a provider's moderation endpoint and no account can be flagged. That is the actual\n  difference from workflow 04.\n- **Nothing is uploaded.** The pod pulls models down; outputs are only written to the pod's disk\n  and go straight to you. (Unlike the *training* pod, which pushes checkpoints through a private\n  HF repo.)\n- **Model-side reluctance** is the only limit left, and it is a weights problem, not a switch:\n  H3's own training makes it shy at explicit content. The **Optional extra LoRA** slot in the\n  loader column is there for that - point it at a community fine-tune (or at your character LoRA),\n  press Ctrl+B to enable it, and keep the strength around 0.6-1.0.\n\n## How to use it\n\n1. **Starting frame** - point the Load Image node at your approved still. It is scaled to ~0.98 MP\n   in multiples of 32 and its real size is fed to the model, so the clip keeps the still's aspect ratio.\n2. **Video description** - the big text box, wired into the model's `prompt`. This is where you say\n   *what happens*: see the note on the right for the shape that works.\n3. **Duration (seconds)** - the Float node. The Math Expression converts it to a frame count on H3's\n   24 fps / 17k+5 grid (5 s -> 124 frames). Trained range is roughly 5-15 s.\n4. Queue. The clip is written to `output/projects/<project>/outputs/videos/` and logged to\n   `logs/generations.jsonl` by the Save & Log node - fill in the same project name you use elsewhere.\n\n## Speed / quality switch\n\nThe chain ships with the **8-step Lightning turbo LoRA** on and `steps = 8` - roughly a minute-scale\nrender. For maximum quality, select the **turbo LoRA** node, press **Ctrl+B** to bypass it, and\nraise `steps` on the Basic Scheduler to **20**. Nothing else changes.\n\nThe second LoRA node below it (**Optional extra LoRA**) is bypassed by default and is a free slot:\nyour character LoRA, a style LoRA, or an uncensored fine-tune. Ctrl+B enables it.\n\nIf you want the *last* frame pinned too (e.g. to loop back to the opening pose), connect a second\nLoad Image to the `last_frame` input of the MiniMax H3 Image to Video node."
+      ],
+      "title": "Read me first"
+    },
+    {
+      "id": 3,
+      "type": "MarkdownNote",
+      "pos": [
+        -1060,
+        -460
+      ],
+      "size": [
+        600,
+        560
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "properties": {
+        "Node name for S&R": "MarkdownNote"
+      },
+      "widgets_values": [
+        "## Writing the video description\n\nH3 reads one prose block, not a tag list. What reliably works, in this order:\n\n1. **Look + subject continuity** - one sentence: \"photoreal, same face/hair/outfit as the starting\n   image, shallow depth of field with the background far out of focus\". Repeating the identity and\n   the blurred background here is what keeps them from drifting mid-clip.\n2. **A timestamped beat list** - `[0.0s-1.2s] ...`, `[1.2s-2.8s] ...`. Say what the *body* does\n   (blink, breathe, turn, tuck hair, smile) and what the *camera* does (hold, drift in, gentle\n   handheld). Small human motions read far better than big ones at 5 s.\n3. **Dialogue in quotes** - \"She says: \\\"...\\\"\". H3 lip-syncs it and speaks it. Keep it to one or\n   two short lines for a 5 s clip; anything longer gets rushed.\n4. **An `Audio:` line** - voice character, then background. If you do *not* want music, say\n   \"no music\" - silence is not the default.\n5. **A negative tail** - \"no cuts, no scene changes, no text overlays, no extra fingers\".\n\nRules of thumb: one continuous shot per 5 s clip; describe motion, never a still pose; do not\nre-describe the scenery the starting image already shows (the model can see it) - spend the words\non movement, speech, and what must *not* change."
+      ],
+      "title": "How to write the description"
+    },
+    {
+      "id": 2,
+      "type": "MarkdownNote",
+      "pos": [
+        -1060,
+        140
+      ],
+      "size": [
+        600,
+        620
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "properties": {
+        "Node name for S&R": "MarkdownNote"
+      },
+      "widgets_values": [
+        "## Models to download\n\n```\nComfyUI/models/\n\u251c\u2500\u2500 diffusion_models/\n\u2502   \u2514\u2500\u2500 minimax_h3_fl2va_pruned_int8_convrot.safetensors\n\u251c\u2500\u2500 text_encoders/\n\u2502   \u2514\u2500\u2500 qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors\n\u251c\u2500\u2500 vae/\n\u2502   \u251c\u2500\u2500 minimax_h3_video_vae_fp16.safetensors\n\u2502   \u2514\u2500\u2500 minimax_h3_audio_vae_fp32.safetensors\n\u2514\u2500\u2500 loras/\n    \u2514\u2500\u2500 minimax_h3_fl2v_turbo_8step_v1.0_comfyui_bf16.safetensors\n```\n\n- diffusion model, text encoder, VAEs: [Comfy-Org/MiniMax-H3](https://huggingface.co/Comfy-Org/MiniMax-H3)\n- 8-step turbo LoRA: [lightx2v/Minimax-h3-Turbo](https://huggingface.co/lightx2v/Minimax-h3-Turbo/resolve/main/minimax_h3_fl2v_turbo_8step_v1.0_comfyui_bf16.safetensors)\n- 4-step variant (faster, softer): `minimax_h3_fl2v_turbo_4step_v1.0_768p_comfyui_bf16.safetensors`\n\nOn vast.ai, download straight into the instance's `models/` folders with `hf download` before the\nfirst queue; the text encoder alone is the big one.\n\n**Audio note:** the audio stream is generated by the model and decoded by the *audio* VAE, then muxed\nby Create Video. If you only want the picture, disconnect the audio input on Create Video."
+      ],
+      "title": "Models to download"
+    },
+    {
+      "id": 10,
+      "type": "LoadImage",
+      "pos": [
+        -1720,
+        380
+      ],
+      "size": [
+        330,
+        350
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            1
+          ]
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "final_image.png",
+        "image"
+      ],
+      "title": "Generated still (first frame)"
+    },
+    {
+      "id": 11,
+      "type": "ImageScaleToTotalPixels",
+      "pos": [
+        -1720,
+        780
+      ],
+      "size": [
+        330,
+        130
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 1
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            2,
+            3
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ImageScaleToTotalPixels"
+      },
+      "widgets_values": [
+        "lanczos",
+        0.98,
+        32
+      ],
+      "title": "Fit to H3 canvas (~0.98 MP, x32)"
+    },
+    {
+      "id": 12,
+      "type": "GetImageSize",
+      "pos": [
+        -1720,
+        960
+      ],
+      "size": [
+        330,
+        100
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 2
+        }
+      ],
+      "outputs": [
+        {
+          "name": "width",
+          "type": "INT",
+          "links": [
+            5
+          ]
+        },
+        {
+          "name": "height",
+          "type": "INT",
+          "links": [
+            6
+          ]
+        },
+        {
+          "name": "batch_size",
+          "type": "INT",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "GetImageSize"
+      },
+      "title": "width / height for the model"
+    },
+    {
+      "id": 13,
+      "type": "PrimitiveStringMultiline",
+      "pos": [
+        -420,
+        -460
+      ],
+      "size": [
+        620,
+        620
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            4,
+            27
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "PrimitiveStringMultiline"
+      },
+      "widgets_values": [
+        "Photoreal vertical social clip of the woman from the starting image, same face, same hair, same outfit, same golden-hour light. The background stays soft and far out of focus the whole time (shallow depth of field, creamy bokeh); only she is sharp. Handheld phone-vlog energy, gentle natural camera breathing, no cuts to other people.\n\nTimeline:\n[0.0s-1.2s] The shot opens exactly on the starting image. She is still for a beat, then blinks and takes a small breath; a strand of hair drifts in the breeze.\n[1.2s-2.8s] She turns her head a few degrees toward the camera, tucks the strand behind her ear, and a small genuine smile grows.\n[2.8s-4.2s] She says, warmly and unhurried: \"Okay, this light is unreal right now.\" Natural lip sync, relaxed jaw, slight shoulder movement.\n[4.2s-5.2s] She laughs softly, glances off-camera, and settles back into a calm half-smile as the camera drifts a couple of centimetres closer.\n\nAudio: one female voice, warm, mid-20s, close-mic'd and conversational, no reverb tail; under it a quiet outdoor room tone with distant traffic and faint wind on the mic. No music, no crowd noise, no second speaker.\n\nKeep her identity, skin texture, and clothing identical to the starting image. No cuts, no scene changes, no text overlays, no extra hands or fingers, no warping of the face."
+      ],
+      "title": "Video description - what happens in the clip"
+    },
+    {
+      "id": 14,
+      "type": "PrimitiveFloat",
+      "pos": [
+        -420,
+        200
+      ],
+      "size": [
+        300,
+        80
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "FLOAT",
+          "type": "FLOAT",
+          "links": [
+            7
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "PrimitiveFloat"
+      },
+      "widgets_values": [
+        5.0
+      ],
+      "title": "Duration (seconds)"
+    },
+    {
+      "id": 15,
+      "type": "ComfyMathExpression",
+      "pos": [
+        -420,
+        320
+      ],
+      "size": [
+        300,
+        150
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "values.a",
+          "type": "FLOAT,INT,BOOLEAN",
+          "link": 7
+        }
+      ],
+      "outputs": [
+        {
+          "name": "FLOAT",
+          "type": "FLOAT",
+          "links": null
+        },
+        {
+          "name": "INT",
+          "type": "INT",
+          "links": [
+            8
+          ]
+        },
+        {
+          "name": "BOOL",
+          "type": "BOOLEAN",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ComfyMathExpression"
+      },
+      "widgets_values": [
+        "max(5, round(a * 24)) + (5 - (max(5, round(a * 24)) % 17)) % 17"
+      ],
+      "title": "seconds -> frames (24 fps, 17k+5 grid)"
+    },
+    {
+      "id": 20,
+      "type": "UNETLoader",
+      "pos": [
+        -1720,
+        1120
+      ],
+      "size": [
+        560,
+        110
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            11
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "UNETLoader"
+      },
+      "widgets_values": [
+        "minimax_h3_fl2va_pruned_int8_convrot.safetensors",
+        "default"
+      ],
+      "title": "MiniMax H3 (fl2va)"
+    },
+    {
+      "id": 21,
+      "type": "LoraLoaderModelOnly",
+      "pos": [
+        -1720,
+        1290
+      ],
+      "size": [
+        560,
+        130
+      ],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 11
+        }
+      ],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            12
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LoraLoaderModelOnly"
+      },
+      "widgets_values": [
+        "minimax_h3_fl2v_turbo_8step_v1.0_comfyui_bf16.safetensors",
+        1.0
+      ],
+      "title": "8-step turbo LoRA (Ctrl+B to bypass for max quality)"
+    },
+    {
+      "id": 25,
+      "type": "LoraLoaderModelOnly",
+      "pos": [
+        -1720,
+        1480
+      ],
+      "size": [
+        560,
+        130
+      ],
+      "flags": {},
+      "order": 9,
+      "mode": 4,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 12
+        }
+      ],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            28,
+            29
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LoraLoaderModelOnly"
+      },
+      "widgets_values": [
+        "",
+        1.0
+      ],
+      "title": "Optional extra LoRA - character / uncensored fine-tune (Ctrl+B to enable)"
+    },
+    {
+      "id": 22,
+      "type": "CLIPLoader",
+      "pos": [
+        -1720,
+        1670
+      ],
+      "size": [
+        560,
+        130
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "CLIP",
+          "type": "CLIP",
+          "links": [
+            9
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "CLIPLoader"
+      },
+      "widgets_values": [
+        "qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors",
+        "minimax",
+        "default"
+      ],
+      "title": "Qwen3-VL text/vision encoder"
+    },
+    {
+      "id": 23,
+      "type": "VAELoader",
+      "pos": [
+        -1720,
+        1860
+      ],
+      "size": [
+        560,
+        80
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "VAE",
+          "type": "VAE",
+          "links": [
+            10,
+            21
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "VAELoader"
+      },
+      "widgets_values": [
+        "minimax_h3_video_vae_fp16.safetensors"
+      ],
+      "title": "Video VAE"
+    },
+    {
+      "id": 24,
+      "type": "VAELoader",
+      "pos": [
+        -1720,
+        1980
+      ],
+      "size": [
+        560,
+        80
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "VAE",
+          "type": "VAE",
+          "links": [
+            23
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "VAELoader"
+      },
+      "widgets_values": [
+        "minimax_h3_audio_vae_fp32.safetensors"
+      ],
+      "title": "Audio VAE"
+    },
+    {
+      "id": 30,
+      "type": "MiniMaxH3ImageToVideo",
+      "pos": [
+        -1060,
+        820
+      ],
+      "size": [
+        430,
+        420
+      ],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 9
+        },
+        {
+          "name": "vae",
+          "type": "VAE",
+          "link": 10
+        },
+        {
+          "name": "first_frame",
+          "type": "IMAGE",
+          "shape": 7,
+          "link": 3
+        },
+        {
+          "name": "last_frame",
+          "type": "IMAGE",
+          "shape": 7,
+          "link": null
+        },
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "widget": {
+            "name": "prompt"
+          },
+          "link": 4
+        },
+        {
+          "name": "width",
+          "type": "INT",
+          "widget": {
+            "name": "width"
+          },
+          "link": 5
+        },
+        {
+          "name": "height",
+          "type": "INT",
+          "widget": {
+            "name": "height"
+          },
+          "link": 6
+        },
+        {
+          "name": "length",
+          "type": "INT",
+          "widget": {
+            "name": "length"
+          },
+          "link": 8
+        }
+      ],
+      "outputs": [
+        {
+          "name": "positive",
+          "type": "CONDITIONING",
+          "links": [
+            14
+          ]
+        },
+        {
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": [
+            19
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "MiniMaxH3ImageToVideo"
+      },
+      "widgets_values": [
+        "",
+        1344,
+        768,
+        124
+      ],
+      "title": "MiniMax H3 Image to Video"
+    },
+    {
+      "id": 31,
+      "type": "RandomNoise",
+      "pos": [
+        -560,
+        820
+      ],
+      "size": [
+        330,
+        100
+      ],
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "NOISE",
+          "type": "NOISE",
+          "links": [
+            15
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "RandomNoise"
+      },
+      "widgets_values": [
+        0,
+        "randomize"
+      ],
+      "title": "Seed"
+    },
+    {
+      "id": 32,
+      "type": "BasicGuider",
+      "pos": [
+        -560,
+        970
+      ],
+      "size": [
+        330,
+        80
+      ],
+      "flags": {},
+      "order": 11,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 28
+        },
+        {
+          "name": "conditioning",
+          "type": "CONDITIONING",
+          "link": 14
+        }
+      ],
+      "outputs": [
+        {
+          "name": "GUIDER",
+          "type": "GUIDER",
+          "links": [
+            16
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "BasicGuider"
+      }
+    },
+    {
+      "id": 33,
+      "type": "KSamplerSelect",
+      "pos": [
+        -560,
+        1100
+      ],
+      "size": [
+        330,
+        80
+      ],
+      "flags": {},
+      "order": 12,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "SAMPLER",
+          "type": "SAMPLER",
+          "links": [
+            17
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "KSamplerSelect"
+      },
+      "widgets_values": [
+        "res_multistep"
+      ]
+    },
+    {
+      "id": 34,
+      "type": "BasicScheduler",
+      "pos": [
+        -560,
+        1230
+      ],
+      "size": [
+        330,
+        140
+      ],
+      "flags": {},
+      "order": 13,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 29
+        }
+      ],
+      "outputs": [
+        {
+          "name": "SIGMAS",
+          "type": "SIGMAS",
+          "links": [
+            18
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "BasicScheduler"
+      },
+      "widgets_values": [
+        "simple",
+        8,
+        1.0
+      ],
+      "title": "Steps (8 with turbo LoRA, 20 without)"
+    },
+    {
+      "id": 35,
+      "type": "SamplerCustomAdvanced",
+      "pos": [
+        -180,
+        820
+      ],
+      "size": [
+        250,
+        250
+      ],
+      "flags": {},
+      "order": 14,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "noise",
+          "type": "NOISE",
+          "link": 15
+        },
+        {
+          "name": "guider",
+          "type": "GUIDER",
+          "link": 16
+        },
+        {
+          "name": "sampler",
+          "type": "SAMPLER",
+          "link": 17
+        },
+        {
+          "name": "sigmas",
+          "type": "SIGMAS",
+          "link": 18
+        },
+        {
+          "name": "latent_image",
+          "type": "LATENT",
+          "link": 19
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "type": "LATENT",
+          "links": [
+            20,
+            22
+          ]
+        },
+        {
+          "name": "denoised_output",
+          "type": "LATENT",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "SamplerCustomAdvanced"
+      }
+    },
+    {
+      "id": 40,
+      "type": "VAEDecode",
+      "pos": [
+        120,
+        820
+      ],
+      "size": [
+        250,
+        70
+      ],
+      "flags": {},
+      "order": 15,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "samples",
+          "type": "LATENT",
+          "link": 20
+        },
+        {
+          "name": "vae",
+          "type": "VAE",
+          "link": 21
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            24
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "VAEDecode"
+      },
+      "title": "Decode video"
+    },
+    {
+      "id": 41,
+      "type": "VAEDecodeAudio",
+      "pos": [
+        120,
+        940
+      ],
+      "size": [
+        250,
+        70
+      ],
+      "flags": {},
+      "order": 16,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "samples",
+          "type": "LATENT",
+          "link": 22
+        },
+        {
+          "name": "vae",
+          "type": "VAE",
+          "link": 23
+        }
+      ],
+      "outputs": [
+        {
+          "name": "AUDIO",
+          "type": "AUDIO",
+          "links": [
+            25
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "VAEDecodeAudio"
+      },
+      "title": "Decode native audio"
+    },
+    {
+      "id": 42,
+      "type": "CreateVideo",
+      "pos": [
+        120,
+        1060
+      ],
+      "size": [
+        250,
+        110
+      ],
+      "flags": {},
+      "order": 17,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 24
+        },
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "shape": 7,
+          "link": 25
+        }
+      ],
+      "outputs": [
+        {
+          "name": "VIDEO",
+          "type": "VIDEO",
+          "links": [
+            26
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "CreateVideo"
+      },
+      "widgets_values": [
+        24,
+        8
+      ],
+      "title": "Mux at 24 fps"
+    },
+    {
+      "id": 43,
+      "type": "AIInfluencerSaveVideo",
+      "pos": [
+        430,
+        820
+      ],
+      "size": [
+        400,
+        420
+      ],
+      "flags": {},
+      "order": 18,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "link": 26
+        },
+        {
+          "name": "project",
+          "type": "STRING",
+          "widget": {
+            "name": "project"
+          },
+          "link": null
+        },
+        {
+          "name": "stage",
+          "type": "COMBO",
+          "widget": {
+            "name": "stage"
+          },
+          "link": null
+        },
+        {
+          "name": "provider",
+          "type": "COMBO",
+          "widget": {
+            "name": "provider"
+          },
+          "link": null
+        },
+        {
+          "name": "model",
+          "type": "STRING",
+          "widget": {
+            "name": "model"
+          },
+          "link": null
+        },
+        {
+          "name": "motion_prompt",
+          "type": "STRING",
+          "widget": {
+            "name": "motion_prompt"
+          },
+          "link": 27
+        },
+        {
+          "name": "resolution",
+          "type": "STRING",
+          "widget": {
+            "name": "resolution"
+          },
+          "link": null
+        },
+        {
+          "name": "duration_seconds",
+          "type": "STRING",
+          "widget": {
+            "name": "duration_seconds"
+          },
+          "link": null
+        },
+        {
+          "name": "seed",
+          "type": "INT",
+          "widget": {
+            "name": "seed"
+          },
+          "link": null
+        },
+        {
+          "name": "job_id",
+          "type": "STRING",
+          "widget": {
+            "name": "job_id"
+          },
+          "link": null
+        },
+        {
+          "name": "notes",
+          "type": "STRING",
+          "widget": {
+            "name": "notes"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "VIDEO",
+          "type": "VIDEO",
+          "links": null
+        },
+        {
+          "name": "output_path",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "AIInfluencerSaveVideo"
+      },
+      "widgets_values": [
+        "",
+        "minimax_h3_video",
+        "minimax_h3_local",
+        "MiniMax H3",
+        "",
+        "768p",
+        "5",
+        -1,
+        "fixed",
+        "",
+        ""
+      ],
+      "title": "Save & log the clip"
+    }
+  ],
+  "links": [
+    [
+      1,
+      10,
+      0,
+      11,
+      0,
+      "IMAGE"
+    ],
+    [
+      2,
+      11,
+      0,
+      12,
+      0,
+      "IMAGE"
+    ],
+    [
+      3,
+      11,
+      0,
+      30,
+      2,
+      "IMAGE"
+    ],
+    [
+      4,
+      13,
+      0,
+      30,
+      4,
+      "STRING"
+    ],
+    [
+      5,
+      12,
+      0,
+      30,
+      5,
+      "INT"
+    ],
+    [
+      6,
+      12,
+      1,
+      30,
+      6,
+      "INT"
+    ],
+    [
+      7,
+      14,
+      0,
+      15,
+      0,
+      "FLOAT"
+    ],
+    [
+      8,
+      15,
+      1,
+      30,
+      7,
+      "INT"
+    ],
+    [
+      9,
+      22,
+      0,
+      30,
+      0,
+      "CLIP"
+    ],
+    [
+      10,
+      23,
+      0,
+      30,
+      1,
+      "VAE"
+    ],
+    [
+      11,
+      20,
+      0,
+      21,
+      0,
+      "MODEL"
+    ],
+    [
+      12,
+      21,
+      0,
+      25,
+      0,
+      "MODEL"
+    ],
+    [
+      28,
+      25,
+      0,
+      32,
+      0,
+      "MODEL"
+    ],
+    [
+      29,
+      25,
+      0,
+      34,
+      0,
+      "MODEL"
+    ],
+    [
+      14,
+      30,
+      0,
+      32,
+      1,
+      "CONDITIONING"
+    ],
+    [
+      15,
+      31,
+      0,
+      35,
+      0,
+      "NOISE"
+    ],
+    [
+      16,
+      32,
+      0,
+      35,
+      1,
+      "GUIDER"
+    ],
+    [
+      17,
+      33,
+      0,
+      35,
+      2,
+      "SAMPLER"
+    ],
+    [
+      18,
+      34,
+      0,
+      35,
+      3,
+      "SIGMAS"
+    ],
+    [
+      19,
+      30,
+      1,
+      35,
+      4,
+      "LATENT"
+    ],
+    [
+      20,
+      35,
+      0,
+      40,
+      0,
+      "LATENT"
+    ],
+    [
+      21,
+      23,
+      0,
+      40,
+      1,
+      "VAE"
+    ],
+    [
+      22,
+      35,
+      0,
+      41,
+      0,
+      "LATENT"
+    ],
+    [
+      23,
+      24,
+      0,
+      41,
+      1,
+      "VAE"
+    ],
+    [
+      24,
+      40,
+      0,
+      42,
+      0,
+      "IMAGE"
+    ],
+    [
+      25,
+      41,
+      0,
+      42,
+      1,
+      "AUDIO"
+    ],
+    [
+      26,
+      42,
+      0,
+      43,
+      0,
+      "VIDEO"
+    ],
+    [
+      27,
+      13,
+      0,
+      43,
+      5,
+      "STRING"
+    ]
+  ],
+  "groups": [
+    {
+      "id": 1,
+      "title": "1. Starting frame + description",
+      "bounding": [
+        -1760,
+        300,
+        1420,
+        800
+      ],
+      "color": "#3f789e",
+      "font_size": 24,
+      "flags": {}
+    },
+    {
+      "id": 2,
+      "title": "2. MiniMax H3 models",
+      "bounding": [
+        -1760,
+        1060,
+        620,
+        1030
+      ],
+      "color": "#88A",
+      "font_size": 24,
+      "flags": {}
+    },
+    {
+      "id": 3,
+      "title": "3. Sample",
+      "bounding": [
+        -600,
+        760,
+        700,
+        640
+      ],
+      "color": "#8A8",
+      "font_size": 24,
+      "flags": {}
+    },
+    {
+      "id": 4,
+      "title": "4. Decode + save",
+      "bounding": [
+        80,
+        760,
+        800,
+        500
+      ],
+      "color": "#a1309b",
+      "font_size": 24,
+      "flags": {}
+    }
+  ],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.55,
+      "offset": [
+        1900,
+        520
+      ]
+    },
+    "frontendVersion": "1.52.7"
+  },
+  "version": 0.4
+}

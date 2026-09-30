@@ -1,0 +1,323 @@
+{
+  "id": "3f6a0f2a-3f6f-4b1b-9a01-000000000004",
+  "revision": 0,
+  "last_node_id": 5,
+  "last_link_id": 3,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "MarkdownNote",
+      "pos": [
+        -260,
+        -460
+      ],
+      "size": [
+        1000,
+        420
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "properties": {
+        "Node name for S&R": "MarkdownNote"
+      },
+      "widgets_values": [
+        "# 04 \u2014 Seedance 2.5 Image-to-Video\n\nTurns one approved final still into a short realistic video clip using ByteDance's Seedance 2.5 (Reference-to-Video mode, task_type=`reference`), with the still as the primary reference image. Optionally add 1-2 more canonical identity photos as extra references to further lock identity/clothing/environment across the clip.\n\n**Configurable per the current Seedance 2.5 API**: resolution (up to 1080p; 4k is a Seedance 2.0-only option), duration (up to 30s on 2.5), aspect ratio ('adaptive' keeps the still's own framing). Switch the model dropdown to Seedance 2.0/Fast/Mini for other quality/cost/resolution tradeoffs (see the node's tooltip and price badge).\n\nEdit the motion prompt below the default one \u2014 keep instructions subtle and physically plausible; large/fast motion is where identity and anatomy tend to drift."
+      ],
+      "color": "#222",
+      "bgcolor": "#000"
+    },
+    {
+      "id": 2,
+      "type": "LoadImage",
+      "pos": [
+        -260,
+        40
+      ],
+      "size": [
+        300,
+        320
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            1
+          ]
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "final_image.png",
+        "image"
+      ],
+      "title": "Approved final still (starting frame)"
+    },
+    {
+      "id": 3,
+      "type": "LoadImage",
+      "pos": [
+        -260,
+        400
+      ],
+      "size": [
+        300,
+        320
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            2
+          ]
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "front.png",
+        "image"
+      ],
+      "title": "Optional extra identity reference"
+    },
+    {
+      "id": 4,
+      "type": "ByteDance2ReferenceNodeV2",
+      "pos": [
+        140,
+        40
+      ],
+      "size": [
+        420,
+        520
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "image_1",
+          "name": "model.reference_images.image_1",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": 1
+        },
+        {
+          "label": "image_2",
+          "name": "model.reference_images.image_2",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": 2
+        },
+        {
+          "label": "image_3",
+          "name": "model.reference_images.image_3",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": null
+        },
+        {
+          "label": "video_1",
+          "name": "model.reference_videos.video_1",
+          "shape": 7,
+          "type": "VIDEO",
+          "link": null
+        },
+        {
+          "label": "audio_1",
+          "name": "model.reference_audios.audio_1",
+          "shape": 7,
+          "type": "AUDIO",
+          "link": null
+        },
+        {
+          "label": "asset_1",
+          "name": "model.reference_assets.asset_1",
+          "shape": 7,
+          "type": "STRING",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "VIDEO",
+          "type": "VIDEO",
+          "links": [
+            3
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ByteDance2ReferenceNodeV2"
+      },
+      "widgets_values": [
+        "Seedance 2.5",
+        "She looks toward the street, naturally brushes one strand of hair behind her ear, then gives a subtle smile. Slight handheld smartphone camera movement. Preserve identity, clothing, environment and facial structure.",
+        "1080p",
+        "adaptive",
+        5,
+        true,
+        "reference",
+        "mp4",
+        true,
+        false,
+        0,
+        "randomize",
+        false
+      ],
+      "color": "#432",
+      "bgcolor": "#653"
+    },
+    {
+      "id": 5,
+      "type": "AIInfluencerSaveVideo",
+      "pos": [
+        680,
+        40
+      ],
+      "size": [
+        320,
+        340
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "link": 3
+        }
+      ],
+      "outputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "links": []
+        },
+        {
+          "name": "output_path",
+          "type": "STRING",
+          "links": []
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "AIInfluencerSaveVideo"
+      },
+      "widgets_values": [
+        "",
+        "seedance_video",
+        "bytedance_seedance",
+        "Seedance 2.5",
+        "",
+        "1080p",
+        "5",
+        -1,
+        "fixed",
+        "",
+        ""
+      ]
+    }
+  ],
+  "links": [
+    [
+      1,
+      2,
+      0,
+      4,
+      0,
+      "IMAGE"
+    ],
+    [
+      2,
+      3,
+      0,
+      4,
+      1,
+      "IMAGE"
+    ],
+    [
+      3,
+      4,
+      0,
+      5,
+      0,
+      "VIDEO"
+    ]
+  ],
+  "groups": [
+    {
+      "id": 1,
+      "title": "01 INPUT / 02 CHARACTER IDENTITY",
+      "bounding": [
+        -280,
+        0,
+        340,
+        760
+      ],
+      "color": "#3f789e",
+      "flags": {}
+    },
+    {
+      "id": 2,
+      "title": "08 VIDEO (SEEDANCE 2.5)",
+      "bounding": [
+        120,
+        0,
+        500,
+        760
+      ],
+      "color": "#3f9e5e",
+      "flags": {}
+    },
+    {
+      "id": 3,
+      "title": "09 OUTPUT (SAVE FINAL VIDEO)",
+      "bounding": [
+        660,
+        0,
+        400,
+        400
+      ],
+      "color": "#9e7f3f",
+      "flags": {}
+    }
+  ],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.65,
+      "offset": [
+        200,
+        200
+      ]
+    },
+    "frontendVersion": "1.52.7"
+  },
+  "version": 0.4
+}

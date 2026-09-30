@@ -1,0 +1,915 @@
+{
+ "id": "3f6a0f2a-3f6f-4b1b-9a01-000000000005",
+ "revision": 0,
+ "last_node_id": 16,
+ "last_link_id": 13,
+ "nodes": [
+  {
+   "id": 1,
+   "type": "MarkdownNote",
+   "pos": [
+    -260,
+    -560
+   ],
+   "size": [
+    1050,
+    520
+   ],
+   "flags": {},
+   "order": 0,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [],
+   "properties": {
+    "Node name for S&R": "MarkdownNote"
+   },
+   "widgets_values": [
+    "# 05 \u2014 Automated Production (optional, combined pipeline)\n\nPrompt -> Krea candidate -> save -> **[optional] GPT refine** -> save final -> **[optional] Seedance video** -> save video.\n\n## Cost-control toggles (obvious controls, per your brief)\n\nThe two expensive stages are **disabled by default** using ComfyUI's node Mode (the same mechanism official ComfyUI templates use for optional branches):\n\n- **[ Use GPT refinement: OFF ]** \u2014 the GPT Image 2.5 node below is set to *Never* (right-click it -> Mode -> Always to turn ON). While off, its Krea input passes straight through unmodified, so 'final image' downstream is just the Krea candidate.\n- **[ Generate video: OFF ]** \u2014 the Seedance node AND its Save & Log Video node are both set to *Never*. Turn ON both together (right-click each -> Mode -> Always) \u2014 video has no image passthrough, so only the Save node would error if left on its own.\n\nKrea generation itself always runs when you Queue (it's the cheap, high-volume stage)."
+   ],
+   "color": "#222",
+   "bgcolor": "#000"
+  },
+  {
+   "id": 2,
+   "type": "AIInfluencerLoadCharacter",
+   "pos": [
+    -260,
+    20
+   ],
+   "size": [
+    300,
+    160
+   ],
+   "flags": {},
+   "order": 1,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "name",
+     "type": "STRING",
+     "links": []
+    },
+    {
+     "name": "trigger",
+     "type": "STRING",
+     "links": []
+    },
+    {
+     "name": "identity_prompt",
+     "type": "STRING",
+     "links": [
+      1
+     ]
+    },
+    {
+     "name": "lora_url",
+     "type": "STRING",
+     "links": []
+    },
+    {
+     "name": "character_json",
+     "type": "STRING",
+     "links": []
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerLoadCharacter"
+   },
+   "widgets_values": [
+    ""
+   ]
+  },
+  {
+   "id": 3,
+   "type": "AIInfluencerPromptBuilder",
+   "pos": [
+    140,
+    20
+   ],
+   "size": [
+    420,
+    560
+   ],
+   "flags": {},
+   "order": 2,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "identity",
+     "type": "STRING",
+     "widget": {
+      "name": "identity"
+     },
+     "link": 1
+    }
+   ],
+   "outputs": [
+    {
+     "name": "prompt",
+     "type": "STRING",
+     "links": [
+      2,
+      5
+     ]
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerPromptBuilder"
+   },
+   "widgets_values": [
+    "",
+    "",
+    "",
+    "",
+    "",
+    "85mm f/1.8 portrait lens, shallow depth of field, background strongly out of focus, creamy bokeh, eye level",
+    "",
+    "natural, photographic imperfections: visible skin pores and texture, subtle color variation, minor asymmetry in the face, realistic hand anatomy with correct finger count, natural flyaway hairs, fabric wrinkles consistent with pose and gravity, soft naturalistic lighting appropriate to the scene, slight sensor noise/film grain; avoid plastic/airbrushed skin, extreme symmetry, HDR glow, oversharpening, and studio-perfect lighting in casual scenes",
+    "preserve this exact person's facial identity, bone structure, and recognizable features from the reference; do not beautify or change the face",
+    ""
+   ]
+  },
+  {
+   "id": 4,
+   "type": "MarkdownNote",
+   "pos": [
+    140,
+    660,
+    460,
+    160
+   ],
+   "size": [
+    420,
+    220
+   ],
+   "flags": {},
+   "order": 3,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [],
+   "properties": {
+    "Node name for S&R": "MarkdownNote"
+   },
+   "widgets_values": [
+    "OPTIONAL: OpenRouter prompt helper. Connect its STRING output into Prompt Builder's `extra` input to auto-expand a rough idea into scene/lighting/camera detail with a cheap model before it reaches Krea. Disconnected by default."
+   ],
+   "color": "#222",
+   "bgcolor": "#000"
+  },
+  {
+   "id": 5,
+   "type": "OpenRouterLLMNode",
+   "pos": [
+    140,
+    860
+   ],
+   "size": [
+    420,
+    420
+   ],
+   "flags": {},
+   "order": 4,
+   "mode": 0,
+   "inputs": [
+    {
+     "label": "image_1",
+     "name": "model.images.image_1",
+     "shape": 7,
+     "type": "IMAGE",
+     "link": null
+    }
+   ],
+   "outputs": [
+    {
+     "name": "STRING",
+     "type": "STRING",
+     "links": []
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "OpenRouterLLMNode"
+   },
+   "widgets_values": [
+    "Rough idea: <describe the shot you want in one sentence>",
+    "anthropic/claude-haiku-4.5",
+    "off",
+    0,
+    "randomize",
+    "You are an expert prompt engineer for a photorealistic AI-influencer photo pipeline. Given a rough one-sentence idea, expand it into concrete, comma-separated visual details covering: scene, subject action, clothing, environment, camera/lens, and lighting. Favor candid, imperfect, photographic realism over polished studio/AI aesthetics. Output only the expanded description, no commentary."
+   ],
+   "color": "#432",
+   "bgcolor": "#653"
+  },
+  {
+   "id": 6,
+   "type": "Krea2ImageNode",
+   "pos": [
+    680,
+    20
+   ],
+   "size": [
+    400,
+    380
+   ],
+   "flags": {},
+   "order": 5,
+   "mode": 0,
+   "inputs": [
+    {
+     "label": "style_reference",
+     "name": "model.style_reference",
+     "shape": 7,
+     "type": "KREA_STYLE_REF",
+     "link": null
+    },
+    {
+     "name": "prompt",
+     "type": "STRING",
+     "widget": {
+      "name": "prompt"
+     },
+     "link": 2
+    }
+   ],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [
+      3,
+      4,
+      6
+     ]
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "Krea2ImageNode"
+   },
+   "widgets_values": [
+    "(filled from Prompt Builder's output)",
+    "Krea 2 Large",
+    "4:5",
+    "1K",
+    "medium",
+    "",
+    0.35,
+    0,
+    "randomize"
+   ],
+   "color": "#432",
+   "bgcolor": "#653"
+  },
+  {
+   "id": 7,
+   "type": "PreviewImage",
+   "pos": [
+    1140,
+    20
+   ],
+   "size": [
+    280,
+    280
+   ],
+   "flags": {},
+   "order": 6,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "images",
+     "type": "IMAGE",
+     "link": 3
+    }
+   ],
+   "outputs": [],
+   "properties": {
+    "Node name for S&R": "PreviewImage"
+   },
+   "widgets_values": []
+  },
+  {
+   "id": 8,
+   "type": "AIInfluencerSaveImage",
+   "pos": [
+    1460,
+    20
+   ],
+   "size": [
+    320,
+    380
+   ],
+   "flags": {},
+   "order": 7,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "images",
+     "type": "IMAGE",
+     "link": 4
+    },
+    {
+     "name": "prompt_text",
+     "type": "STRING",
+     "widget": {
+      "name": "prompt_text"
+     },
+     "link": 5
+    }
+   ],
+   "outputs": [
+    {
+     "name": "images",
+     "type": "IMAGE",
+     "links": []
+    },
+    {
+     "name": "output_path",
+     "type": "STRING",
+     "links": []
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerSaveImage"
+   },
+   "widgets_values": [
+    "",
+    "krea_candidate",
+    "krea",
+    "Krea 2 Large",
+    "generate",
+    "",
+    "",
+    "4:5",
+    -1,
+    "fixed",
+    0,
+    "",
+    ""
+   ]
+  },
+  {
+   "id": 9,
+   "type": "OpenAIGPTImageNodeV2",
+   "pos": [
+    1900,
+    20
+   ],
+   "size": [
+    400,
+    460
+   ],
+   "flags": {},
+   "order": 8,
+   "mode": 4,
+   "inputs": [
+    {
+     "label": "image_1",
+     "name": "model.images.image_1",
+     "shape": 7,
+     "type": "IMAGE",
+     "link": 6
+    },
+    {
+     "name": "model.mask",
+     "shape": 7,
+     "type": "MASK",
+     "link": null
+    }
+   ],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [
+      9,
+      11
+     ]
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "OpenAIGPTImageNodeV2"
+   },
+   "widgets_values": [
+    "Preserve the person's identity and recognizable facial characteristics from the canonical reference images. Preserve the composition, pose, clothing and scene of the candidate unless explicitly instructed otherwise. Improve photographic realism and correct visible generation defects. Preserve natural skin texture and realistic imperfections. Do not beautify the subject or unnecessarily modify facial structure.",
+    "gpt-image-2.5-flare",
+    "auto",
+    1024,
+    1024,
+    "auto",
+    "high",
+    1,
+    0,
+    "randomize"
+   ],
+   "color": "#432",
+   "bgcolor": "#653"
+  },
+  {
+   "id": 10,
+   "type": "MarkdownNote",
+   "pos": [
+    1900,
+    500
+   ],
+   "size": [
+    420,
+    260
+   ],
+   "flags": {},
+   "order": 9,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [],
+   "properties": {
+    "Node name for S&R": "MarkdownNote"
+   },
+   "widgets_values": [
+    "[ Use GPT refinement: OFF ]\n\nThis node is set to Mode=Never. Right-click -> Mode -> Always to turn it ON. When off, the Krea image passes straight through as 'final image' (no cost). When on, it edits the Krea candidate using the instruction above, optionally referencing canonical identity images (convert the extra image_2/image_3 sockets to inputs and wire Load Image nodes into them)."
+   ],
+   "color": "#222",
+   "bgcolor": "#000"
+  },
+  {
+   "id": 11,
+   "type": "PreviewImage",
+   "pos": [
+    2400,
+    20
+   ],
+   "size": [
+    280,
+    280
+   ],
+   "flags": {},
+   "order": 10,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "images",
+     "type": "IMAGE",
+     "link": 12
+    }
+   ],
+   "outputs": [],
+   "properties": {
+    "Node name for S&R": "PreviewImage"
+   },
+   "widgets_values": []
+  },
+  {
+   "id": 12,
+   "type": "AIInfluencerSaveImage",
+   "pos": [
+    2720,
+    20
+   ],
+   "size": [
+    320,
+    380
+   ],
+   "flags": {},
+   "order": 11,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "images",
+     "type": "IMAGE",
+     "link": 13
+    }
+   ],
+   "outputs": [
+    {
+     "name": "images",
+     "type": "IMAGE",
+     "links": []
+    },
+    {
+     "name": "output_path",
+     "type": "STRING",
+     "links": []
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerSaveImage"
+   },
+   "widgets_values": [
+    "",
+    "gpt_refined",
+    "openai_gpt_image",
+    "gpt-image-2.5-flare/none",
+    "edit",
+    "",
+    "high",
+    "",
+    -1,
+    "fixed",
+    0,
+    "",
+    ""
+   ]
+  },
+  {
+   "id": 13,
+   "type": "ByteDance2ReferenceNodeV2",
+   "pos": [
+    3140,
+    20
+   ],
+   "size": [
+    420,
+    520
+   ],
+   "flags": {},
+   "order": 12,
+   "mode": 4,
+   "inputs": [
+    {
+     "label": "image_1",
+     "name": "model.reference_images.image_1",
+     "shape": 7,
+     "type": "IMAGE",
+     "link": 9
+    },
+    {
+     "label": "image_2",
+     "name": "model.reference_images.image_2",
+     "shape": 7,
+     "type": "IMAGE",
+     "link": null
+    },
+    {
+     "label": "video_1",
+     "name": "model.reference_videos.video_1",
+     "shape": 7,
+     "type": "VIDEO",
+     "link": null
+    },
+    {
+     "label": "audio_1",
+     "name": "model.reference_audios.audio_1",
+     "shape": 7,
+     "type": "AUDIO",
+     "link": null
+    },
+    {
+     "label": "asset_1",
+     "name": "model.reference_assets.asset_1",
+     "shape": 7,
+     "type": "STRING",
+     "link": null
+    }
+   ],
+   "outputs": [
+    {
+     "name": "VIDEO",
+     "type": "VIDEO",
+     "links": [
+      10
+     ]
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "ByteDance2ReferenceNodeV2"
+   },
+   "widgets_values": [
+    "Seedance 2.5",
+    "She looks toward the street, naturally brushes one strand of hair behind her ear, then gives a subtle smile. Slight handheld smartphone camera movement. Preserve identity, clothing, environment and facial structure.",
+    "1080p",
+    "adaptive",
+    5,
+    true,
+    "reference",
+    "mp4",
+    true,
+    false,
+    0,
+    "randomize",
+    false
+   ],
+   "color": "#432",
+   "bgcolor": "#653"
+  },
+  {
+   "id": 14,
+   "type": "AIInfluencerSaveVideo",
+   "pos": [
+    3700,
+    20
+   ],
+   "size": [
+    320,
+    340
+   ],
+   "flags": {},
+   "order": 13,
+   "mode": 4,
+   "inputs": [
+    {
+     "name": "video",
+     "type": "VIDEO",
+     "link": 10
+    }
+   ],
+   "outputs": [
+    {
+     "name": "video",
+     "type": "VIDEO",
+     "links": []
+    },
+    {
+     "name": "output_path",
+     "type": "STRING",
+     "links": []
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerSaveVideo"
+   },
+   "widgets_values": [
+    "",
+    "seedance_video",
+    "bytedance_seedance",
+    "Seedance 2.5",
+    "",
+    "1080p",
+    "5",
+    -1,
+    "fixed",
+    "",
+    ""
+   ]
+  },
+  {
+   "id": 15,
+   "type": "MarkdownNote",
+   "pos": [
+    3140,
+    560
+   ],
+   "size": [
+    460,
+    260
+   ],
+   "flags": {},
+   "order": 14,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [],
+   "properties": {
+    "Node name for S&R": "MarkdownNote"
+   },
+   "widgets_values": [
+    "[ Generate video: OFF ]\n\nBoth the Seedance node and Save & Log Video node are set to Mode=Never. Right-click EACH -> Mode -> Always to turn video ON (must enable both -- unlike the image stage, video has no type-compatible passthrough, so enabling only the Save node would error on an empty input)."
+   ],
+   "color": "#222",
+   "bgcolor": "#000"
+  },
+  {
+   "id": 16,
+   "type": "AIInfluencerCameraImperfections",
+   "pos": [
+    1900,
+    520
+   ],
+   "size": [
+    340,
+    280
+   ],
+   "flags": {},
+   "order": 15,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "image",
+     "type": "IMAGE",
+     "link": 11
+    }
+   ],
+   "outputs": [
+    {
+     "name": "image",
+     "type": "IMAGE",
+     "links": [
+      12,
+      13
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerCameraImperfections"
+   },
+   "widgets_values": [
+    42,
+    "randomize",
+    0.025,
+    0.1,
+    0.35,
+    0.05,
+    0.15,
+    0.3
+   ],
+   "title": "Camera Imperfections"
+  }
+ ],
+ "links": [
+  [
+   1,
+   2,
+   2,
+   3,
+   0,
+   "STRING"
+  ],
+  [
+   2,
+   3,
+   0,
+   6,
+   1,
+   "STRING"
+  ],
+  [
+   3,
+   6,
+   0,
+   7,
+   0,
+   "IMAGE"
+  ],
+  [
+   4,
+   6,
+   0,
+   8,
+   0,
+   "IMAGE"
+  ],
+  [
+   5,
+   3,
+   0,
+   8,
+   1,
+   "STRING"
+  ],
+  [
+   6,
+   6,
+   0,
+   9,
+   0,
+   "IMAGE"
+  ],
+  [
+   9,
+   9,
+   0,
+   13,
+   0,
+   "IMAGE"
+  ],
+  [
+   10,
+   13,
+   0,
+   14,
+   0,
+   "VIDEO"
+  ],
+  [
+   11,
+   9,
+   0,
+   16,
+   0,
+   "IMAGE"
+  ],
+  [
+   12,
+   16,
+   0,
+   11,
+   0,
+   "IMAGE"
+  ],
+  [
+   13,
+   16,
+   0,
+   12,
+   0,
+   "IMAGE"
+  ]
+ ],
+ "groups": [
+  {
+   "id": 1,
+   "title": "02 CHARACTER IDENTITY",
+   "bounding": [
+    -280,
+    -20,
+    340,
+    220
+   ],
+   "color": "#3f789e",
+   "flags": {}
+  },
+  {
+   "id": 2,
+   "title": "03 PROMPT",
+   "bounding": [
+    120,
+    -20,
+    460,
+    620
+   ],
+   "color": "#3f789e",
+   "flags": {}
+  },
+  {
+   "id": 3,
+   "title": "03b OPTIONAL PROMPT ENGINE (OpenRouter, disconnected by default)",
+   "bounding": [
+    120,
+    620,
+    460,
+    480
+   ],
+   "color": "#7f3f9e",
+   "flags": {}
+  },
+  {
+   "id": 4,
+   "title": "05 KREA GENERATION",
+   "bounding": [
+    660,
+    -20,
+    400,
+    460
+   ],
+   "color": "#3f9e5e",
+   "flags": {}
+  },
+  {
+   "id": 5,
+   "title": "06 CANDIDATE SELECTION / SAVE CANDIDATE",
+   "bounding": [
+    1120,
+    -20,
+    700,
+    460
+   ],
+   "color": "#9e7f3f",
+   "flags": {}
+  },
+  {
+   "id": 6,
+   "title": "07 GPT REFINEMENT (toggle, OFF by default)",
+   "bounding": [
+    1880,
+    -20,
+    460,
+    700
+   ],
+   "color": "#3f9e9e",
+   "flags": {}
+  },
+  {
+   "id": 7,
+   "title": "09 OUTPUT - SAVE FINAL IMAGE",
+   "bounding": [
+    2380,
+    -20,
+    700,
+    460
+   ],
+   "color": "#9e7f3f",
+   "flags": {}
+  },
+  {
+   "id": 8,
+   "title": "08 VIDEO - SEEDANCE 2.5 (toggle, OFF by default)",
+   "bounding": [
+    3120,
+    -20,
+    1060,
+    860
+   ],
+   "color": "#7f3f5e",
+   "flags": {}
+  }
+ ],
+ "config": {},
+ "extra": {
+  "ds": {
+   "scale": 0.65,
+   "offset": [
+    200,
+    200
+   ]
+  },
+  "frontendVersion": "1.52.7"
+ },
+ "version": 0.4
+}

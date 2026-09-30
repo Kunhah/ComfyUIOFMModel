@@ -1,0 +1,1951 @@
+{
+ "last_node_id": 35,
+ "last_link_id": 46,
+ "nodes": [
+  {
+   "id": 1,
+   "type": "UNETLoader",
+   "pos": [
+    30,
+    60
+   ],
+   "size": [
+    320,
+    120
+   ],
+   "flags": {},
+   "order": 0,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "MODEL",
+     "type": "MODEL",
+     "links": [
+      1
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "UNETLoader",
+    "models": [
+     {
+      "name": "krea2_turbo_fp8_scaled.safetensors",
+      "url": "https://huggingface.co/Comfy-Org/Krea-2/resolve/main/diffusion_models/krea2_turbo_fp8_scaled.safetensors",
+      "directory": "diffusion_models"
+     }
+    ]
+   },
+   "widgets_values": [
+    "krea2_turbo_fp8_scaled.safetensors",
+    "default"
+   ]
+  },
+  {
+   "id": 2,
+   "type": "CLIPLoader",
+   "pos": [
+    30,
+    210
+   ],
+   "size": [
+    320,
+    120
+   ],
+   "flags": {},
+   "order": 1,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "CLIP",
+     "type": "CLIP",
+     "links": [
+      4
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "CLIPLoader",
+    "models": [
+     {
+      "name": "qwen3vl_4b_fp8_scaled.safetensors",
+      "url": "https://huggingface.co/Comfy-Org/Krea-2/resolve/main/text_encoders/qwen3vl_4b_fp8_scaled.safetensors",
+      "directory": "text_encoders"
+     }
+    ]
+   },
+   "widgets_values": [
+    "qwen3vl_4b_fp8_scaled.safetensors",
+    "krea2",
+    "default"
+   ]
+  },
+  {
+   "id": 3,
+   "type": "VAELoader",
+   "pos": [
+    30,
+    360
+   ],
+   "size": [
+    320,
+    120
+   ],
+   "flags": {},
+   "order": 2,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "VAE",
+     "type": "VAE",
+     "links": [
+      8,
+      14,
+      27
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "VAELoader",
+    "models": [
+     {
+      "name": "qwen_image_vae.safetensors",
+      "url": "https://huggingface.co/Comfy-Org/Krea-2/resolve/main/vae/qwen_image_vae.safetensors",
+      "directory": "vae"
+     }
+    ]
+   },
+   "widgets_values": [
+    "qwen_image_vae.safetensors"
+   ]
+  },
+  {
+   "id": 4,
+   "type": "AIInfluencerApplyCharacterLora",
+   "pos": [
+    30,
+    510
+   ],
+   "size": [
+    320,
+    130
+   ],
+   "flags": {},
+   "order": 3,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "model",
+     "type": "MODEL",
+     "link": 1
+    }
+   ],
+   "outputs": [
+    {
+     "name": "MODEL",
+     "type": "MODEL",
+     "links": [
+      32
+     ],
+     "slot_index": 0
+    },
+    {
+     "name": "trigger",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 1
+    },
+    {
+     "name": "lora_name",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 2
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerApplyCharacterLora"
+   },
+   "widgets_values": [
+    "",
+    "(from character.json)",
+    -1.0
+   ]
+  },
+  {
+   "id": 5,
+   "type": "LoadImage",
+   "pos": [
+    460,
+    60
+   ],
+   "size": [
+    340,
+    380
+   ],
+   "flags": {},
+   "order": 4,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [
+      2
+     ],
+     "slot_index": 0
+    },
+    {
+     "name": "MASK",
+     "type": "MASK",
+     "links": [
+      19
+     ],
+     "slot_index": 1
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "LoadImage"
+   },
+   "widgets_values": [
+    "ai_influencer/MyCharacter/dataset/62.png",
+    "image"
+   ],
+   "title": "LOCATION plate (mask this one)"
+  },
+  {
+   "id": 6,
+   "type": "ImageScaleToTotalPixels",
+   "pos": [
+    460,
+    480
+   ],
+   "size": [
+    340,
+    130
+   ],
+   "flags": {},
+   "order": 5,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "image",
+     "type": "IMAGE",
+     "link": 2
+    }
+   ],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [
+      7,
+      17,
+      23
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "ImageScaleToTotalPixels"
+   },
+   "widgets_values": [
+    "lanczos",
+    1.0,
+    16
+   ]
+  },
+  {
+   "id": 7,
+   "type": "AIInfluencerLoadCharacter",
+   "pos": [
+    890,
+    60
+   ],
+   "size": [
+    320,
+    150
+   ],
+   "flags": {},
+   "order": 6,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "name",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 0
+    },
+    {
+     "name": "trigger",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 1
+    },
+    {
+     "name": "identity_prompt",
+     "type": "STRING",
+     "links": [
+      3
+     ],
+     "slot_index": 2
+    },
+    {
+     "name": "lora_url",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 3
+    },
+    {
+     "name": "character_json",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 4
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerLoadCharacter"
+   },
+   "widgets_values": [
+    ""
+   ]
+  },
+  {
+   "id": 8,
+   "type": "AIInfluencerPromptBuilder",
+   "pos": [
+    1250,
+    60
+   ],
+   "size": [
+    400,
+    620
+   ],
+   "flags": {},
+   "order": 7,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "identity",
+     "type": "STRING",
+     "link": 3,
+     "widget": {
+      "name": "identity"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "name": "prompt",
+     "type": "STRING",
+     "links": [
+      5,
+      16
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerPromptBuilder"
+   },
+   "widgets_values": [
+    "",
+    "photo taken on an iPhone",
+    "relaxed expression, looking toward the camera",
+    "black leather jacket, white t-shirt, blue jeans",
+    "rooftop terrace at sunset, city skyline behind",
+    "35mm, eye level",
+    "warm golden hour light",
+    "natural, photographic imperfections: visible skin pores and texture, subtle color variation, minor asymmetry in the face, realistic hand anatomy with correct finger count, natural flyaway hairs, fabric wrinkles consistent with pose and gravity, slight sensor noise; avoid plastic/airbrushed skin, HDR glow and oversharpening",
+    "",
+    "Picture 1 is the reference for her face and identity. Picture 3 is an OpenPose stick-figure skeleton: reproduce that exact body pose, limb positions and head angle. Copy nothing else from Picture 3 - not its person, face, clothing, background or lighting."
+   ]
+  },
+  {
+   "id": 9,
+   "type": "TextEncodeQwenImageEditPlus",
+   "pos": [
+    1750,
+    60
+   ],
+   "size": [
+    320,
+    240
+   ],
+   "flags": {},
+   "order": 8,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "clip",
+     "type": "CLIP",
+     "link": 4
+    },
+    {
+     "name": "vae",
+     "shape": 7,
+     "type": "VAE",
+     "link": 27
+    },
+    {
+     "name": "image1",
+     "shape": 7,
+     "type": "IMAGE",
+     "link": 28
+    },
+    {
+     "name": "image2",
+     "shape": 7,
+     "type": "IMAGE",
+     "link": 29
+    },
+    {
+     "name": "image3",
+     "shape": 7,
+     "type": "IMAGE",
+     "link": 39
+    },
+    {
+     "name": "prompt",
+     "type": "STRING",
+     "widget": {
+      "name": "prompt"
+     },
+     "link": 5
+    }
+   ],
+   "outputs": [
+    {
+     "name": "CONDITIONING",
+     "type": "CONDITIONING",
+     "links": [
+      31
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "TextEncodeQwenImageEditPlus"
+   },
+   "widgets_values": [
+    ""
+   ]
+  },
+  {
+   "id": 10,
+   "type": "ConditioningZeroOut",
+   "pos": [
+    1750,
+    440
+   ],
+   "size": [
+    320,
+    30
+   ],
+   "flags": {},
+   "order": 9,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "conditioning",
+     "type": "CONDITIONING",
+     "link": 6
+    }
+   ],
+   "outputs": [
+    {
+     "name": "CONDITIONING",
+     "type": "CONDITIONING",
+     "links": [
+      11
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "ConditioningZeroOut"
+   },
+   "widgets_values": []
+  },
+  {
+   "id": 11,
+   "type": "VAEEncode",
+   "pos": [
+    1750,
+    500
+   ],
+   "size": [
+    320,
+    50
+   ],
+   "flags": {},
+   "order": 10,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "pixels",
+     "type": "IMAGE",
+     "link": 7
+    },
+    {
+     "name": "vae",
+     "type": "VAE",
+     "link": 8
+    }
+   ],
+   "outputs": [
+    {
+     "name": "LATENT",
+     "type": "LATENT",
+     "links": [
+      20
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "VAEEncode"
+   },
+   "widgets_values": []
+  },
+  {
+   "id": 12,
+   "type": "KSampler",
+   "pos": [
+    2110,
+    60
+   ],
+   "size": [
+    320,
+    262
+   ],
+   "flags": {},
+   "order": 11,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "model",
+     "type": "MODEL",
+     "link": 9
+    },
+    {
+     "name": "positive",
+     "type": "CONDITIONING",
+     "link": 10
+    },
+    {
+     "name": "negative",
+     "type": "CONDITIONING",
+     "link": 11
+    },
+    {
+     "name": "latent_image",
+     "type": "LATENT",
+     "link": 22
+    }
+   ],
+   "outputs": [
+    {
+     "name": "LATENT",
+     "type": "LATENT",
+     "links": [
+      13
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "KSampler"
+   },
+   "widgets_values": [
+    42,
+    "randomize",
+    8,
+    1.0,
+    "euler",
+    "simple",
+    1.0
+   ],
+   "title": "Sampler (denoise 1.0 - pose comes from the skeleton, not the latent)"
+  },
+  {
+   "id": 13,
+   "type": "VAEDecode",
+   "pos": [
+    2110,
+    350
+   ],
+   "size": [
+    320,
+    50
+   ],
+   "flags": {},
+   "order": 12,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "samples",
+     "type": "LATENT",
+     "link": 13
+    },
+    {
+     "name": "vae",
+     "type": "VAE",
+     "link": 14
+    }
+   ],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [
+      18,
+      24
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "VAEDecode"
+   },
+   "widgets_values": []
+  },
+  {
+   "id": 14,
+   "type": "AIInfluencerSaveImage",
+   "pos": [
+    2470,
+    60
+   ],
+   "size": [
+    360,
+    420
+   ],
+   "flags": {},
+   "order": 13,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "images",
+     "type": "IMAGE",
+     "link": 46
+    },
+    {
+     "name": "prompt_text",
+     "type": "STRING",
+     "link": 16,
+     "widget": {
+      "name": "prompt_text"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [],
+     "slot_index": 0
+    },
+    {
+     "name": "output_path",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 1
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerSaveImage"
+   },
+   "widgets_values": [
+    "",
+    "local_final",
+    "local_krea2",
+    "Krea 2 Turbo + LoRA + image refs (fixed-location inpaint) + bg blur + camera",
+    "generate",
+    "",
+    "",
+    "",
+    -1,
+    "fixed",
+    0,
+    "",
+    ""
+   ]
+  },
+  {
+   "id": 15,
+   "type": "ImageCompare",
+   "pos": [
+    2110,
+    430
+   ],
+   "size": [
+    320,
+    240
+   ],
+   "flags": {},
+   "order": 14,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "image_a",
+     "type": "IMAGE",
+     "link": 17
+    },
+    {
+     "name": "image_b",
+     "type": "IMAGE",
+     "link": 18
+    }
+   ],
+   "outputs": [],
+   "properties": {
+    "Node name for S&R": "ImageCompare"
+   },
+   "widgets_values": [],
+   "title": "Reference / result"
+  },
+  {
+   "id": 16,
+   "type": "MarkdownNote",
+   "pos": [
+    2890,
+    0
+   ],
+   "size": [
+    560,
+    620
+   ],
+   "flags": {},
+   "order": 15,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [],
+   "properties": {
+    "Node name for S&R": "MarkdownNote"
+   },
+   "widgets_values": [
+    "# 09b models\n\nThe **location photo** in group 02 is the background: it is the inpaint canvas, so whatever you\nload there is what the final image is pasted back onto. There is no second background loader.\n\nThe loaders in group 06 are **reference images** (her face, an outfit, a look, or a pose you want\ncopied) \u2014 they steer what gets painted *inside* the mask, they are not backgrounds.\n\n## Models (put them in ComfyUI/models/...)\n\n| File | Folder |\n|---|---|\n| [krea2_turbo_fp8_scaled.safetensors](https://huggingface.co/Comfy-Org/Krea-2/resolve/main/diffusion_models/krea2_turbo_fp8_scaled.safetensors) | `diffusion_models/` |\n| [qwen3vl_4b_fp8_scaled.safetensors](https://huggingface.co/Comfy-Org/Krea-2/resolve/main/text_encoders/qwen3vl_4b_fp8_scaled.safetensors) | `text_encoders/` |\n| [qwen_image_vae.safetensors](https://huggingface.co/Comfy-Org/Krea-2/resolve/main/vae/qwen_image_vae.safetensors) | `vae/` |\n| [sdpose_wholebody_fp16.safetensors](https://huggingface.co/Comfy-Org/SDPose/resolve/main/checkpoints/sdpose_wholebody_fp16.safetensors) | `checkpoints/` |\n| [krea2_style_reference.safetensors](https://huggingface.co/Comfy-Org/Krea-2/resolve/main/loras/krea2_style_reference.safetensors) | `loras/` |\n| [seedvr2_3b_int8_convrot.safetensors](https://huggingface.co/Comfy-Org/SeedVR2/resolve/main/diffusion_models/seedvr2_3b_int8_convrot.safetensors) | `diffusion_models/` |\n| [seedvr2_ema_vae_fp16.safetensors](https://huggingface.co/Comfy-Org/SeedVR2/resolve/main/vae/seedvr2_ema_vae_fp16.safetensors) | `vae/` |\n| [sigclip_vision_patch14_384.safetensors](https://huggingface.co/Comfy-Org/sigclip_vision_384/resolve/main/sigclip_vision_patch14_384.safetensors) | `clip_vision/` |\n\nYour character LoRA checkpoints go in `models/loras/` (a subfolder per character is fine, e.g. `models/loras/lina/`).\n\nKrea 2 needs a big GPU (RTX 5090 / RTX 6000 Pro class). Run these on RunPod, not a 6 GB card."
+   ]
+  },
+  {
+   "id": 17,
+   "type": "GrowMask",
+   "pos": [
+    1180,
+    980
+   ],
+   "size": [
+    300,
+    110
+   ],
+   "flags": {},
+   "order": 16,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "mask",
+     "type": "MASK",
+     "link": 19
+    }
+   ],
+   "outputs": [
+    {
+     "name": "MASK",
+     "type": "MASK",
+     "links": [
+      21,
+      25
+     ]
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "GrowMask"
+   },
+   "widgets_values": [
+    12,
+    true
+   ],
+   "title": "Grow mask (feather the seam)"
+  },
+  {
+   "id": 18,
+   "type": "SetLatentNoiseMask",
+   "pos": [
+    1180,
+    1130
+   ],
+   "size": [
+    300,
+    90
+   ],
+   "flags": {},
+   "order": 17,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "samples",
+     "type": "LATENT",
+     "link": 20
+    },
+    {
+     "name": "mask",
+     "type": "MASK",
+     "link": 21
+    }
+   ],
+   "outputs": [
+    {
+     "name": "LATENT",
+     "type": "LATENT",
+     "links": [
+      22
+     ]
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "SetLatentNoiseMask"
+   },
+   "widgets_values": [],
+   "title": "Regenerate only inside the mask"
+  },
+  {
+   "id": 19,
+   "type": "ImageCompositeMasked",
+   "pos": [
+    1600,
+    1130
+   ],
+   "size": [
+    340,
+    150
+   ],
+   "flags": {},
+   "order": 18,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "destination",
+     "type": "IMAGE",
+     "link": 23
+    },
+    {
+     "name": "source",
+     "type": "IMAGE",
+     "link": 24
+    },
+    {
+     "name": "mask",
+     "shape": 7,
+     "type": "MASK",
+     "link": 25
+    }
+   ],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [
+      41,
+      42
+     ]
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "ImageCompositeMasked"
+   },
+   "widgets_values": [
+    0,
+    0,
+    false
+   ],
+   "title": "Keep background pixel-identical"
+  },
+  {
+   "id": 20,
+   "type": "MarkdownNote",
+   "pos": [
+    1560,
+    1450
+   ],
+   "size": [
+    430,
+    900
+   ],
+   "flags": {},
+   "order": 19,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [],
+   "properties": {
+    "Node name for S&R": "MarkdownNote"
+   },
+   "widgets_values": [
+    "# 09b Fixed location + pose + references\n\nThree things come from three separate places, each one contributing **only** what it is for:\n\n| What | Where it comes from | Why nothing else leaks in |\n|---|---|---|\n| **Background** | group 02, the location photo | `ImageCompositeMasked` pastes the generation back *inside the mask only*, so every pixel outside is bit-identical to your photo |\n| **Pose** | group 07, the pose photo | the photo is reduced to an OpenPose **stick-figure skeleton** first, so there is no face, clothing, lighting or background left to copy |\n| **Her** | group 01 character LoRA + group 06 reference photos | the LoRA holds the face, the references hold hair, make-up and clothes |\n\n## Use it\n1. **Group 02**: load the location photo. Right-click it -> **Open in MaskEditor** and paint where\n   she should appear (her whole body plus a little room). Save.\n2. **Group 07**: load any photo of anyone in the pose you want. Look at *Check the skeleton* after\n   the first run to confirm it was detected.\n3. **Group 06**: a clear photo of her in *Reference 1*. Ctrl+B on *Reference 2* to add an outfit\n   shot or a second angle.\n4. **Group 03**: describe the scene. Leave the pose out of `subject_action` -- the skeleton is in\n   charge of it. Keep `environment` matching the real photo so the lighting agrees. The\n   `extra` field holds the standing \"Picture 1 is her, Picture 3 is the skeleton\" instruction;\n   keep it. You never write the \"don't look AI\" wording: the Prompt Builder appends it to every\n   prompt by itself.\n5. **Queue.** Group 08 runs by itself: the background is blurred, then the camera pass adds ISO\n   grain, corner fringing, corner falloff and a white balance drift, and the result is saved to\n   `outputs/images/final/`. Nothing to set -- that is the whole point of it being here.\n\nSet once, then leave alone: groups 01, 04, 05, 08. Per picture you touch **02** (location +\nmask), **03** (prompt), and **06/07** when the reference or pose changes.\n\n## Knobs\n- **Picture numbers are fixed to the slots**, so Picture 3 is always the skeleton even when\n  Reference 2 is bypassed. Safe to refer to them in the prompt.\n- **Denoise is 1.0**: the masked area is built from scratch. Pose no longer needs to survive from\n  the latent, so nothing of the location photo's original contents bleeds into her.\n- **Grow mask** feathers the seam by 12px. Raise it if you see an outline, lower it if the\n  background gets eaten.\n- **Wrong scale?** Paint the mask the size you want her to be -- the model fills the shape.\n- **Skeleton too literal / not detected?** Ctrl+B the *Skeleton* node to drop the pose reference\n  entirely; the rest of the workflow keeps working.\n- **No references at all?** Also Ctrl+B the *Krea 2 image reference LoRA* in group 01 and the\n  Reference loaders, and it falls back to prompt-only inpainting.\n- **Grain too strong / too clean?** `iso_grain` on *Camera Imperfections*: 0.015 clean daylight,\n  0.025 ordinary phone photo, 0.05+ pushed high ISO. 0 turns it off.\n- **Same picture, different grain?** Set the *Sampler*'s control to `fixed` and queue again: only\n  the filters re-run (the generation is cached), so you get another grain roll in seconds."
+   ],
+   "color": "#222",
+   "bgcolor": "#000"
+  },
+  {
+   "id": 21,
+   "type": "LoraLoaderModelOnly",
+   "pos": [
+    30,
+    670
+   ],
+   "size": [
+    320,
+    130
+   ],
+   "flags": {},
+   "order": 20,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "model",
+     "type": "MODEL",
+     "link": 32
+    }
+   ],
+   "outputs": [
+    {
+     "name": "MODEL",
+     "type": "MODEL",
+     "links": [
+      9
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "LoraLoaderModelOnly",
+    "models": [
+     {
+      "name": "krea2_style_reference.safetensors",
+      "url": "https://huggingface.co/Comfy-Org/Krea-2/resolve/main/loras/krea2_style_reference.safetensors",
+      "directory": "loras"
+     }
+    ]
+   },
+   "widgets_values": [
+    "krea2_style_reference.safetensors",
+    1.0
+   ],
+   "title": "Krea 2 image reference LoRA (bypass = no references)"
+  },
+  {
+   "id": 22,
+   "type": "LoadImage",
+   "pos": [
+    30,
+    960
+   ],
+   "size": [
+    340,
+    380
+   ],
+   "flags": {},
+   "order": 21,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [
+      28
+     ],
+     "slot_index": 0
+    },
+    {
+     "name": "MASK",
+     "type": "MASK",
+     "links": [],
+     "slot_index": 1
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "LoadImage"
+   },
+   "widgets_values": [
+    "ai_influencer/MyCharacter/dataset/41.jpg",
+    "image"
+   ],
+   "title": "IDENTITY reference (picture 1)"
+  },
+  {
+   "id": 23,
+   "type": "LoadImage",
+   "pos": [
+    400,
+    960
+   ],
+   "size": [
+    340,
+    380
+   ],
+   "flags": {},
+   "order": 22,
+   "mode": 4,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [
+      29
+     ],
+     "slot_index": 0
+    },
+    {
+     "name": "MASK",
+     "type": "MASK",
+     "links": [],
+     "slot_index": 1
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "LoadImage"
+   },
+   "widgets_values": [
+    "ai_influencer/MyCharacter/dataset/37.jpg",
+    "image"
+   ],
+   "title": "SECOND reference (picture 2)"
+  },
+  {
+   "id": 25,
+   "type": "FluxKontextMultiReferenceLatentMethod",
+   "pos": [
+    1750,
+    330
+   ],
+   "size": [
+    320,
+    80
+   ],
+   "flags": {},
+   "order": 23,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "conditioning",
+     "type": "CONDITIONING",
+     "link": 31
+    }
+   ],
+   "outputs": [
+    {
+     "name": "CONDITIONING",
+     "type": "CONDITIONING",
+     "links": [
+      6,
+      10
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "FluxKontextMultiReferenceLatentMethod"
+   },
+   "widgets_values": [
+    "index_timestep_zero"
+   ],
+   "showAdvanced": true
+  },
+  {
+   "id": 26,
+   "type": "LoadImage",
+   "pos": [
+    30,
+    1540
+   ],
+   "size": [
+    340,
+    380
+   ],
+   "flags": {},
+   "order": 24,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [
+      33
+     ],
+     "slot_index": 0
+    },
+    {
+     "name": "MASK",
+     "type": "MASK",
+     "links": [],
+     "slot_index": 1
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "LoadImage"
+   },
+   "widgets_values": [
+    "ai_influencer/MyCharacter/poses/pic_36_big.jpg",
+    "image"
+   ],
+   "title": "POSE reference -> skeleton"
+  },
+  {
+   "id": 28,
+   "type": "CheckpointLoaderSimple",
+   "pos": [
+    400,
+    1540
+   ],
+   "size": [
+    340,
+    110
+   ],
+   "flags": {},
+   "order": 25,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "MODEL",
+     "type": "MODEL",
+     "links": [
+      34
+     ],
+     "slot_index": 0
+    },
+    {
+     "name": "CLIP",
+     "type": "CLIP",
+     "links": [],
+     "slot_index": 1
+    },
+    {
+     "name": "VAE",
+     "type": "VAE",
+     "links": [
+      35
+     ],
+     "slot_index": 2
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "CheckpointLoaderSimple",
+    "models": [
+     {
+      "name": "sdpose_wholebody_fp16.safetensors",
+      "url": "https://huggingface.co/Comfy-Org/SDPose/resolve/main/checkpoints/sdpose_wholebody_fp16.safetensors",
+      "directory": "checkpoints"
+     }
+    ]
+   },
+   "widgets_values": [
+    "sdpose_wholebody_fp16.safetensors"
+   ],
+   "title": "SDPose model"
+  },
+  {
+   "id": 27,
+   "type": "ImageScaleToTotalPixels",
+   "pos": [
+    400,
+    1690
+   ],
+   "size": [
+    340,
+    130
+   ],
+   "flags": {},
+   "order": 26,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "image",
+     "type": "IMAGE",
+     "link": 33
+    }
+   ],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [
+      36
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "ImageScaleToTotalPixels"
+   },
+   "widgets_values": [
+    "lanczos",
+    1.0,
+    16
+   ]
+  },
+  {
+   "id": 29,
+   "type": "SDPoseKeypointExtractor",
+   "pos": [
+    770,
+    1540
+   ],
+   "size": [
+    320,
+    160
+   ],
+   "flags": {},
+   "order": 27,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "model",
+     "type": "MODEL",
+     "link": 34
+    },
+    {
+     "name": "vae",
+     "type": "VAE",
+     "link": 35
+    },
+    {
+     "name": "image",
+     "type": "IMAGE",
+     "link": 36
+    },
+    {
+     "name": "bboxes",
+     "type": "BOUNDING_BOX",
+     "link": null,
+     "shape": 7
+    }
+   ],
+   "outputs": [
+    {
+     "name": "keypoints",
+     "type": "POSE_KEYPOINT",
+     "links": [
+      37
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "SDPoseKeypointExtractor"
+   },
+   "widgets_values": [
+    16
+   ]
+  },
+  {
+   "id": 30,
+   "type": "SDPoseDrawKeypoints",
+   "pos": [
+    770,
+    1740
+   ],
+   "size": [
+    320,
+    250
+   ],
+   "flags": {},
+   "order": 28,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "keypoints",
+     "type": "POSE_KEYPOINT",
+     "link": 37
+    }
+   ],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [
+      38,
+      39
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "SDPoseDrawKeypoints"
+   },
+   "widgets_values": [
+    true,
+    true,
+    false,
+    true,
+    4,
+    2,
+    0.5,
+    true
+   ],
+   "title": "Skeleton (bypass this to drop the pose)"
+  },
+  {
+   "id": 31,
+   "type": "PreviewImage",
+   "pos": [
+    1120,
+    1540
+   ],
+   "size": [
+    340,
+    380
+   ],
+   "flags": {},
+   "order": 29,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "images",
+     "type": "IMAGE",
+     "link": 38
+    }
+   ],
+   "outputs": [],
+   "properties": {
+    "Node name for S&R": "PreviewImage"
+   },
+   "widgets_values": [],
+   "title": "Check the skeleton"
+  },
+  {
+   "id": 32,
+   "type": "LoadBackgroundRemovalModel",
+   "pos": [
+    2480,
+    760
+   ],
+   "size": [
+    340,
+    60
+   ],
+   "flags": {},
+   "order": 30,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "bg_model",
+     "type": "BACKGROUND_REMOVAL",
+     "links": [
+      40
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "LoadBackgroundRemovalModel",
+    "models": [
+     {
+      "name": "birefnet.safetensors",
+      "url": "https://huggingface.co/Comfy-Org/BiRefNet/resolve/main/background_removal/birefnet.safetensors",
+      "directory": "background_removal"
+     }
+    ]
+   },
+   "widgets_values": [
+    "birefnet.safetensors"
+   ]
+  },
+  {
+   "id": 33,
+   "type": "RemoveBackground",
+   "pos": [
+    2480,
+    870
+   ],
+   "size": [
+    320,
+    50
+   ],
+   "flags": {},
+   "order": 31,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "bg_removal_model",
+     "type": "BACKGROUND_REMOVAL",
+     "link": 40
+    },
+    {
+     "name": "image",
+     "type": "IMAGE",
+     "link": 41
+    }
+   ],
+   "outputs": [
+    {
+     "name": "mask",
+     "type": "MASK",
+     "links": [
+      43
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "RemoveBackground"
+   },
+   "widgets_values": []
+  },
+  {
+   "id": 34,
+   "type": "AIInfluencerBlurBackground",
+   "pos": [
+    2480,
+    970
+   ],
+   "size": [
+    340,
+    180
+   ],
+   "flags": {},
+   "order": 32,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "image",
+     "type": "IMAGE",
+     "link": 42
+    },
+    {
+     "name": "subject_mask",
+     "type": "MASK",
+     "link": 43
+    }
+   ],
+   "outputs": [
+    {
+     "name": "image",
+     "type": "IMAGE",
+     "links": [
+      45
+     ],
+     "slot_index": 0
+    },
+    {
+     "name": "mask_used",
+     "type": "MASK",
+     "links": [],
+     "slot_index": 1
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerBlurBackground"
+   },
+   "widgets_values": [
+    1.5,
+    0.4,
+    0.3,
+    0.0
+   ],
+   "title": "Blur Background"
+  },
+  {
+   "id": 35,
+   "type": "AIInfluencerCameraImperfections",
+   "pos": [
+    2480,
+    1190
+   ],
+   "size": [
+    340,
+    280
+   ],
+   "flags": {},
+   "order": 33,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "image",
+     "type": "IMAGE",
+     "link": 45
+    }
+   ],
+   "outputs": [
+    {
+     "name": "image",
+     "type": "IMAGE",
+     "links": [
+      46
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerCameraImperfections"
+   },
+   "widgets_values": [
+    42,
+    "randomize",
+    0.025,
+    0.1,
+    0.35,
+    0.05,
+    0.15,
+    0.3
+   ],
+   "title": "Camera Imperfections"
+  }
+ ],
+ "links": [
+  [
+   1,
+   1,
+   0,
+   4,
+   0,
+   "MODEL"
+  ],
+  [
+   2,
+   5,
+   0,
+   6,
+   0,
+   "IMAGE"
+  ],
+  [
+   3,
+   7,
+   2,
+   8,
+   0,
+   "STRING"
+  ],
+  [
+   4,
+   2,
+   0,
+   9,
+   0,
+   "CLIP"
+  ],
+  [
+   5,
+   8,
+   0,
+   9,
+   5,
+   "STRING"
+  ],
+  [
+   6,
+   25,
+   0,
+   10,
+   0,
+   "CONDITIONING"
+  ],
+  [
+   7,
+   6,
+   0,
+   11,
+   0,
+   "IMAGE"
+  ],
+  [
+   8,
+   3,
+   0,
+   11,
+   1,
+   "VAE"
+  ],
+  [
+   9,
+   21,
+   0,
+   12,
+   0,
+   "MODEL"
+  ],
+  [
+   10,
+   25,
+   0,
+   12,
+   1,
+   "CONDITIONING"
+  ],
+  [
+   11,
+   10,
+   0,
+   12,
+   2,
+   "CONDITIONING"
+  ],
+  [
+   13,
+   12,
+   0,
+   13,
+   0,
+   "LATENT"
+  ],
+  [
+   14,
+   3,
+   0,
+   13,
+   1,
+   "VAE"
+  ],
+  [
+   16,
+   8,
+   0,
+   14,
+   1,
+   "STRING"
+  ],
+  [
+   17,
+   6,
+   0,
+   15,
+   0,
+   "IMAGE"
+  ],
+  [
+   18,
+   13,
+   0,
+   15,
+   1,
+   "IMAGE"
+  ],
+  [
+   19,
+   5,
+   1,
+   17,
+   0,
+   "MASK"
+  ],
+  [
+   20,
+   11,
+   0,
+   18,
+   0,
+   "LATENT"
+  ],
+  [
+   21,
+   17,
+   0,
+   18,
+   1,
+   "MASK"
+  ],
+  [
+   22,
+   18,
+   0,
+   12,
+   3,
+   "LATENT"
+  ],
+  [
+   23,
+   6,
+   0,
+   19,
+   0,
+   "IMAGE"
+  ],
+  [
+   24,
+   13,
+   0,
+   19,
+   1,
+   "IMAGE"
+  ],
+  [
+   25,
+   17,
+   0,
+   19,
+   2,
+   "MASK"
+  ],
+  [
+   27,
+   3,
+   0,
+   9,
+   1,
+   "VAE"
+  ],
+  [
+   28,
+   22,
+   0,
+   9,
+   2,
+   "IMAGE"
+  ],
+  [
+   29,
+   23,
+   0,
+   9,
+   3,
+   "IMAGE"
+  ],
+  [
+   31,
+   9,
+   0,
+   25,
+   0,
+   "CONDITIONING"
+  ],
+  [
+   32,
+   4,
+   0,
+   21,
+   0,
+   "MODEL"
+  ],
+  [
+   33,
+   26,
+   0,
+   27,
+   0,
+   "IMAGE"
+  ],
+  [
+   34,
+   28,
+   0,
+   29,
+   0,
+   "MODEL"
+  ],
+  [
+   35,
+   28,
+   2,
+   29,
+   1,
+   "VAE"
+  ],
+  [
+   36,
+   27,
+   0,
+   29,
+   2,
+   "IMAGE"
+  ],
+  [
+   37,
+   29,
+   0,
+   30,
+   0,
+   "POSE_KEYPOINT"
+  ],
+  [
+   38,
+   30,
+   0,
+   31,
+   0,
+   "IMAGE"
+  ],
+  [
+   39,
+   30,
+   0,
+   9,
+   4,
+   "IMAGE"
+  ],
+  [
+   40,
+   32,
+   0,
+   33,
+   0,
+   "BACKGROUND_REMOVAL"
+  ],
+  [
+   41,
+   19,
+   0,
+   33,
+   1,
+   "IMAGE"
+  ],
+  [
+   42,
+   19,
+   0,
+   34,
+   0,
+   "IMAGE"
+  ],
+  [
+   43,
+   33,
+   0,
+   34,
+   1,
+   "MASK"
+  ],
+  [
+   45,
+   34,
+   0,
+   35,
+   0,
+   "IMAGE"
+  ],
+  [
+   46,
+   35,
+   0,
+   14,
+   0,
+   "IMAGE"
+  ]
+ ],
+ "groups": [
+  {
+   "id": 1,
+   "title": "01 MODELS + CHARACTER LORA",
+   "bounding": [
+    0,
+    0,
+    400,
+    860
+   ],
+   "color": "#3f789e",
+   "font_size": 24,
+   "flags": {}
+  },
+  {
+   "id": 2,
+   "title": "02 LOCATION PHOTO (paint the mask here)",
+   "bounding": [
+    430,
+    0,
+    400,
+    700
+   ],
+   "color": "#b58b2a",
+   "font_size": 24,
+   "flags": {}
+  },
+  {
+   "id": 3,
+   "title": "03 PROMPT",
+   "bounding": [
+    860,
+    0,
+    830,
+    700
+   ],
+   "color": "#b58b2a",
+   "font_size": 24,
+   "flags": {}
+  },
+  {
+   "id": 4,
+   "title": "04 GENERATE (inpaint + image references)",
+   "bounding": [
+    1720,
+    0,
+    1140,
+    700
+   ],
+   "color": "#8A8",
+   "font_size": 24,
+   "flags": {}
+  },
+  {
+   "id": 5,
+   "title": "05 FIXED LOCATION (inpaint + composite)",
+   "bounding": [
+    1160,
+    900,
+    1280,
+    520
+   ],
+   "color": "#7f3f5e",
+   "flags": {}
+  },
+  {
+   "id": 6,
+   "title": "06 IDENTITY REFERENCES (face / outfit)",
+   "bounding": [
+    0,
+    900,
+    760,
+    520
+   ],
+   "color": "#b58b2a",
+   "font_size": 24,
+   "flags": {}
+  },
+  {
+   "id": 7,
+   "title": "07 POSE REFERENCE (skeleton only - nothing else is copied)",
+   "bounding": [
+    0,
+    1480,
+    1500,
+    560
+   ],
+   "color": "#a1309b",
+   "font_size": 24,
+   "flags": {}
+  },
+  {
+   "id": 8,
+   "title": "08 FILTERS \u2014 background blur + camera grain (always on)",
+   "bounding": [
+    2450,
+    700,
+    420,
+    810
+   ],
+   "color": "#a1309b",
+   "font_size": 24,
+   "flags": {}
+  }
+ ],
+ "config": {},
+ "extra": {
+  "ds": {
+   "scale": 0.6,
+   "offset": [
+    0,
+    0
+   ]
+  }
+ },
+ "version": 0.4
+}

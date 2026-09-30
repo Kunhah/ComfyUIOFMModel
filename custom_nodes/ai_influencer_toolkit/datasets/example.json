@@ -1,0 +1,10 @@
+{
+  "project": "MyCharacter",
+  "trigger": "mychr1",
+  "source_dir": "input/ai_influencer/MyCharacter/dataset_candidates",
+  "notes": "Template: copy to datasets/<YourCharacter>_v1.json. List the pictures you keep; each caption starts with the trigger word, then names everything that should stay changeable (clothing, pose, expression, background, lighting, framing) and leaves out the fixed traits (face, hair, eye colour) so they bind to the trigger.",
+  "images": [
+    {"src": "01.png", "caption": "mychr1, a woman in a grey hoodie sitting on a sofa, smiling, living room background, soft window light, medium shot"},
+    {"src": "02.png", "caption": "mychr1, a woman in a black dress standing on a street at night, neutral expression, city lights behind, full body shot"}
+  ]
+}

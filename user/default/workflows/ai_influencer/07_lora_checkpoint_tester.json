@@ -1,0 +1,393 @@
+{
+ "last_node_id": 7,
+ "last_link_id": 4,
+ "nodes": [
+  {
+   "id": 1,
+   "type": "UNETLoader",
+   "pos": [
+    30,
+    60
+   ],
+   "size": [
+    320,
+    120
+   ],
+   "flags": {},
+   "order": 0,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "MODEL",
+     "type": "MODEL",
+     "links": [
+      1
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "UNETLoader",
+    "models": [
+     {
+      "name": "krea2_turbo_fp8_scaled.safetensors",
+      "url": "https://huggingface.co/Comfy-Org/Krea-2/resolve/main/diffusion_models/krea2_turbo_fp8_scaled.safetensors",
+      "directory": "diffusion_models"
+     }
+    ]
+   },
+   "widgets_values": [
+    "krea2_turbo_fp8_scaled.safetensors",
+    "default"
+   ]
+  },
+  {
+   "id": 2,
+   "type": "CLIPLoader",
+   "pos": [
+    30,
+    210
+   ],
+   "size": [
+    320,
+    120
+   ],
+   "flags": {},
+   "order": 1,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "CLIP",
+     "type": "CLIP",
+     "links": [
+      2
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "CLIPLoader",
+    "models": [
+     {
+      "name": "qwen3vl_4b_fp8_scaled.safetensors",
+      "url": "https://huggingface.co/Comfy-Org/Krea-2/resolve/main/text_encoders/qwen3vl_4b_fp8_scaled.safetensors",
+      "directory": "text_encoders"
+     }
+    ]
+   },
+   "widgets_values": [
+    "qwen3vl_4b_fp8_scaled.safetensors",
+    "krea2",
+    "default"
+   ]
+  },
+  {
+   "id": 3,
+   "type": "VAELoader",
+   "pos": [
+    30,
+    360
+   ],
+   "size": [
+    320,
+    120
+   ],
+   "flags": {},
+   "order": 2,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "VAE",
+     "type": "VAE",
+     "links": [
+      3
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "VAELoader",
+    "models": [
+     {
+      "name": "qwen_image_vae.safetensors",
+      "url": "https://huggingface.co/Comfy-Org/Krea-2/resolve/main/vae/qwen_image_vae.safetensors",
+      "directory": "vae"
+     }
+    ]
+   },
+   "widgets_values": [
+    "qwen_image_vae.safetensors"
+   ]
+  },
+  {
+   "id": 4,
+   "type": "AIInfluencerLoraCheckpointTester",
+   "pos": [
+    460,
+    60
+   ],
+   "size": [
+    420,
+    900
+   ],
+   "flags": {},
+   "order": 3,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "model",
+     "type": "MODEL",
+     "link": 1
+    },
+    {
+     "name": "clip",
+     "type": "CLIP",
+     "link": 2
+    },
+    {
+     "name": "vae",
+     "type": "VAE",
+     "link": 3
+    },
+    {
+     "name": "clip_vision",
+     "type": "CLIP_VISION",
+     "link": null
+    }
+   ],
+   "outputs": [
+    {
+     "name": "grid",
+     "type": "IMAGE",
+     "links": [],
+     "slot_index": 0
+    },
+    {
+     "name": "images",
+     "type": "IMAGE",
+     "links": [],
+     "slot_index": 1
+    },
+    {
+     "name": "report",
+     "type": "STRING",
+     "links": [
+      4
+     ],
+     "slot_index": 2
+    },
+    {
+     "name": "best_lora",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 3
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerLoraCheckpointTester"
+   },
+   "widgets_values": [
+    "lina",
+    "l1na",
+    4,
+    3000,
+    true,
+    "",
+    "photo of [trigger], close-up portrait, looking at the camera, soft window light\nphoto of [trigger] laughing at a cafe table, candid smartphone photo\nfull body photo of [trigger] walking down a city street at night, wearing a red coat\nphoto of [trigger] in profile, hiking on a mountain trail, overcast daylight",
+    "1.0",
+    42,
+    8,
+    1.0,
+    "euler",
+    "simple",
+    832,
+    1024,
+    "",
+    false
+   ]
+  },
+  {
+   "id": 5,
+   "type": "PreviewAny",
+   "pos": [
+    910,
+    60
+   ],
+   "size": [
+    320,
+    400
+   ],
+   "flags": {},
+   "order": 4,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "source",
+     "type": "*",
+     "link": 4
+    }
+   ],
+   "outputs": [
+    {
+     "name": "STRING",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "PreviewAny"
+   },
+   "widgets_values": []
+  },
+  {
+   "id": 6,
+   "type": "CLIPVisionLoader",
+   "pos": [
+    30,
+    600
+   ],
+   "size": [
+    340,
+    60
+   ],
+   "flags": {},
+   "order": 5,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "CLIP_VISION",
+     "type": "CLIP_VISION",
+     "links": [],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "CLIPVisionLoader",
+    "models": [
+     {
+      "name": "sigclip_vision_patch14_384.safetensors",
+      "url": "https://huggingface.co/Comfy-Org/sigclip_vision_384/resolve/main/sigclip_vision_patch14_384.safetensors",
+      "directory": "clip_vision"
+     }
+    ]
+   },
+   "widgets_values": [
+    "sigclip_vision_patch14_384.safetensors"
+   ]
+  },
+  {
+   "id": 7,
+   "type": "MarkdownNote",
+   "pos": [
+    1280,
+    0
+   ],
+   "size": [
+    560,
+    1000
+   ],
+   "flags": {},
+   "order": 6,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [],
+   "properties": {
+    "Node name for S&R": "MarkdownNote"
+   },
+   "widgets_values": [
+    "# 07 LoRA Checkpoint Tester\n\nDon't just take the last checkpoint. Past a point the LoRA overtrains, and the best one is often somewhere between 2,000 and 3,000 steps. This workflow renders **the same prompts with the same seed on every checkpoint**, so only the checkpoint changes, and puts the results side by side in one grid.\n\n1. Copy your checkpoints (usually the last 4) into `models/loras/lina/`. AI Toolkit names them `l1na_000002250.safetensors` ... and the final one `l1na.safetensors`.\n2. `lora_filter` = part of the file name (`l1na`). `last_n` = how many of the newest to test (0 = all). `final_step` = your total steps (3000), so the final file is labelled by step.\n3. Queue. Columns = checkpoints (plus a no-LoRA column if `include_baseline` is on), rows = prompts. Use prompts with outfits and places that are **not** in your dataset: an overtrained LoRA copies dataset backgrounds and clothes.\n4. Pick the checkpoint that keeps the face the most stable **and** still follows the prompt. Record it:\n   `python custom_nodes/ai_influencer_toolkit/tools/pick_checkpoint.py lina --filter l1na --step 2500`\n   Workflows 08/09 then use it automatically.\n\n**Optional scores:** connect *Load CLIP Vision* to `clip_vision` and put your dataset images in `input/ai_influencer/lina/dataset/`. Each column then shows\n- `id`: similarity to the dataset (higher = more like the character)\n- `copy`: similarity to the closest single training image. If `copy` keeps rising while `id` stays flat, the later checkpoints are memorizing photos.\n\nCLIP isn't a face recognizer, so use the scores as a tie-breaker, not a verdict. With `save_best_to_character` on, the best `id` checkpoint is written to character.json.\n\nEvery run is saved to `output/projects/lina/lora_tests/<time>/` (grid.png + report.json).\n\n## Models (put them in ComfyUI/models/...)\n\n| File | Folder |\n|---|---|\n| [krea2_turbo_fp8_scaled.safetensors](https://huggingface.co/Comfy-Org/Krea-2/resolve/main/diffusion_models/krea2_turbo_fp8_scaled.safetensors) | `diffusion_models/` |\n| [qwen3vl_4b_fp8_scaled.safetensors](https://huggingface.co/Comfy-Org/Krea-2/resolve/main/text_encoders/qwen3vl_4b_fp8_scaled.safetensors) | `text_encoders/` |\n| [qwen_image_vae.safetensors](https://huggingface.co/Comfy-Org/Krea-2/resolve/main/vae/qwen_image_vae.safetensors) | `vae/` |\n| [seedvr2_3b_int8_convrot.safetensors](https://huggingface.co/Comfy-Org/SeedVR2/resolve/main/diffusion_models/seedvr2_3b_int8_convrot.safetensors) | `diffusion_models/` |\n| [seedvr2_ema_vae_fp16.safetensors](https://huggingface.co/Comfy-Org/SeedVR2/resolve/main/vae/seedvr2_ema_vae_fp16.safetensors) | `vae/` |\n| [sigclip_vision_patch14_384.safetensors](https://huggingface.co/Comfy-Org/sigclip_vision_384/resolve/main/sigclip_vision_patch14_384.safetensors) | `clip_vision/` |\n| [birefnet.safetensors](https://huggingface.co/Comfy-Org/BiRefNet/resolve/main/background_removal/birefnet.safetensors) | `background_removal/` |\n\nYour character LoRA checkpoints go in `models/loras/` (a subfolder per character is fine, e.g. `models/loras/lina/`).\n\nKrea 2 needs a big GPU (RTX 5090 / RTX 6000 Pro class). Run these on RunPod, not a 6 GB card."
+   ]
+  }
+ ],
+ "links": [
+  [
+   1,
+   1,
+   0,
+   4,
+   0,
+   "MODEL"
+  ],
+  [
+   2,
+   2,
+   0,
+   4,
+   1,
+   "CLIP"
+  ],
+  [
+   3,
+   3,
+   0,
+   4,
+   2,
+   "VAE"
+  ],
+  [
+   4,
+   4,
+   2,
+   5,
+   0,
+   "STRING"
+  ]
+ ],
+ "groups": [
+  {
+   "id": 1,
+   "title": "01 MODELS (Krea 2 Turbo: test on the model you generate with)",
+   "bounding": [
+    0,
+    0,
+    400,
+    520
+   ],
+   "color": "#3f789e",
+   "font_size": 24,
+   "flags": {}
+  },
+  {
+   "id": 2,
+   "title": "02 CHECKPOINT TEST",
+   "bounding": [
+    430,
+    0,
+    820,
+    1000
+   ],
+   "color": "#8A8",
+   "font_size": 24,
+   "flags": {}
+  },
+  {
+   "id": 3,
+   "title": "03 SCORING (optional, connect to enable)",
+   "bounding": [
+    0,
+    540,
+    400,
+    200
+   ],
+   "color": "#a1309b",
+   "font_size": 24,
+   "flags": {}
+  }
+ ],
+ "config": {},
+ "extra": {
+  "ds": {
+   "scale": 0.6,
+   "offset": [
+    0,
+    0
+   ]
+  }
+ },
+ "version": 0.4
+}

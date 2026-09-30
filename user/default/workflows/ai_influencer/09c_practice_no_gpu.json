@@ -1,0 +1,798 @@
+{
+ "last_node_id": 13,
+ "last_link_id": 14,
+ "nodes": [
+  {
+   "id": 1,
+   "type": "LoadImage",
+   "pos": [
+    30,
+    60
+   ],
+   "size": [
+    340,
+    380
+   ],
+   "flags": {},
+   "order": 0,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [
+      1
+     ],
+     "slot_index": 0
+    },
+    {
+     "name": "MASK",
+     "type": "MASK",
+     "links": [
+      2
+     ],
+     "slot_index": 1
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "LoadImage"
+   },
+   "widgets_values": [
+    "ai_influencer/MyCharacter/scenes/practice_plate.png",
+    "image"
+   ],
+   "title": "LOCATION plate (mask this one)"
+  },
+  {
+   "id": 2,
+   "type": "ImageScaleToTotalPixels",
+   "pos": [
+    30,
+    480
+   ],
+   "size": [
+    340,
+    130
+   ],
+   "flags": {},
+   "order": 1,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "image",
+     "type": "IMAGE",
+     "link": 1
+    }
+   ],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [
+      5,
+      13
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "ImageScaleToTotalPixels"
+   },
+   "widgets_values": [
+    "lanczos",
+    1.0,
+    16
+   ]
+  },
+  {
+   "id": 3,
+   "type": "GrowMask",
+   "pos": [
+    460,
+    60
+   ],
+   "size": [
+    340,
+    110
+   ],
+   "flags": {},
+   "order": 2,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "mask",
+     "type": "MASK",
+     "link": 2
+    }
+   ],
+   "outputs": [
+    {
+     "name": "MASK",
+     "type": "MASK",
+     "links": [
+      7,
+      9
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "GrowMask"
+   },
+   "widgets_values": [
+    12,
+    true
+   ],
+   "title": "Grow mask (feather the seam)"
+  },
+  {
+   "id": 4,
+   "type": "LoadImage",
+   "pos": [
+    460,
+    320
+   ],
+   "size": [
+    340,
+    380
+   ],
+   "flags": {},
+   "order": 3,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [
+      6
+     ],
+     "slot_index": 0
+    },
+    {
+     "name": "MASK",
+     "type": "MASK",
+     "links": [],
+     "slot_index": 1
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "LoadImage"
+   },
+   "widgets_values": [
+    "ai_influencer/MyCharacter/dataset/29.png",
+    "image"
+   ],
+   "title": "Any photo of her"
+  },
+  {
+   "id": 5,
+   "type": "AIInfluencerLoadCharacter",
+   "pos": [
+    890,
+    60
+   ],
+   "size": [
+    320,
+    150
+   ],
+   "flags": {},
+   "order": 4,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "name",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 0
+    },
+    {
+     "name": "trigger",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 1
+    },
+    {
+     "name": "identity_prompt",
+     "type": "STRING",
+     "links": [
+      3
+     ],
+     "slot_index": 2
+    },
+    {
+     "name": "lora_url",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 3
+    },
+    {
+     "name": "character_json",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 4
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerLoadCharacter"
+   },
+   "widgets_values": [
+    ""
+   ]
+  },
+  {
+   "id": 6,
+   "type": "AIInfluencerPromptBuilder",
+   "pos": [
+    1250,
+    60
+   ],
+   "size": [
+    400,
+    620
+   ],
+   "flags": {},
+   "order": 5,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "identity",
+     "type": "STRING",
+     "link": 3,
+     "widget": {
+      "name": "identity"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "name": "prompt",
+     "type": "STRING",
+     "links": [
+      4,
+      12
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerPromptBuilder"
+   },
+   "widgets_values": [
+    "",
+    "photo taken on an iPhone",
+    "relaxed expression, looking toward the camera",
+    "black leather jacket, white t-shirt, blue jeans",
+    "rooftop terrace at sunset, city skyline behind",
+    "85mm f/1.8 portrait lens, shallow depth of field, background strongly out of focus, eye level",
+    "warm golden hour light",
+    "",
+    "",
+    ""
+   ]
+  },
+  {
+   "id": 7,
+   "type": "PreviewAny",
+   "pos": [
+    890,
+    260
+   ],
+   "size": [
+    320,
+    420
+   ],
+   "flags": {},
+   "order": 6,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "source",
+     "type": "*",
+     "link": 4
+    }
+   ],
+   "outputs": [
+    {
+     "name": "STRING",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "PreviewAny"
+   },
+   "widgets_values": [],
+   "title": "The prompt Krea 2 would get"
+  },
+  {
+   "id": 8,
+   "type": "ImageCompositeMasked",
+   "pos": [
+    1750,
+    60
+   ],
+   "size": [
+    340,
+    150
+   ],
+   "flags": {},
+   "order": 7,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "destination",
+     "type": "IMAGE",
+     "link": 5
+    },
+    {
+     "name": "source",
+     "type": "IMAGE",
+     "link": 6
+    },
+    {
+     "name": "mask",
+     "type": "MASK",
+     "link": 7
+    }
+   ],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [
+      8
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "ImageCompositeMasked"
+   },
+   "widgets_values": [
+    0,
+    0,
+    true
+   ],
+   "title": "Keep background pixel-identical"
+  },
+  {
+   "id": 9,
+   "type": "AIInfluencerBlurBackground",
+   "pos": [
+    1750,
+    400
+   ],
+   "size": [
+    340,
+    180
+   ],
+   "flags": {},
+   "order": 8,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "image",
+     "type": "IMAGE",
+     "link": 8
+    },
+    {
+     "name": "subject_mask",
+     "type": "MASK",
+     "link": 9
+    }
+   ],
+   "outputs": [
+    {
+     "name": "image",
+     "type": "IMAGE",
+     "links": [
+      10
+     ],
+     "slot_index": 0
+    },
+    {
+     "name": "mask_used",
+     "type": "MASK",
+     "links": [],
+     "slot_index": 1
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerBlurBackground"
+   },
+   "widgets_values": [
+    1.5,
+    0.4,
+    0.3,
+    0.0
+   ],
+   "title": "Blur Background"
+  },
+  {
+   "id": 10,
+   "type": "AIInfluencerCameraImperfections",
+   "pos": [
+    1750,
+    620
+   ],
+   "size": [
+    340,
+    280
+   ],
+   "flags": {},
+   "order": 9,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "image",
+     "type": "IMAGE",
+     "link": 10
+    }
+   ],
+   "outputs": [
+    {
+     "name": "image",
+     "type": "IMAGE",
+     "links": [
+      11,
+      14
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerCameraImperfections"
+   },
+   "widgets_values": [
+    42,
+    "randomize",
+    0.025,
+    0.1,
+    0.35,
+    0.05,
+    0.15,
+    0.3
+   ],
+   "title": "Camera Imperfections"
+  },
+  {
+   "id": 11,
+   "type": "AIInfluencerSaveImage",
+   "pos": [
+    2180,
+    60
+   ],
+   "size": [
+    360,
+    420
+   ],
+   "flags": {},
+   "order": 10,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "images",
+     "type": "IMAGE",
+     "link": 11
+    },
+    {
+     "name": "prompt_text",
+     "type": "STRING",
+     "link": 12,
+     "widget": {
+      "name": "prompt_text"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [],
+     "slot_index": 0
+    },
+    {
+     "name": "output_path",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 1
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerSaveImage"
+   },
+   "widgets_values": [
+    "",
+    "misc_image",
+    "other",
+    "practice run (no GPU)",
+    "other",
+    "",
+    "",
+    "",
+    -1,
+    0,
+    "",
+    ""
+   ]
+  },
+  {
+   "id": 12,
+   "type": "ImageCompare",
+   "pos": [
+    2570,
+    60
+   ],
+   "size": [
+    340,
+    480
+   ],
+   "flags": {},
+   "order": 11,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "image_a",
+     "type": "IMAGE",
+     "link": 13
+    },
+    {
+     "name": "image_b",
+     "type": "IMAGE",
+     "link": 14
+    }
+   ],
+   "outputs": [],
+   "properties": {
+    "Node name for S&R": "ImageCompare"
+   },
+   "widgets_values": [],
+   "title": "Plate / result"
+  },
+  {
+   "id": 13,
+   "type": "MarkdownNote",
+   "pos": [
+    2980,
+    0
+   ],
+   "size": [
+    560,
+    780
+   ],
+   "flags": {},
+   "order": 12,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [],
+   "properties": {
+    "Node name for S&R": "MarkdownNote"
+   },
+   "widgets_values": [
+    "# 09c Practice run (no GPU, no models)\n\nWorkflow 09b's clicks, minus Krea 2. Everything here runs on CPU in a few seconds, so you can\nlearn the moves before the vast.ai meter starts. Queue it as is first, then change things.\n\n## The loop you are rehearsing\n1. **01**: right-click the plate -> **Open in MaskEditor**, paint where she should be, Save. The\n   shape you paint is where she lands and how big she is. `practice_plate.png` already has one\n   painted, so you can see the effect before doing your own.\n2. **03**: any photo of her. On the pod this loader doesn't exist -- Krea 2 *generates* what goes\n   inside the mask, using the character LoRA and the reference photos. Here the photo is just\n   pasted in so you can see where the mask puts it.\n3. **04**: the real Prompt Builder. Type in the fields and watch *The prompt Krea 2 would get*:\n   the mandatory \"don't look AI\" block is appended for you, every time, whatever you type.\n4. **05**: `ImageCompositeMasked` -- outside the painted mask, the plate is bit-identical. That is\n   what \"fixed background\" means.\n5. **06**: the two filter nodes, exactly as 09b runs them: background blur, then ISO grain, corner\n   fringing, falloff and a white balance drift. Queue again for a different grain roll.\n6. **07**: saved to `output/projects/MyCharacter/outputs/images/misc/` and logged, with a\n   plate/result slider.\n\n## What is missing on purpose\nKrea 2 + your character LoRA, the identity reference LoRA, and the SDPose skeleton -- all of them\nneed model files and a big GPU. In 09b they sit between groups 04 and 05. Nothing else differs:\nsame mask, same prompt node, same filters, same save.\n\nOne honest difference: here the blur's subject mask is the mask you painted; on the pod BiRefNet\ncuts her out properly, so hair and shoulders blend instead of following your brush."
+   ]
+  }
+ ],
+ "links": [
+  [
+   1,
+   1,
+   0,
+   2,
+   0,
+   "IMAGE"
+  ],
+  [
+   2,
+   1,
+   1,
+   3,
+   0,
+   "MASK"
+  ],
+  [
+   3,
+   5,
+   2,
+   6,
+   0,
+   "STRING"
+  ],
+  [
+   4,
+   6,
+   0,
+   7,
+   0,
+   "STRING"
+  ],
+  [
+   5,
+   2,
+   0,
+   8,
+   0,
+   "IMAGE"
+  ],
+  [
+   6,
+   4,
+   0,
+   8,
+   1,
+   "IMAGE"
+  ],
+  [
+   7,
+   3,
+   0,
+   8,
+   2,
+   "MASK"
+  ],
+  [
+   8,
+   8,
+   0,
+   9,
+   0,
+   "IMAGE"
+  ],
+  [
+   9,
+   3,
+   0,
+   9,
+   1,
+   "MASK"
+  ],
+  [
+   10,
+   9,
+   0,
+   10,
+   0,
+   "IMAGE"
+  ],
+  [
+   11,
+   10,
+   0,
+   11,
+   0,
+   "IMAGE"
+  ],
+  [
+   12,
+   6,
+   0,
+   11,
+   1,
+   "STRING"
+  ],
+  [
+   13,
+   2,
+   0,
+   12,
+   0,
+   "IMAGE"
+  ],
+  [
+   14,
+   10,
+   0,
+   12,
+   1,
+   "IMAGE"
+  ]
+ ],
+ "groups": [
+  {
+   "id": 1,
+   "title": "01 LOCATION PHOTO (paint the mask here)",
+   "bounding": [
+    0,
+    0,
+    400,
+    700
+   ],
+   "color": "#b58b2a",
+   "font_size": 24,
+   "flags": {}
+  },
+  {
+   "id": 2,
+   "title": "02 THE MASK",
+   "bounding": [
+    430,
+    0,
+    400,
+    220
+   ],
+   "color": "#b58b2a",
+   "font_size": 24,
+   "flags": {}
+  },
+  {
+   "id": 3,
+   "title": "03 HER (stands in for the Krea 2 generation)",
+   "bounding": [
+    430,
+    260,
+    400,
+    500
+   ],
+   "color": "#8A8",
+   "font_size": 24,
+   "flags": {}
+  },
+  {
+   "id": 4,
+   "title": "04 PROMPT (the real thing, same fields as 09b)",
+   "bounding": [
+    860,
+    0,
+    830,
+    760
+   ],
+   "color": "#b58b2a",
+   "font_size": 24,
+   "flags": {}
+  },
+  {
+   "id": 5,
+   "title": "05 FIXED BACKGROUND",
+   "bounding": [
+    1720,
+    0,
+    400,
+    300
+   ],
+   "color": "#a1309b",
+   "font_size": 24,
+   "flags": {}
+  },
+  {
+   "id": 6,
+   "title": "06 FILTERS (the same two nodes as 09b group 08)",
+   "bounding": [
+    1720,
+    340,
+    400,
+    560
+   ],
+   "color": "#a1309b",
+   "font_size": 24,
+   "flags": {}
+  },
+  {
+   "id": 7,
+   "title": "07 OUTPUT",
+   "bounding": [
+    2150,
+    0,
+    800,
+    560
+   ],
+   "color": "#444",
+   "font_size": 24,
+   "flags": {}
+  }
+ ],
+ "config": {},
+ "extra": {
+  "ds": {
+   "scale": 0.6,
+   "offset": [
+    0,
+    0
+   ]
+  }
+ },
+ "version": 0.4
+}
