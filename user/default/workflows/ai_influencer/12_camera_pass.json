@@ -4,7 +4,7 @@
  "nodes": [
   {
    "id": 1,
-   "type": "LoadImageOutput",
+   "type": "LoadImage",
    "pos": [
     30,
     60
@@ -36,13 +36,13 @@
     }
    ],
    "properties": {
-    "Node name for S&R": "LoadImageOutput"
+    "Node name for S&R": "LoadImage"
    },
    "widgets_values": [
-    "",
+    "ai_influencer_choose_a_picture.png",
     "image"
    ],
-   "title": "Pick one (refresh, newest first)"
+   "title": "Your picture (upload or drag it here)"
   },
   {
    "id": 2,
@@ -337,7 +337,7 @@
     "Node name for S&R": "MarkdownNote"
    },
    "widgets_values": [
-    "# 12 Camera pass on an existing image\n\nThe same *Camera Imperfections* node that Workflows 02-10 run at the end, on its own, for pictures\nthat were generated before it existed or that came from somewhere else. ISO grain, red/blue\nfringing towards the corners, corner falloff, and a white balance drift that changes with the seed.\n\n1. **01**: press refresh on the loader and pick any file in `output/`. For a picture that isn't in\n   the output folder, drop it in `input/` and swap this node for a normal *Load Image*.\n2. **02** is bypassed (Ctrl+B) because a final image from Workflow 08/09/10 already has its\n   background blurred. Un-bypass it for an image that doesn't.\n3. **03**: `iso_grain` 0.015 is a clean daylight shot, 0.025 an ordinary phone photo, 0.05+ pushed\n   high ISO. The seed changes the grain pattern and the white balance drift, so re-queueing gives a\n   different roll without touching anything else.\n4. **04** saves to `outputs/images/final/` and logs the pass, with a before/after slider.\n\nFor a whole folder at once, skip ComfyUI:\n\n    python custom_nodes/ai_influencer_toolkit/tools/camera_pass.py output/projects/lina/outputs/images/final\n\nIt runs the same code, gives each file its own grain from its name, and writes `<name>_camera.<ext>`\nnext to each input (`--in-place` to overwrite, `--out DIR` to collect them elsewhere)."
+    "# 12 Camera pass on an existing image\n\nThe same *Camera Imperfections* node that Workflows 02-10 run at the end, on its own, for pictures\nthat were generated before it existed or that came from somewhere else. ISO grain, red/blue\nfringing towards the corners, corner falloff, and a white balance drift that changes with the seed.\n\n1. **01**: click *choose file to upload* on the loader and pick the picture from any folder (a\n   final image is in `output/projects/<project>/outputs/images/final/`), or drag it onto the node.\n2. **02** is bypassed (Ctrl+B) because a final image from Workflow 08/09/10 already has its\n   background blurred. Un-bypass it for an image that doesn't.\n3. **03**: `iso_grain` 0.015 is a clean daylight shot, 0.025 an ordinary phone photo, 0.05+ pushed\n   high ISO. The seed changes the grain pattern and the white balance drift, so re-queueing gives a\n   different roll without touching anything else.\n4. **04** saves to `outputs/images/final/` and logs the pass, with a before/after slider.\n\nFor a whole folder at once, skip ComfyUI:\n\n    python custom_nodes/ai_influencer_toolkit/tools/camera_pass.py output/projects/lina/outputs/images/final\n\nIt runs the same code, gives each file its own grain from its name, and writes `<name>_camera.<ext>`\nnext to each input (`--in-place` to overwrite, `--out DIR` to collect them elsewhere)."
    ]
   }
  ],

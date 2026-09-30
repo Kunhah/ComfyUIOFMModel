@@ -2,6 +2,7 @@
 still needs, the Krea 2 version choice, and downloads with progress.
 
     GET  /ai_influencer/models            GPU, recommended + chosen Krea 2 version, the catalog with installed flags
+    GET  /ai_influencer/models/dropdowns  {node type: {input: [catalog files]}}, added to the loaders' dropdowns
     POST /ai_influencer/models/check      {"names": [...]} -> the ones of those that aren't installed
     POST /ai_influencer/models/download   {"names": [...]} -> starts the downloads
     GET  /ai_influencer/models/progress   per file: done / total bytes, running | finished | failed
@@ -55,6 +56,11 @@ def gguf_loaded() -> bool:
     import nodes
 
     return "UnetLoaderGGUF" in nodes.NODE_CLASS_MAPPINGS
+
+
+@routes.get("/ai_influencer/models/dropdowns")
+async def models_dropdowns(request):
+    return web.json_response(cat.dropdowns())
 
 
 @routes.post("/ai_influencer/models/addon")

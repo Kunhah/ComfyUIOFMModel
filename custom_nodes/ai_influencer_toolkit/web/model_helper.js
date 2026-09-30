@@ -1,6 +1,7 @@
 // "Models": model files for the local workflows, asked for only when they are needed. Server side: ../model_routes.py.
-// - Opening a workflow swaps Krea 2 to the version that is installed (or chosen), so ComfyUI's own missing-model
-//   list asks for the right file.
+// - The loaders' dropdowns list the catalog files even before they are downloaded, so opening a workflow never shows
+//   ComfyUI's "missing models" error; the files are asked for when you press Run.
+// - Opening a workflow swaps Krea 2 to the version that is installed (or chosen).
 // - Pressing Run with a model file missing opens a window that says what each file is for, how big it is, whether
 //   this graphics card can run it, lets you pick the Krea 2 version, and downloads into the right folder.
 // - Extensions menu -> "AI Influencer: Models" opens the same window any time.
@@ -27,6 +28,28 @@ const toast = (summary, detail, severity = "info", life = 6000) => {
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const gb = bytes => `${(bytes / 1e9).toFixed(1)} GB`;
 const byName = () => Object.fromEntries(info.models.map(m => [m.name, m]));
+
+// --- dropdowns -------------------------------------------------------------------------------------------------
+// Every node definition load (startup and each refresh) goes through api.getNodeDefs, so adding the catalog files
+// here keeps them in the dropdowns ComfyUI checks for missing models.
+const originalGetNodeDefs = api.getNodeDefs.bind(api);
+api.getNodeDefs = async function (...args) {
+  const defs = await originalGetNodeDefs(...args);
+  try {
+    const extra = await (await api.fetchApi(BASE + "/dropdowns")).json();
+    for (const [type, inputs] of Object.entries(extra)) {
+      const input = defs?.[type]?.input;
+      if (!input) continue;
+      for (const [name, files] of Object.entries(inputs)) {
+        const spec = input.required?.[name] ?? input.optional?.[name];
+        if (Array.isArray(spec?.[0])) spec[0] = [...new Set([...spec[0], ...files])].sort();  // [[files], {...}]
+        else if (spec?.[0] === "COMBO" && Array.isArray(spec[1]?.options))                   // ["COMBO", {options}]
+          spec[1].options = [...new Set([...spec[1].options, ...files])].sort();
+      }
+    }
+  } catch (e) { console.warn("[AI Influencer models] dropdowns", e); }
+  return defs;
+};
 
 // The file to use for a Krea 2 file `name`: the chosen version if installed, else any installed version, else the
 // chosen version (so whatever asks for a download asks for that one). `strict`: the chosen version, installed or not
@@ -56,7 +79,6 @@ function allNodes(graphData) {
 async function swapVersions(graphData) {
   await getInfo(true);
   const models = byName(), swapped = new Set();
-  let needed = 0;
   for (const node of allNodes(graphData)) {
     if (!Array.isArray(node.widgets_values)) continue;
     if (isKreaUnet(node.type, node.widgets_values[0])) {
@@ -71,7 +93,6 @@ async function swapVersions(graphData) {
         node.properties = { ...node.properties, "Node name for S&R": type };
         node.widgets_values = type === "UnetLoaderGGUF" ? [to] : [to, "default"];
       } else node.widgets_values[0] = to;
-      if (node.mode !== 2 && node.mode !== 4 && !models[to].installed) needed += models[to].size;
       continue;
     }
     node.widgets_values = node.widgets_values.map(v => {
@@ -82,16 +103,10 @@ async function swapVersions(graphData) {
         const meta = node.properties?.models?.find(e => e.name === v);
         if (meta) Object.assign(meta, { name: to, url: models[to].url, directory: models[to].folder });
       }
-      if (node.mode !== 2 && node.mode !== 4 && !models[to].installed) needed += models[to].size;
       return to;
     });
   }
   if (swapped.size) toast("Krea 2 version", `Using: ${[...swapped].join("; ")}.`);
-  if (needed && localStorage.getItem(HOLD_KEY) !== "1") {
-    toast("This workflow runs on your graphics card",
-      `It needs ${gb(needed)} of model files that aren't downloaded yet. You can look around without them. ` +
-      "When you press Run, a window explains each file and checks your graphics card first.", "info", 12000);
-  }
 }
 
 // --- pressing Run ----------------------------------------------------------------------------------------------
@@ -198,6 +213,7 @@ async function openWindow(names, reason) {
     const list = names.map(n => models[n]);
     const missing = list.filter(m => !m.installed && progress[m.name]?.status !== "finished");
     const usesKrea = reason === "menu" || list.some(m => KREA_GROUPS.includes(m.group));
+    const minimaxTooBig = list.some(m => m.group === "minimax") && !(info.gpu?.vram_gb >= 31);
     const running = Object.values(progress).some(p => p.status === "running");
     const total = missing.reduce((s, m) => s + m.size, 0);
     const needsAddon = list.some(m => m.loader) && !info.addon.loaded;
@@ -206,10 +222,13 @@ async function openWindow(names, reason) {
       : `<p class="muted">The Low memory version also needs the free ComfyUI-GGUF add-on (it loads GGUF files). Downloading installs it; restart ComfyUI afterwards.</p>`;
     el.innerHTML = `<div class="box">
       <h2>${reason === "run" ? "This workflow needs model files first" : "Models for the local workflows"}</h2>
-      <p>${reason === "run" ? "This workflow makes" : "The local workflows (07-10, 09b, 12) make"} the picture on <b>your own graphics card</b>, so ${reason === "run" ? "it needs" : "they need"} the AI model files on this computer.
+      <p>${reason === "run" ? "This workflow makes" : "The local workflows (07-12, 09b) make"} the picture on <b>your own graphics card</b>, so ${reason === "run" ? "it needs" : "they need"} the AI model files on this computer.
         They are downloaded once into <code>ComfyUI/models</code> and reused by every local workflow.
         The online workflows (01, 04, 05) need no downloads, but they spend Comfy credits.</p>
-      <p class="advice">${esc(info.advice)}</p>
+      ${usesKrea ? `<p class="advice">${esc(info.advice)}</p>` : ""}
+      ${minimaxTooBig ? `<p class="advice">MiniMax H3 (Workflow 11) needs a graphics card with 32 GB of memory or more
+        (RTX 5090 / RTX 6000 Pro class)${info.gpu ? `; this computer has ${esc(info.gpu.name)} (${info.gpu.vram_gb.toFixed(0)} GB)` : ""}.
+        Hold the job for a rented GPU with the Pod queue instead of downloading here.</p>` : ""}
       ${usesKrea ? `<h3>Krea 2 version</h3>
         ${Object.entries(info.versions).map(([k, v]) => {
           const size = models[v.krea2].size + models[v.krea2_te].size;

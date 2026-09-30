@@ -1,4 +1,4 @@
-"""Every model file the local workflows (07-10, 09b, 12) load: where it goes, where it comes from, how big it is,
+"""Every model file the local workflows (07-12, 09b) load: where it goes, where it comes from, how big it is,
 and what it is for in plain words. Used by model_routes.py (the "Models" window in the browser) and
 tools/models.py (the same from a terminal).
 
@@ -61,8 +61,43 @@ MODELS = [
           501324814, "Part of the upscaler"),
     Model("sigclip_vision_patch14_384.safetensors", "clip_vision", HF + "sigclip_vision_384/resolve/main/sigclip_vision_patch14_384.safetensors",
           856505640, "Scores how much each test image looks like her (Workflow 07)"),
+    Model("minimax_h3_fl2va_pruned_int8_convrot.safetensors", "diffusion_models",
+          HF + "MiniMax-H3/resolve/main/diffusion_models/minimax_h3_fl2va_pruned_int8_convrot.safetensors",
+          20970379616, "MiniMax H3, the model that turns a picture into a video with sound (Workflow 11)", "minimax"),
+    Model("qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors", "text_encoders",
+          HF + "MiniMax-H3/resolve/main/text_encoders/qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors",
+          15687142551, "Reads your video description for MiniMax H3", "minimax"),
+    Model("minimax_h3_video_vae_fp16.safetensors", "vae", HF + "MiniMax-H3/resolve/main/vae/minimax_h3_video_vae_fp16.safetensors",
+          5207808496, "Turns MiniMax H3's result into video frames", "minimax"),
+    Model("minimax_h3_audio_vae_fp32.safetensors", "vae", HF + "MiniMax-H3/resolve/main/vae/minimax_h3_audio_vae_fp32.safetensors",
+          605254808, "Turns MiniMax H3's result into the video's sound", "minimax"),
+    Model("minimax_h3_fl2v_turbo_8step_v1.0_comfyui_bf16.safetensors", "loras",
+          "https://huggingface.co/lightx2v/Minimax-h3-Turbo/resolve/main/minimax_h3_fl2v_turbo_8step_v1.0_comfyui_bf16.safetensors",
+          1956193000, "Makes MiniMax H3 finish in 8 steps instead of 20", "minimax"),
 ]
 BY_NAME = {m.name: m for m in MODELS}
+
+# The loader node inputs that pick a file from each folder. The browser adds the catalog files to these dropdowns
+# even before they are downloaded, so opening a workflow never reports a missing model; pressing Run asks for the
+# download instead (web/model_helper.js).
+LOADERS = {
+    "diffusion_models": [("UNETLoader", "unet_name")],
+    "text_encoders": [("CLIPLoader", "clip_name")],
+    "vae": [("VAELoader", "vae_name")],
+    "loras": [("LoraLoaderModelOnly", "lora_name"), ("LoraLoader", "lora_name")],
+    "checkpoints": [("CheckpointLoaderSimple", "ckpt_name")],
+    "clip_vision": [("CLIPVisionLoader", "clip_name")],
+    "background_removal": [("LoadBackgroundRemovalModel", "bg_removal_name")],
+}
+
+
+def dropdowns() -> dict[str, dict[str, list[str]]]:
+    """{node type: {input: [catalog files]}}. A file with its own loader (GGUF) only goes to that loader's input."""
+    out: dict[str, dict[str, list[str]]] = {}
+    for m in MODELS:
+        for node, inp in [(m.loader, "unet_name")] if m.loader else LOADERS.get(m.folder, []):
+            out.setdefault(node, {}).setdefault(inp, []).append(m.name)
+    return out
 
 # The Krea 2 versions. Each picks one file from the "krea2" and "krea2_te" groups.
 VERSIONS = {

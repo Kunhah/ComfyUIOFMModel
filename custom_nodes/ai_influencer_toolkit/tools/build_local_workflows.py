@@ -36,6 +36,7 @@ SEEDVR_UNET = "seedvr2_3b_int8_convrot.safetensors"
 SEEDVR_VAE = "seedvr2_ema_vae_fp16.safetensors"
 SIGCLIP = "sigclip_vision_patch14_384.safetensors"
 BIREFNET = "birefnet.safetensors"
+CHOOSE_PICTURE = "ai_influencer_choose_a_picture.png"  # input_listing.PLACEHOLDER: made in input/ on startup; Run asks for a real one
 
 NEVER = 2  # LiteGraph node mode: muted, not executed until you enable it
 BYPASS = 4  # LiteGraph node mode: passes its input straight through
@@ -495,8 +496,8 @@ def build_10():
     # Everything below is muted until you confirm a candidate.
     confirm_start = len(g.nodes)
     g.group("04 CONFIRM → 4K (muted: unmute after picking)", 0, 800, 1260, 700, color="#a1309b")
-    chosen = g.node("LoadImageOutput", (30, 860), ["", "image"], size=(340, 400),
-                    outputs=[("IMAGE", "IMAGE"), ("MASK", "MASK")], title="The candidate you picked (refresh, then choose)")
+    chosen = g.node("LoadImage", (30, 860), [CHOOSE_PICTURE, "image"], size=(340, 400),
+                    outputs=[("IMAGE", "IMAGE"), ("MASK", "MASK")], title="The candidate you picked (upload it here)")
     upscaled = seedvr_upscale(g, chosen, 420, 860, scale=4.0)
 
     g.group("05 BACKGROUND BLUR + CAMERA + SAVE", 1290, 800, 800, 940, color="#444")
@@ -516,7 +517,7 @@ ComfyUI has no "pause and ask" node, so this is two queues on one canvas.
 
 **2. Confirm.** When you like one:
 - right-click group **03** → *Set Group Nodes to Never* (so it doesn't re-roll), and groups **04** and **05** → *Set Group Nodes to Always*;
-- in *The candidate you picked*, press the refresh button and select that candidate's file (it lists the output folder, newest first);
+- in *The candidate you picked*, click *choose file to upload* and pick that candidate from `output/projects/<project>/outputs/images/candidates/` (or drag it onto the node);
 - Queue. SeedVR2 upscales it **4x** — a ~1 MP preview (≈900x1200) becomes ≈3600x4800, i.e. comfortably 4K — then the background blur and the camera imperfections pass (ISO grain, lens fringing, corner falloff) run and it is saved to `outputs/images/final/`.
 
 **Why the 4K pass upscales the picture instead of re-generating it at 4K:** a diffusion model with the same seed at a different resolution gives a *different* picture — different pose, different framing. The only way "the same image, bigger" works is to take the pixels you approved and add detail to them. That is what SeedVR2 does here.
@@ -532,8 +533,8 @@ The preview PNGs carry the full workflow inside them, so you can drag one back o
 def build_12():
     g = Graph()
     g.group("01 THE IMAGE YOU ALREADY HAVE", 0, 0, 400, 520, color="#b58b2a")
-    chosen = g.node("LoadImageOutput", (30, 60), ["", "image"], size=(340, 400),
-                    outputs=[("IMAGE", "IMAGE"), ("MASK", "MASK")], title="Pick one (refresh, newest first)")
+    chosen = g.node("LoadImage", (30, 60), [CHOOSE_PICTURE, "image"], size=(340, 400),
+                    outputs=[("IMAGE", "IMAGE"), ("MASK", "MASK")], title="Your picture (upload or drag it here)")
 
     g.group("02 BACKGROUND BLUR (bypassed: the image usually has it already)", 430, 0, 420, 520, color="#a1309b")
     blur_start = len(g.nodes)
@@ -556,8 +557,8 @@ The same *Camera Imperfections* node that Workflows 02-10 run at the end, on its
 that were generated before it existed or that came from somewhere else. ISO grain, red/blue
 fringing towards the corners, corner falloff, and a white balance drift that changes with the seed.
 
-1. **01**: press refresh on the loader and pick any file in `output/`. For a picture that isn't in
-   the output folder, drop it in `input/` and swap this node for a normal *Load Image*.
+1. **01**: click *choose file to upload* on the loader and pick the picture from any folder (a
+   final image is in `output/projects/<project>/outputs/images/final/`), or drag it onto the node.
 2. **02** is bypassed (Ctrl+B) because a final image from Workflow 08/09/10 already has its
    background blurred. Un-bypass it for an image that doesn't.
 3. **03**: `iso_grain` 0.015 is a clean daylight shot, 0.025 an ordinary phone photo, 0.05+ pushed

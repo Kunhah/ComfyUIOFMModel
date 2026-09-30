@@ -46,12 +46,15 @@ try:
     from . import input_listing
 
     input_listing.install()  # LoadImage dropdown includes input/ai_influencer/** subfolders
+    input_listing.make_placeholder()  # picked by web/input_helper.js for pictures this computer doesn't have
+    input_listing.install_routes()
 except Exception as e:
     import logging
 
-    logging.warning("AI Influencer LoadImage subfolder listing disabled: %s", e)
+    logging.warning("AI Influencer picture inputs helper disabled: %s", e)
 
-WEB_DIRECTORY = "./web"  # web/pod_queue.js: the "Pod queue" panel; web/model_helper.js: the "Models" window
+WEB_DIRECTORY = "./web"  # web/pod_queue.js: the "Pod queue" panel; web/model_helper.js: the "Models" window;
+                         # web/input_helper.js: pictures a workflow names that aren't on this computer
 
 
 class AIInfluencerToolkitExtension(ComfyExtension):

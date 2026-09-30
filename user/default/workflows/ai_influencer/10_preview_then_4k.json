@@ -655,7 +655,7 @@
   },
   {
    "id": 15,
-   "type": "LoadImageOutput",
+   "type": "LoadImage",
    "pos": [
     30,
     860
@@ -685,13 +685,13 @@
     }
    ],
    "properties": {
-    "Node name for S&R": "LoadImageOutput"
+    "Node name for S&R": "LoadImage"
    },
    "widgets_values": [
-    "",
+    "ai_influencer_choose_a_picture.png",
     "image"
    ],
-   "title": "The candidate you picked (refresh, then choose)"
+   "title": "The candidate you picked (upload it here)"
   },
   {
    "id": 16,
@@ -1389,7 +1389,7 @@
     "Node name for S&R": "MarkdownNote"
    },
    "widgets_values": [
-    "# 10 Preview first, 4K after\n\nComfyUI has no \"pause and ask\" node, so this is two queues on one canvas.\n\n**1. Preview.** Queue as is: group 03 renders **4 small candidates** at ~1 MP (8 steps, no polish, no upscale, no blur \u2014 the cheap part). They are saved to `outputs/images/candidates/` and shown in *Pick one of these*. Queue again for 4 more. Lower the `megapixels` on *Preview size* for faster, rougher previews.\n\n**2. Confirm.** When you like one:\n- right-click group **03** \u2192 *Set Group Nodes to Never* (so it doesn't re-roll), and groups **04** and **05** \u2192 *Set Group Nodes to Always*;\n- in *The candidate you picked*, press the refresh button and select that candidate's file (it lists the output folder, newest first);\n- Queue. SeedVR2 upscales it **4x** \u2014 a ~1 MP preview (\u2248900x1200) becomes \u22483600x4800, i.e. comfortably 4K \u2014 then the background blur and the camera imperfections pass (ISO grain, lens fringing, corner falloff) run and it is saved to `outputs/images/final/`.\n\n**Why the 4K pass upscales the picture instead of re-generating it at 4K:** a diffusion model with the same seed at a different resolution gives a *different* picture \u2014 different pose, different framing. The only way \"the same image, bigger\" works is to take the pixels you approved and add detail to them. That is what SeedVR2 does here.\n\nWant the skin-polish pass as well? Workflow 08 has it (generate \u2192 polish \u2192 2x upscale \u2192 blur) in one queue; this workflow trades that for the preview/confirm split.\n\nThe preview PNGs carry the full workflow inside them, so you can drag one back onto the canvas to recover its exact seed and prompt.\n\n{MODELS_NOTE}"
+    "# 10 Preview first, 4K after\n\nComfyUI has no \"pause and ask\" node, so this is two queues on one canvas.\n\n**1. Preview.** Queue as is: group 03 renders **4 small candidates** at ~1 MP (8 steps, no polish, no upscale, no blur \u2014 the cheap part). They are saved to `outputs/images/candidates/` and shown in *Pick one of these*. Queue again for 4 more. Lower the `megapixels` on *Preview size* for faster, rougher previews.\n\n**2. Confirm.** When you like one:\n- right-click group **03** \u2192 *Set Group Nodes to Never* (so it doesn't re-roll), and groups **04** and **05** \u2192 *Set Group Nodes to Always*;\n- in *The candidate you picked*, click *choose file to upload* and pick that candidate from `output/projects/<project>/outputs/images/candidates/` (or drag it onto the node);\n- Queue. SeedVR2 upscales it **4x** \u2014 a ~1 MP preview (\u2248900x1200) becomes \u22483600x4800, i.e. comfortably 4K \u2014 then the background blur and the camera imperfections pass (ISO grain, lens fringing, corner falloff) run and it is saved to `outputs/images/final/`.\n\n**Why the 4K pass upscales the picture instead of re-generating it at 4K:** a diffusion model with the same seed at a different resolution gives a *different* picture \u2014 different pose, different framing. The only way \"the same image, bigger\" works is to take the pixels you approved and add detail to them. That is what SeedVR2 does here.\n\nWant the skin-polish pass as well? Workflow 08 has it (generate \u2192 polish \u2192 2x upscale \u2192 blur) in one queue; this workflow trades that for the preview/confirm split.\n\nThe preview PNGs carry the full workflow inside them, so you can drag one back onto the canvas to recover its exact seed and prompt.\n\n{MODELS_NOTE}"
    ]
   }
  ],
