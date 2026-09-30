@@ -1,0 +1,49 @@
+HOW TO START COMFYUI ON WINDOWS
+===============================
+
+You do not need to know how to code. You only double-click two files.
+
+
+1. GET THE FOLDER
+   If you received a link to GitHub: click the green "Code" button, then "Download ZIP".
+   Right-click the ZIP, choose "Extract All", and put the folder somewhere simple,
+   for example C:\ComfyUI  (a short path without special characters works best).
+
+
+2. START COMFYUI
+   Open the folder and double-click  START_COMFYUI.bat
+
+   - If Windows shows "Windows protected your PC", click "More info" and then "Run anyway".
+   - If Python is not installed, the black window asks you to install it. Press Y.
+     If that does not work, install Python 3.13 from https://www.python.org/downloads/windows/
+     (tick "Add python.exe to PATH" at the bottom of the first installer screen),
+     then double-click START_COMFYUI.bat again.
+   - The FIRST time, it downloads a few GB and can take 10-30 minutes. Let it finish.
+   - A small window for API keys opens once. Fill in what you were given, or just click Save.
+
+   When it is ready, ComfyUI opens in your web browser by itself.
+   If it does not, open the browser and go to  http://127.0.0.1:8188
+
+   Keep the black window open while you work. Closing it turns ComfyUI off.
+   Next time, just double-click START_COMFYUI.bat again: it starts in under a minute.
+
+
+3. OPEN A WORKFLOW
+   In ComfyUI click  Workflow -> Open  and pick a file from the "ai_influencer" folder,
+   then click "Run" (or "Queue"). Your pictures are saved in the "output" folder.
+
+
+4. CHANGE YOUR API KEYS LATER
+   Double-click  SETTINGS_API_KEYS.bat , fill in the boxes, click Save,
+   then close the black ComfyUI window and start START_COMFYUI.bat again.
+   Each key has a "Get key" button that opens the website where you create it.
+   Keys cost money when used. Never send your keys (or the .env file) to anyone.
+
+
+IF SOMETHING GOES WRONG
+   - Read the last lines in the black window; they usually say what happened.
+   - Without an NVIDIA graphics card, ComfyUI runs on the processor. That works, but
+     local image generation is very slow. The workflows that use online services still work.
+   - To redo the installation, delete the "venv" folder and double-click START_COMFYUI.bat.
+   - Still stuck? Take a screenshot of the black window and send it to the person who
+     shared this folder with you.

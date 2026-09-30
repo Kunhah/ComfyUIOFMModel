@@ -60,6 +60,15 @@ python main.py
 Open http://127.0.0.1:8188, then **Workflow → Open** and pick one of the thirteen files under
 `user/default/workflows/ai_influencer/` (or use the workflow browser's "Workflows" tab).
 
+**On Windows, without a terminal:** double-click `START_COMFYUI.bat`. The first run finds or
+installs Python (via winget), creates `venv\`, installs the PyTorch build that fits the PC
+(`cu130`, `cu126` for GTX 10-series and older, or CPU with `--cpu` when there is no NVIDIA card)
+plus `requirements.txt`, opens the key window once, and then starts ComfyUI with the browser.
+Later runs start right away, and they reinstall only when `requirements.txt` changes.
+`SETTINGS_API_KEYS.bat` opens that key window (`tools/configure_gui.py`, a window version of
+`configure.py`). `START_HERE_WINDOWS.txt` has the same steps for people who don't code. The logic
+is in `tools/windows_launcher.py`, and `START_COMFYUI.bat --reinstall` redoes the installs.
+
 ## Credentials (API keys)
 
 Every key and per-user setting lives in one file, `.env` at the ComfyUI root. It is gitignored and
