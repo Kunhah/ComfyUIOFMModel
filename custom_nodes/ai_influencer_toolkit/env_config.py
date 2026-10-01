@@ -55,7 +55,8 @@ SETTINGS = [
 ]
 BY_NAME = {s.name: s for s in SETTINGS}
 
-_loaded = False
+_loaded: float | None | bool = False  # mtime of .env when last read; False = never read
+_from_file: set[str] = set()  # keys load_env() put into os.environ (the shell's own stay untouched)
 
 
 def parse_env_file(path: str = ENV_FILE) -> dict[str, str]:
@@ -81,15 +82,25 @@ def parse_env_file(path: str = ENV_FILE) -> dict[str, str]:
 
 
 def load_env() -> None:
-    """Copy `.env` into os.environ once, without overriding variables that are already set
-    (fal_client and huggingface_hub read FAL_KEY / HF_TOKEN from the environment themselves)."""
+    """Copy `.env` into os.environ, without overriding variables set in the shell (fal_client and
+    huggingface_hub read FAL_KEY / HF_TOKEN from the environment themselves). Read again whenever
+    `.env` changes, so a key saved while ComfyUI is running is used without a restart."""
     global _loaded
-    if _loaded:
+    try:
+        mtime = os.path.getmtime(ENV_FILE)
+    except OSError:
+        mtime = None
+    if _loaded is not False and _loaded == mtime:
         return
-    _loaded = True
-    for key, value in parse_env_file().items():
-        if value and not os.environ.get(key):
-            os.environ[key] = value
+    _loaded = mtime
+    for key, value in parse_env_file(ENV_FILE).items():
+        if key in _from_file or not os.environ.get(key):
+            if value:
+                os.environ[key] = value
+                _from_file.add(key)
+            elif key in _from_file:
+                os.environ.pop(key, None)  # cleared in .env
+                _from_file.discard(key)
 
 
 def get(name: str) -> str:

@@ -13,7 +13,7 @@ from typing_extensions import override
 
 from . import logging_util, pricing
 
-_PROVIDERS = ["krea", "local_krea2", "openai_gpt_image", "bytedance_seedream", "bytedance_seedance", "openrouter", "other"]
+_PROVIDERS = ["krea", "local_krea2", "openai_gpt_image", "bytedance_seedream", "bytedance_seedance", "openrouter", "fal_ai", "other"]
 _OPERATIONS = ["generate", "edit", "refine", "image_to_video", "other"]
 _IMAGE_STAGES = ["character_candidate", "character_canonical", "krea_candidate", "gpt_refined", "local_candidate", "local_final", "character_sheet", "misc_image"]
 _VIDEO_STAGES = ["seedance_video", "minimax_h3_video", "misc_video"]

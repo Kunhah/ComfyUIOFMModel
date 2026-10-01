@@ -94,8 +94,11 @@ def reference_embeddings(scorer: FaceScorer, folder: str) -> tuple[np.ndarray, l
 
 
 def main() -> int:
-    if len(sys.argv) != 2:
+    if len(sys.argv) != 2 or sys.argv[1] in ("-h", "--help"):
         print(__doc__)
+        return 0 if len(sys.argv) == 2 else 1
+    if not os.path.isdir(sys.argv[1]):
+        print(f"Not a folder: {sys.argv[1]}", file=sys.stderr)
         return 1
     scorer = FaceScorer()
     paths = list_images(sys.argv[1])

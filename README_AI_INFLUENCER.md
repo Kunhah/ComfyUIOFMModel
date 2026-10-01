@@ -89,7 +89,10 @@ python custom_nodes/ai_influencer_toolkit/tools/configure.py --set HF_TOKEN=hf_.
 ```
 
 It creates `.env` from `.env.example` the first time, keeps any other lines you have in it, and
-makes it readable by you only. Restart ComfyUI afterwards. A variable exported in your shell
+makes it readable by you only. The toolkit reads `.env` again whenever it changes, so no restart is
+needed. Pressing Run on a workflow whose nodes need a key that isn't set (`FAL_KEY` for Workflow
+06's fal.ai nodes) opens a window to paste it (`web/key_helper.js`, server side `key_routes.py`).
+It is saved to `.env` the same way, and the run goes ahead. A variable exported in your shell
 wins over `.env`. You only need the keys for the parts you use:
 
 | Setting | Needed for | Get it at |

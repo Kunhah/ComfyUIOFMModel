@@ -43,6 +43,13 @@ except Exception as e:
     logging.warning("AI Influencer Models window disabled: %s", e)
 
 try:
+    from . import key_routes  # noqa: F401  (registers the /ai_influencer/keys routes)
+except Exception as e:
+    import logging
+
+    logging.warning("AI Influencer key prompt disabled: %s", e)
+
+try:
     from . import input_listing
 
     input_listing.install()  # LoadImage dropdown includes input/ai_influencer/** subfolders
@@ -54,7 +61,8 @@ except Exception as e:
     logging.warning("AI Influencer picture inputs helper disabled: %s", e)
 
 WEB_DIRECTORY = "./web"  # web/pod_queue.js: the "Pod queue" panel; web/model_helper.js: the "Models" window;
-                         # web/input_helper.js: pictures a workflow names that aren't on this computer
+                         # web/input_helper.js: pictures a workflow names that aren't on this computer;
+                         # web/key_helper.js: asks for a missing key (FAL_KEY) when you press Run
 
 
 class AIInfluencerToolkitExtension(ComfyExtension):
