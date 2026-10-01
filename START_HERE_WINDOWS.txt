@@ -2,7 +2,7 @@ HOW TO START COMFYUI ON WINDOWS
 ===============================
 
 You do not need to know how to code. You only double-click files.
-(On Linux: run  ./start_comfyui.sh  and  ./settings_api_keys.sh  instead. Everything else is the same.)
+(On Linux: run  ./start_comfyui.sh,  ./settings_api_keys.sh  and  ./update_comfyui.sh  instead. Everything else is the same.)
 
 
 1. GET THE FOLDER
@@ -78,6 +78,17 @@ You do not need to know how to code. You only double-click files.
    then close the black ComfyUI window and start START_COMFYUI.bat again.
    Each key has a "Get key" button that opens the website where you create it.
    Keys cost money when used. Never send your keys (or the .env file) to anyone.
+
+
+6. GET THE NEWEST VERSION
+   Close the black ComfyUI window, then double-click  UPDATE_COMFYUI.bat
+   It downloads only what changed. Your pictures, models, keys and the venv are kept.
+   Then start START_COMFYUI.bat as usual (it installs new packages by itself if needed).
+   - If it says GitHub answered 404: the project is private. Ask the person who shared it
+     for access and a GitHub token, put the token in SETTINGS_API_KEYS.bat (GITHUB_TOKEN),
+     and run UPDATE_COMFYUI.bat again.
+   - Changed one of the workflows that came with the folder? Save it under a new name
+     first: the update replaces the original files.
 
 
 IF SOMETHING GOES WRONG

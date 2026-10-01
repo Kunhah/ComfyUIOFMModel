@@ -52,6 +52,12 @@ SETTINGS = [
             "Blank = <your HF user>/<project>-lora-transfer, created on first use."),
     Setting("AI_INFLUENCER_LORA_PATH", "Path inside the HF repo of the character LoRA the ComfyUI pod loads, "
             "e.g. results/<instance id>/<name>_000002500.safetensors (vast_pod.py watch prints it)."),
+    Setting("AI_INFLUENCER_UPDATE_REPO", "GitHub repo UPDATE_COMFYUI.bat / update_comfyui.sh get new versions from, "
+            "as owner/name.", default="Kunhah/ComfyUIOFMModel"),
+    Setting("AI_INFLUENCER_UPDATE_BRANCH", "Branch of that repo to update to.", default="main"),
+    Setting("GITHUB_TOKEN", "GitHub token with read access to that repo. Only needed while it is private "
+            "(a fine-grained token with Contents: Read-only is enough).",
+            secret=True, url="https://github.com/settings/personal-access-tokens/new"),
 ]
 BY_NAME = {s.name: s for s in SETTINGS}
 

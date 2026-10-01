@@ -31,6 +31,8 @@ uv.lock
 .env.*
 !.env.example
 /logs/
+# Version the ZIP updater (tools/update.py) installed last
+.update_version
 
 # Ship the toolkit and its workflows although upstream ignores custom_nodes/ and user/ ...
 !/custom_nodes/

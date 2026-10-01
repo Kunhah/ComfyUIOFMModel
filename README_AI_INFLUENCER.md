@@ -77,6 +77,16 @@ PyTorch only when the venv doesn't have it yet, and it adds `--cpu` when the ins
 run on the card (as with this box's GTX 1060). Extra `main.py` arguments go after `--`, as in
 `./start_comfyui.sh -- --port 8190`.
 
+**Updating to the newest version of this fork:** `UPDATE_COMFYUI.bat` / `./update_comfyui.sh`
+(`tools/update.py`, standard library only). In a Git clone it runs `git pull --ff-only` and stops
+if tracked files were edited. In a folder downloaded as a ZIP it asks GitHub for the newest commit
+of `AI_INFLUENCER_UPDATE_REPO` (default `Kunhah/ComfyUIOFMModel`) on `AI_INFLUENCER_UPDATE_BRANCH`
+(default `main`), downloads that ZIP and overwrites only the files whose content changed; the
+installed commit is kept in `.update_version`. Anything not in the repo (venv, models, input,
+output, `.env`, your own workflows) is untouched, files deleted upstream are left behind, and a
+shipped workflow edited locally is replaced. While the repo is private, ZIP users need a GitHub
+token with read access in `GITHUB_TOKEN`. The next start installs any changed `requirements.txt`.
+
 ## Credentials (API keys)
 
 Every key and per-user setting lives in one file, `.env` at the ComfyUI root. It is gitignored and
