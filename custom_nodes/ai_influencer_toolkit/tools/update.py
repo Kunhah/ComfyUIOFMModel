@@ -30,6 +30,8 @@ import env_config  # noqa: E402
 ROOT = env_config.REPO_ROOT
 STAMP = os.path.join(ROOT, ".update_version")  # commit of the last ZIP update; gitignored
 START = "START_COMFYUI.bat" if os.name == "nt" else "./start_comfyui.sh"
+# Also here, not only in env_config: an update can bring an env_config.py that doesn't list these settings.
+DEFAULTS = {"AI_INFLUENCER_UPDATE_REPO": "Kunhah/ComfyUIOFMModel", "AI_INFLUENCER_UPDATE_BRANCH": "main"}
 
 
 def say(msg: str = "") -> None:
@@ -53,11 +55,15 @@ def git_update() -> int:
     return result.returncode
 
 
+def setting(name: str) -> str:
+    return env_config.get(name) or DEFAULTS.get(name, "")
+
+
 def github(path: str, accept: str) -> bytes:
-    repo = env_config.get("AI_INFLUENCER_UPDATE_REPO")
+    repo = setting("AI_INFLUENCER_UPDATE_REPO")
     req = urllib.request.Request(f"https://api.github.com/repos/{repo}/{path}",
                                  headers={"Accept": accept, "User-Agent": "ai-influencer-update"})
-    token = env_config.get("GITHUB_TOKEN")
+    token = setting("GITHUB_TOKEN")
     if token:
         req.add_header("Authorization", f"Bearer {token}")
     try:
@@ -73,8 +79,8 @@ def github(path: str, accept: str) -> bytes:
 
 
 def zip_update() -> int:
-    branch = env_config.get("AI_INFLUENCER_UPDATE_BRANCH")
-    say(f"Checking {env_config.get('AI_INFLUENCER_UPDATE_REPO')} ({branch}) for a new version...")
+    branch = setting("AI_INFLUENCER_UPDATE_BRANCH")
+    say(f"Checking {setting('AI_INFLUENCER_UPDATE_REPO')} ({branch}) for a new version...")
     sha = github(f"commits/{branch}", "application/vnd.github.sha").decode().strip()
     try:
         with open(STAMP, encoding="utf-8") as f:
