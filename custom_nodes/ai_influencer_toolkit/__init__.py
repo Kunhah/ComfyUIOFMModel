@@ -18,6 +18,8 @@ from .nodes_pick import AIInfluencerPickCandidate, AIInfluencerPickWinner
 from .nodes_save import AIInfluencerSaveImage, AIInfluencerSaveVideo
 from .nodes_sheet import AIInfluencerCustomSheet, AIInfluencerSheetPrompt, AIInfluencerSliceSheet
 from .nodes_variation import AIInfluencerPlacementVariations
+from .nodes_pose_angle import AIInfluencerPoseAngle
+from .nodes_video import AIInfluencerVideoPrompt
 
 try:
     from .nodes_fal_lora import AIInfluencerFalLoraImage, AIInfluencerTrainCharacterLoRA
@@ -78,12 +80,14 @@ class AIInfluencerToolkitExtension(ComfyExtension):
             AIInfluencerBlurBackground,
             AIInfluencerCameraImperfections,
             AIInfluencerAutoMask,
+            AIInfluencerPoseAngle,
             AIInfluencerPlacementVariations,
             AIInfluencerPickCandidate,
             AIInfluencerPickWinner,
             AIInfluencerSheetPrompt,
             AIInfluencerSliceSheet,
             AIInfluencerCustomSheet,
+            AIInfluencerVideoPrompt,
             *_FAL_LORA_NODES,
         ]
 

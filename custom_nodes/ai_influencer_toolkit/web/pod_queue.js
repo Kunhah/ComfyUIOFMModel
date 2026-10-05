@@ -145,7 +145,7 @@ root.addEventListener("click", async e => {
     const n = data.items.length;
     if (!confirm(`Run ${n} held job(s) on a vast.ai pod?\n\nIf no pod is running, one is rented now (hard limit ${hours} h). `
       + "If the pod kit on your private HF repo is older than your files here, a new one is uploaded first."
-      + "\nEvery finished image is downloaded before the pod is destroyed."
+      + "\nEvery finished image and video is downloaded before the pod is destroyed."
       + (autoDestroy ? "\nIt is destroyed as soon as everything is done." : "\nIt will KEEP RUNNING afterwards and bill until you destroy it."))) return;
     const r = await post("/run", { hours, auto_destroy: autoDestroy });
     if (r.error) alert(r.error);

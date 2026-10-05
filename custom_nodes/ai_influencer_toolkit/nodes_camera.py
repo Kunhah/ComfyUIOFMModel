@@ -28,6 +28,7 @@ import comfy.model_management
 from comfy_api.latest import IO, Input
 
 _GAMMA = 2.2
+_CHUNK = 16  # images per pass on the GPU
 
 
 def _grain(b: int, h: int, w: int, cell: float, generator: torch.Generator, device, dtype) -> torch.Tensor:
@@ -66,8 +67,11 @@ def apply_camera_imperfections(
     chromatic_aberration: float,
     vignette: float,
     color_jitter: float,
+    color_seed: int | None = None,
 ) -> torch.Tensor:
-    """The pass itself, on a (B, C, H, W) tensor in 0..1. Returns the same shape and device."""
+    """The pass itself, on a (B, C, H, W) tensor in 0..1. Returns the same shape and device.
+    With `color_seed`, every image in the batch gets the same white balance drift, drawn from that
+    seed (video frames: a drift that changes every frame is flicker, not a camera)."""
     b, _, h, w = img.shape
     device, dtype = img.device, img.dtype
     short_side = min(h, w)
@@ -87,7 +91,11 @@ def apply_camera_imperfections(
             r2 = (xs * xs + ys * ys) / 2.0  # 1.0 at the corners
             linear = linear * (1.0 - vignette * r2 * r2).clamp_min(0)  # r^4, the cos^4 falloff
         if color_jitter > 0:
-            gains = 1.0 + torch.randn((b, 3, 1, 1), generator=generator, device="cpu").to(linear) * 0.05 * color_jitter
+            if color_seed is None:
+                gains = torch.randn((b, 3, 1, 1), generator=generator, device="cpu")
+            else:
+                gains = torch.randn((1, 3, 1, 1), generator=torch.Generator(device="cpu").manual_seed(color_seed), device="cpu")
+            gains = 1.0 + gains.to(linear) * 0.05 * color_jitter
             linear = linear * gains.clamp_min(0)
         img = linear.clamp_min(0) ** (1.0 / _GAMMA)
 
@@ -128,6 +136,9 @@ class AIInfluencerCameraImperfections(IO.ComfyNode):
                 IO.Float.Input("chromatic_aberration", default=0.05, min=0.0, max=1.0, step=0.01, tooltip="Red/blue fringing at the corners, as % of the short side. 0.05 is visible only when zoomed in, which is the point."),
                 IO.Float.Input("vignette", default=0.15, min=0.0, max=1.0, step=0.05, tooltip="How much darker the corners are than the center."),
                 IO.Float.Input("color_jitter", default=0.3, min=0.0, max=1.0, step=0.05, tooltip="Per-image white balance and exposure drift, so a set of images doesn't share one identical color grade."),
+                IO.Boolean.Input("video_frames", default=False, optional=True, advanced=True,
+                                 tooltip="On when the images are the frames of one clip: the white balance drift is the same on every "
+                                         "frame (otherwise the clip flickers) while the grain still changes frame to frame, like a real sensor."),
             ],
             outputs=[IO.Image.Output(display_name="image")],
         )
@@ -143,7 +154,13 @@ class AIInfluencerCameraImperfections(IO.ComfyNode):
         chromatic_aberration: float,
         vignette: float,
         color_jitter: float,
+        video_frames: bool = False,
     ) -> IO.NodeOutput:
-        img = image.to(comfy.model_management.get_torch_device()).movedim(-1, 1).float()
-        out = apply_camera_imperfections(img, seed, iso_grain, grain_size, chroma_noise, chromatic_aberration, vignette, color_jitter)
-        return IO.NodeOutput(out.movedim(1, -1).to(comfy.model_management.intermediate_device()))
+        device = comfy.model_management.get_torch_device()
+        chunks = []
+        for i in range(0, image.shape[0], _CHUNK):  # a 5 s clip is 124 frames; don't hold them all on the GPU at once
+            img = image[i:i + _CHUNK].to(device).movedim(-1, 1).float()
+            out = apply_camera_imperfections(img, seed + i, iso_grain, grain_size, chroma_noise, chromatic_aberration,
+                                             vignette, color_jitter, color_seed=seed if video_frames else None)
+            chunks.append(out.movedim(1, -1).to(comfy.model_management.intermediate_device()))
+        return IO.NodeOutput(torch.cat(chunks))

@@ -1,8 +1,8 @@
 {
   "id": "3f6a0f2a-3f6f-4b1b-9a01-000000000011",
   "revision": 0,
-  "last_node_id": 43,
-  "last_link_id": 29,
+  "last_node_id": 44,
+  "last_link_id": 35,
   "nodes": [
     {
       "id": 1,
@@ -24,7 +24,7 @@
         "Node name for S&R": "MarkdownNote"
       },
       "widgets_values": [
-        "# 11 - MiniMax H3 (open weights) Image-to-Video\n\nTakes **one generated still** (workflow 08/09/10 output, or anything in `input/`) and animates it\ninto a ~5 s **1080p-class clip with native audio** - MiniMax H3 generates voice, SFX, and room tone\nin the same pass as the picture, so the clip comes out already sounded.\n\nUnlike workflow 04 (Seedance, cloud API), this is the **open-weights H3 running on a GPU you\nrented**: no partner API node, no provider account, no content moderation in the path, and no\nper-clip cost. It is heavy (the H3 DiT plus a Qwen3-VL-32B text encoder), so it runs on the\n**vast.ai pod**, never on the local GTX 1060.\n\n## Run it on vast.ai\n\nFrom the repo on this machine:\n\n```bash\npython custom_nodes/ai_influencer_toolkit/tools/comfy_pod.py launch     --with-minimax --hours 2          # rents a 5090-class pod, downloads the H3 models\npython custom_nodes/ai_influencer_toolkit/tools/comfy_pod.py url       # the ComfyUI link\npython custom_nodes/ai_influencer_toolkit/tools/comfy_pod.py watch --idle-minutes 25\n```\n\n`--with-minimax` picks a Blackwell GPU (the text encoder ships in nvfp4; it *runs* on a 3090/4090\nbut dequantises every layer, several times slower), asks for 200 GB of disk, and adds the five H3\nfiles to the pod bootstrap. Open the printed URL, load this workflow, generate. Clips stay on the\npod - download them from `output/projects/<project>/outputs/videos/` before `destroy`.\n\n## Uncensored\n\nNothing in this graph filters anything, by construction:\n\n- **No API nodes.** Every node here is local ComfyUI core plus this toolkit, so no request is\n  scored by a provider's moderation endpoint and no account can be flagged. That is the actual\n  difference from workflow 04.\n- **Nothing is uploaded.** The pod pulls models down; outputs are only written to the pod's disk\n  and go straight to you. (Unlike the *training* pod, which pushes checkpoints through a private\n  HF repo.)\n- **Model-side reluctance** is the only limit left, and it is a weights problem, not a switch:\n  H3's own training makes it shy at explicit content. The **Optional extra LoRA** slot in the\n  loader column is there for that - point it at a community fine-tune (or at your character LoRA),\n  press Ctrl+B to enable it, and keep the strength around 0.6-1.0.\n\n## How to use it\n\n1. **Starting frame** - point the Load Image node at your approved still. It is scaled to ~0.98 MP\n   in multiples of 32 and its real size is fed to the model, so the clip keeps the still's aspect ratio.\n2. **Video description** - the big text box, wired into the model's `prompt`. This is where you say\n   *what happens*: see the note on the right for the shape that works.\n3. **Duration (seconds)** - the Float node. The Math Expression converts it to a frame count on H3's\n   24 fps / 17k+5 grid (5 s -> 124 frames). Trained range is roughly 5-15 s.\n4. Queue. The clip is written to `output/projects/<project>/outputs/videos/` and logged to\n   `logs/generations.jsonl` by the Save & Log node - fill in the same project name you use elsewhere.\n\n## Speed / quality switch\n\nThe chain ships with the **8-step Lightning turbo LoRA** on and `steps = 8` - roughly a minute-scale\nrender. For maximum quality, select the **turbo LoRA** node, press **Ctrl+B** to bypass it, and\nraise `steps` on the Basic Scheduler to **20**. Nothing else changes.\n\nThe second LoRA node below it (**Optional extra LoRA**) is bypassed by default and is a free slot:\nyour character LoRA, a style LoRA, or an uncensored fine-tune. Ctrl+B enables it.\n\nIf you want the *last* frame pinned too (e.g. to loop back to the opening pose), connect a second\nLoad Image to the `last_frame` input of the MiniMax H3 Image to Video node."
+        "# 11 - MiniMax H3 (open weights) Image-to-Video\n\nTakes **one generated still** (workflow 08/09/10 output, or anything in `input/`) and animates it\ninto a ~5 s **1080p-class clip with native audio** - MiniMax H3 generates voice, SFX, and room tone\nin the same pass as the picture, so the clip comes out already sounded.\n\nUnlike workflow 04 (Seedance, cloud API), this is the **open-weights H3 running on a GPU you\nrented**: no partner API node, no provider account, no content moderation in the path, and no\nper-clip cost. It is heavy (the H3 DiT plus a Qwen3-VL-32B text encoder), so it runs on the\n**vast.ai pod**, never on the local GTX 1060.\n\n## Run it on vast.ai - the easy way: the Pod queue\n\n1. Open the **Pod queue** pill (bottom right) and tick **Hold for the pod**.\n2. Set up a clip (starting still + description) and press **Queue**. Change the still or the\n   description and press Queue again for the next clip; batch count > 1 gives you takes with\n   different seeds. Nothing runs yet, so this is free.\n3. Press **Start pod & run all**. It checks every held clip on this PC first, rents a pod with the\n   H3 models (`--with-minimax` is added automatically), uploads your starting stills, renders every\n   clip, **downloads them** into `output/projects/<project>/outputs/videos/` here, and destroys\n   the pod.\n\nHeld jobs from other workflows (stills from 08/09/10) can sit in the same list and run on the same pod.\n\n## Run it on vast.ai by hand\n\nFrom the repo on this machine:\n\n```bash\npython custom_nodes/ai_influencer_toolkit/tools/comfy_pod.py launch     --with-minimax --hours 2          # rents a 5090-class pod, downloads the H3 models\npython custom_nodes/ai_influencer_toolkit/tools/comfy_pod.py url       # the ComfyUI link\npython custom_nodes/ai_influencer_toolkit/tools/comfy_pod.py watch --idle-minutes 25\n```\n\n`--with-minimax` picks a Blackwell GPU (the text encoder ships in nvfp4; it *runs* on a 3090/4090\nbut dequantises every layer, several times slower), asks for 200 GB of disk, and adds the five H3\nfiles to the pod bootstrap. Open the printed URL, load this workflow, generate. Clips stay on the\npod - download them from `output/projects/<project>/outputs/videos/` before `destroy`.\n\n## Uncensored\n\nNothing in this graph filters anything, by construction:\n\n- **No API nodes.** Every node here is local ComfyUI core plus this toolkit, so no request is\n  scored by a provider's moderation endpoint and no account can be flagged. That is the actual\n  difference from workflow 04.\n- **Nothing is uploaded.** The pod pulls models down; outputs are only written to the pod's disk\n  and go straight to you. (Unlike the *training* pod, which pushes checkpoints through a private\n  HF repo.)\n- **Model-side reluctance** is the only limit left, and it is a weights problem, not a switch:\n  H3's own training makes it shy at explicit content. The **Optional extra LoRA** slot in the\n  loader column is there for that - point it at a community fine-tune (or at your character LoRA),\n  press Ctrl+B to enable it, and keep the strength around 0.6-1.0.\n\n## How to use it\n\n1. **Starting frame** - point the Load Image node at your approved still. It is scaled to ~0.98 MP\n   in multiples of 32 and its real size is fed to the model, so the clip keeps the still's aspect ratio.\n2. **Video description** node - short fields instead of one big text box: `look` (what stays the\n   same), `beats` (one movement per line), `dialogue`, `audio`, `avoid`. Beats are timed evenly over\n   the duration for you, so changing the duration never leaves stale timestamps; start a line with\n   `[1.5s-3.0s]` to time it yourself. The blurred background and the handheld-phone look are always\n   added (they live in the code, like the stills' imperfection wording). After a run - even a local\n   one, it needs no GPU - the node shows the exact text the model got, plus warnings such as too\n   many spoken words for the length.\n3. **duration_seconds** on that node - it also works out the frame count on H3's 24 fps / 17k+5\n   grid (5 s -> 124 frames) and fills in the Save node's duration. Trained range is roughly 5-15 s.\n4. Every frame then gets the **camera pass** (grain that changes frame to frame like a real sensor,\n   one white balance for the whole clip so it doesn't flicker).\n5. Queue. The clip is written to `output/projects/<project>/outputs/videos/` and logged to\n   `logs/generations.jsonl` by the Save & Log node - fill in the same project name you use elsewhere.\n\n## Speed / quality switch\n\nThe chain ships with the **8-step Lightning turbo LoRA** on and `steps = 8` - roughly a minute-scale\nrender. For maximum quality, select the **turbo LoRA** node, press **Ctrl+B** to bypass it, and\nraise `steps` on the Basic Scheduler to **20**. Nothing else changes.\n\nThe second LoRA node below it (**Optional extra LoRA**) is bypassed by default and is a free slot:\nyour character LoRA, a style LoRA, or an uncensored fine-tune. Ctrl+B enables it.\n\nIf you want the *last* frame pinned too (e.g. to loop back to the opening pose), connect a second\nLoad Image to the `last_frame` input of the MiniMax H3 Image to Video node."
       ],
       "title": "Read me first"
     },
@@ -48,7 +48,7 @@
         "Node name for S&R": "MarkdownNote"
       },
       "widgets_values": [
-        "## Writing the video description\n\nH3 reads one prose block, not a tag list. What reliably works, in this order:\n\n1. **Look + subject continuity** - one sentence: \"photoreal, same face/hair/outfit as the starting\n   image, shallow depth of field with the background far out of focus\". Repeating the identity and\n   the blurred background here is what keeps them from drifting mid-clip.\n2. **A timestamped beat list** - `[0.0s-1.2s] ...`, `[1.2s-2.8s] ...`. Say what the *body* does\n   (blink, breathe, turn, tuck hair, smile) and what the *camera* does (hold, drift in, gentle\n   handheld). Small human motions read far better than big ones at 5 s.\n3. **Dialogue in quotes** - \"She says: \\\"...\\\"\". H3 lip-syncs it and speaks it. Keep it to one or\n   two short lines for a 5 s clip; anything longer gets rushed.\n4. **An `Audio:` line** - voice character, then background. If you do *not* want music, say\n   \"no music\" - silence is not the default.\n5. **A negative tail** - \"no cuts, no scene changes, no text overlays, no extra fingers\".\n\nRules of thumb: one continuous shot per 5 s clip; describe motion, never a still pose; do not\nre-describe the scenery the starting image already shows (the model can see it) - spend the words\non movement, speech, and what must *not* change."
+        "## Writing the video description\n\nThe **Video description** node builds this shape for you from its fields; this note is what each\nfield is for. H3 reads one prose block, not a tag list. What reliably works, in this order:\n\n1. **`look`** - one sentence: \"photoreal, same face/hair/outfit as the starting image\". Repeating\n   the identity is what keeps it from drifting mid-clip (the blurred background is added for you).\n2. **`beats`** - one per line; the node turns them into `[0.0s-1.2s] ...` timestamps. Say what the *body* does\n   (blink, breathe, turn, tuck hair, smile) and what the *camera* does (hold, drift in, gentle\n   handheld). Small human motions read far better than big ones at 5 s.\n3. **`dialogue`** - one line each, no quotes needed. H3 lip-syncs it and speaks it. Keep it to one\n   or two short lines for a 5 s clip (about 2.5 words a second); the node warns when it's more.\n   To place a line at a moment, mention it in that beat (\"they say the line below\").\n4. **`audio`** - voice character, then background. If you do *not* want music, say\n   \"no music\" - silence is not the default.\n5. **`avoid`** - the negative tail: \"no cuts, no scene changes, no text overlays, no extra fingers\".\n\nRules of thumb: one continuous shot per 5 s clip; describe motion, never a still pose; do not\nre-describe the scenery the starting image already shows (the model can see it) - spend the words\non movement, speech, and what must *not* change."
       ],
       "title": "How to write the description"
     },
@@ -201,119 +201,6 @@
         "Node name for S&R": "GetImageSize"
       },
       "title": "width / height for the model"
-    },
-    {
-      "id": 13,
-      "type": "PrimitiveStringMultiline",
-      "pos": [
-        -420,
-        -460
-      ],
-      "size": [
-        620,
-        620
-      ],
-      "flags": {},
-      "order": 2,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "STRING",
-          "type": "STRING",
-          "links": [
-            4,
-            27
-          ]
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "PrimitiveStringMultiline"
-      },
-      "widgets_values": [
-        "Photoreal vertical social clip of the woman from the starting image, same face, same hair, same outfit, same golden-hour light. The background stays soft and far out of focus the whole time (shallow depth of field, creamy bokeh); only she is sharp. Handheld phone-vlog energy, gentle natural camera breathing, no cuts to other people.\n\nTimeline:\n[0.0s-1.2s] The shot opens exactly on the starting image. She is still for a beat, then blinks and takes a small breath; a strand of hair drifts in the breeze.\n[1.2s-2.8s] She turns her head a few degrees toward the camera, tucks the strand behind her ear, and a small genuine smile grows.\n[2.8s-4.2s] She says, warmly and unhurried: \"Okay, this light is unreal right now.\" Natural lip sync, relaxed jaw, slight shoulder movement.\n[4.2s-5.2s] She laughs softly, glances off-camera, and settles back into a calm half-smile as the camera drifts a couple of centimetres closer.\n\nAudio: one female voice, warm, mid-20s, close-mic'd and conversational, no reverb tail; under it a quiet outdoor room tone with distant traffic and faint wind on the mic. No music, no crowd noise, no second speaker.\n\nKeep her identity, skin texture, and clothing identical to the starting image. No cuts, no scene changes, no text overlays, no extra hands or fingers, no warping of the face."
-      ],
-      "title": "Video description - what happens in the clip"
-    },
-    {
-      "id": 14,
-      "type": "PrimitiveFloat",
-      "pos": [
-        -420,
-        200
-      ],
-      "size": [
-        300,
-        80
-      ],
-      "flags": {},
-      "order": 3,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "FLOAT",
-          "type": "FLOAT",
-          "links": [
-            7
-          ]
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "PrimitiveFloat"
-      },
-      "widgets_values": [
-        5.0
-      ],
-      "title": "Duration (seconds)"
-    },
-    {
-      "id": 15,
-      "type": "ComfyMathExpression",
-      "pos": [
-        -420,
-        320
-      ],
-      "size": [
-        300,
-        150
-      ],
-      "flags": {},
-      "order": 7,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "values.a",
-          "type": "FLOAT,INT,BOOLEAN",
-          "link": 7
-        }
-      ],
-      "outputs": [
-        {
-          "name": "FLOAT",
-          "type": "FLOAT",
-          "links": null
-        },
-        {
-          "name": "INT",
-          "type": "INT",
-          "links": [
-            8
-          ]
-        },
-        {
-          "name": "BOOL",
-          "type": "BOOLEAN",
-          "links": null
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "ComfyMathExpression"
-      },
-      "widgets_values": [
-        "max(5, round(a * 24)) + (5 - (max(5, round(a * 24)) % 17)) % 17"
-      ],
-      "title": "seconds -> frames (24 fps, 17k+5 grid)"
     },
     {
       "id": 20,
@@ -569,7 +456,7 @@
           "widget": {
             "name": "prompt"
           },
-          "link": 4
+          "link": 30
         },
         {
           "name": "width",
@@ -593,7 +480,7 @@
           "widget": {
             "name": "length"
           },
-          "link": 8
+          "link": 32
         }
       ],
       "outputs": [
@@ -857,7 +744,7 @@
           "name": "IMAGE",
           "type": "IMAGE",
           "links": [
-            24
+            34
           ]
         }
       ],
@@ -911,7 +798,7 @@
       "type": "CreateVideo",
       "pos": [
         120,
-        1060
+        1290
       ],
       "size": [
         250,
@@ -924,7 +811,7 @@
         {
           "name": "images",
           "type": "IMAGE",
-          "link": 24
+          "link": 35
         },
         {
           "name": "audio",
@@ -1009,7 +896,7 @@
           "widget": {
             "name": "motion_prompt"
           },
-          "link": 27
+          "link": 31
         },
         {
           "name": "resolution",
@@ -1025,7 +912,7 @@
           "widget": {
             "name": "duration_seconds"
           },
-          "link": null
+          "link": 33
         },
         {
           "name": "seed",
@@ -1081,6 +968,104 @@
         ""
       ],
       "title": "Save & log the clip"
+    },
+    {
+      "id": 16,
+      "type": "AIInfluencerVideoPrompt",
+      "pos": [
+        -420,
+        -460
+      ],
+      "size": [
+        640,
+        1040
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "description",
+          "type": "STRING",
+          "links": [
+            30,
+            31
+          ]
+        },
+        {
+          "name": "length",
+          "type": "INT",
+          "links": [
+            32
+          ]
+        },
+        {
+          "name": "duration",
+          "type": "STRING",
+          "links": [
+            33
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "AIInfluencerVideoPrompt"
+      },
+      "title": "Video description - what happens in the clip",
+      "widgets_values": [
+        5.0,
+        "Photoreal vertical social clip of the person from the starting image: same face, same hair, same outfit, same light. Keep their identity, skin texture and clothing identical to the starting image.",
+        "The shot opens exactly on the starting image; the person is still for a beat, then blinks and takes a small breath.\nThey turn their head a little toward the camera and a small, genuine smile grows.\nThey say the line below, relaxed, with a slight shoulder movement.\nThey laugh softly, glance off-camera and settle into a calm half-smile while the camera drifts a little closer.",
+        "Okay, this light is unreal right now.",
+        "the person's natural voice, close to the mic and conversational, no reverb; under it the quiet room tone of the location. No music, no second speaker.",
+        "No cuts, no scene changes, no text overlays, no extra hands or fingers, no warping of the face."
+      ]
+    },
+    {
+      "id": 44,
+      "type": "AIInfluencerCameraImperfections",
+      "pos": [
+        120,
+        940
+      ],
+      "size": [
+        280,
+        300
+      ],
+      "flags": {},
+      "order": 16,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 34
+        }
+      ],
+      "outputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "links": [
+            35
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "AIInfluencerCameraImperfections"
+      },
+      "title": "Camera pass on every frame",
+      "widgets_values": [
+        0,
+        "randomize",
+        0.025,
+        0.1,
+        0.35,
+        0.05,
+        0.15,
+        0.3,
+        true
+      ]
     }
   ],
   "links": [
@@ -1109,14 +1094,6 @@
       "IMAGE"
     ],
     [
-      4,
-      13,
-      0,
-      30,
-      4,
-      "STRING"
-    ],
-    [
       5,
       12,
       0,
@@ -1130,22 +1107,6 @@
       1,
       30,
       6,
-      "INT"
-    ],
-    [
-      7,
-      14,
-      0,
-      15,
-      0,
-      "FLOAT"
-    ],
-    [
-      8,
-      15,
-      1,
-      30,
-      7,
       "INT"
     ],
     [
@@ -1277,14 +1238,6 @@
       "VAE"
     ],
     [
-      24,
-      40,
-      0,
-      42,
-      0,
-      "IMAGE"
-    ],
-    [
       25,
       41,
       0,
@@ -1301,12 +1254,52 @@
       "VIDEO"
     ],
     [
-      27,
-      13,
+      30,
+      16,
+      0,
+      30,
+      4,
+      "STRING"
+    ],
+    [
+      31,
+      16,
       0,
       43,
       5,
       "STRING"
+    ],
+    [
+      32,
+      16,
+      1,
+      30,
+      7,
+      "INT"
+    ],
+    [
+      33,
+      16,
+      2,
+      43,
+      7,
+      "STRING"
+    ],
+    [
+      34,
+      40,
+      0,
+      44,
+      0,
+      "IMAGE"
+    ],
+    [
+      35,
+      44,
+      0,
+      42,
+      0,
+      "IMAGE"
     ]
   ],
   "groups": [
@@ -1356,7 +1349,7 @@
         80,
         760,
         800,
-        500
+        680
       ],
       "color": "#a1309b",
       "font_size": 24,

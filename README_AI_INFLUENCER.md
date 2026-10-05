@@ -926,7 +926,16 @@ pass as the picture, so the clip arrives already sounded and lip-synced. No API 
 leaves the machine.
 
 It is a heavy model (the H3 DiT plus a Qwen3-VL-32B text encoder), so it runs on a **vast.ai pod**,
-never on the local GTX 1060:
+never on the local GTX 1060.
+
+**Easiest: the Pod queue.** Tick *Hold for the pod*, set up a clip, press Queue; repeat for every
+clip you want (other stills, other descriptions, batch count for more takes). *Start pod & run all*
+checks them on this PC for free, rents a pod with `--with-minimax` (added automatically when a held
+job uses H3), uploads the starting stills, renders, **downloads every clip** to
+`output/projects/<project>/outputs/videos/` here, and destroys the pod. Each clip gets the camera
+pass on its frames on the way (see below). Still jobs from 08/09/10 can share the same run.
+
+**By hand:**
 
 ```bash
 python custom_nodes/ai_influencer_toolkit/tools/comfy_pod.py launch --with-minimax --hours 2
@@ -952,20 +961,31 @@ at a community fine-tune or at your character LoRA, Ctrl+B to enable, strength ~
 
 - **Load Image** — your approved still. It is scaled to ~0.98 MP in multiples of 32 (H3's canvas
   cap) and its real size is read back into the model, so the clip keeps the still's aspect ratio.
-- **Video description** — the big text box wired into the model's `prompt`, i.e. *what happens in
-  the clip*. H3 wants one prose block, not tags. The shape that works, and the default shipped in
-  the workflow:
-  1. look + subject continuity ("photoreal, same face/hair/outfit as the starting image, background
-     stays far out of focus") — repeating identity and the background blur here is what stops them
-     drifting mid-clip;
-  2. a timestamped beat list (`[0.0s-1.2s] she blinks and takes a breath…`) covering what the body
-     does and what the camera does;
-  3. dialogue in quotes — H3 speaks and lip-syncs it; one or two short lines per 5 s;
-  4. an `Audio:` line (voice character, then background; say "no music" if you don't want any —
-     silence is not the default);
-  5. a negative tail ("no cuts, no scene changes, no text overlays, no extra fingers").
-- **Duration (seconds)** — a Math Expression snaps it to H3's 24 fps / 17k+5 frame grid (5 s → 124
-  frames). Trained range is roughly 5–15 s.
+- **Video Description node** (`AIInfluencerVideoPrompt`, `nodes_video.py`) — *what happens in the
+  clip*, as short fields that it assembles into the one prose block H3 wants:
+  1. `look` — subject continuity ("same face/hair/outfit as the starting image"); repeating identity
+     is what stops it drifting mid-clip;
+  2. `beats` — one movement per line (body and camera). They are timed evenly over the duration
+     (`[0.0s-1.2s] …`), so changing the duration never leaves stale timestamps; a line that starts
+     with `[1.5s-3.0s]` keeps its own timing;
+  3. `dialogue` — one line each; H3 speaks and lip-syncs it. About 2.5 words a second fit, and the
+     node warns when there are more;
+  4. `audio` — voice character, then background; say "no music" if you don't want any (silence is
+     not the default);
+  5. `avoid` — the negative tail ("no cuts, no scene changes, no text overlays, no extra fingers").
+
+  It always adds `MANDATORY_VIDEO_LOOK` — background far out of focus plus handheld-phone
+  imperfections — which lives in the code, like `MANDATORY_IMPERFECTIONS` for stills, so it can't
+  be edited away. After a run (it needs no GPU, so a local run works too) the node shows the exact
+  text the model got.
+- **`duration_seconds`** on the same node — it snaps the length to H3's 24 fps / 17k+5 frame grid
+  (5 s → 124 frames) and fills in the Save node's duration. Trained range is roughly 5–15 s.
+
+Every frame then goes through **Camera Imperfections** with `video_frames` on: the grain changes
+frame to frame like a real sensor, while the white balance drift is one value for the whole clip
+(per-frame drift would flicker). There is no per-frame background blur — BiRefNet masks shimmer at
+the edges from frame to frame — so the out-of-focus background comes from the starting still (which
+already went through the blur) and the description.
 
 Optionally connect a second Load Image to the node's `last_frame` input to pin the closing frame
 (useful for loops).

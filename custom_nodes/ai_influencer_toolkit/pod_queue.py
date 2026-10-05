@@ -19,7 +19,8 @@ usual) stores the prompt here instead of running it. "Start pod & run all" then:
      timer still ends it) rather than destroyed with your image on it.
 
 Every image a held prompt saves goes through the background blur and then the camera pass as its
-last step: ensure_filters() adds whichever of the two a Save node's image is missing.
+last step: ensure_filters() adds whichever of the two a Save node's image is missing. A saved video
+(Workflow 11) gets the camera pass on its frames, with one white balance for the whole clip.
 
 Prompts that finished are removed from the held list; ones that failed stay, so they can be fixed
 and re-run. Everything here is local open weights on the pod: no partner API, no moderation.
@@ -61,6 +62,7 @@ READY_NODE = "AIInfluencerSaveImage"
 BIREFNET = "birefnet.safetensors"
 CAMERA, BLUR = "AIInfluencerCameraImperfections", "AIInfluencerBlurBackground"
 IMAGE_SAVERS = ("AIInfluencerSaveImage", "SaveImage")  # nodes whose images end up in output/ (and get downloaded)
+VIDEO_SAVERS = ("AIInfluencerSaveVideo", "SaveVideo")
 
 
 # ---------------------------------------------------------------------------------------------
@@ -98,8 +100,14 @@ def summarize(prompt: dict) -> str:
         if not text and node.get("class_type") == "AIInfluencerPromptBuilder":
             text = ", ".join(str(inputs[k]) for k in ("subject_action", "clothing", "environment")
                              if isinstance(inputs.get(k), str) and inputs[k].strip())
+        if not text and node.get("class_type") == "AIInfluencerVideoPrompt":
+            image = next((n["inputs"]["image"] for n in prompt.values() if n.get("class_type") == "LoadImage"
+                          and isinstance(n.get("inputs", {}).get("image"), str)), "")
+            text = f"video {inputs.get('duration_seconds', '?')} s from {os.path.basename(image) or '?'}: {inputs.get('beats', '')}"
         if not text and isinstance(inputs.get("text"), str):
             text = inputs["text"]
+        if not text and node.get("class_type") == "PrimitiveStringMultiline" and isinstance(inputs.get("value"), str):
+            text = inputs["value"]
         for k in ("seed", "noise_seed"):
             if seed is None and isinstance(inputs.get(k), int):
                 seed = inputs[k]
@@ -136,6 +144,57 @@ def _ancestors(prompt: dict, nid: str) -> set[str]:
         seen.add(cur)
         todo += [v[0] for v in prompt[cur].get("inputs", {}).values() if isinstance(v, list) and len(v) == 2]
     return {prompt[n]["class_type"] for n in seen}
+
+
+# Nodes that only show something in the browser: nothing is saved from them, so a pod run doesn't need
+# them -- and some break validation on newer ComfyUI (ImageCompare's compare_view widget comes out of the
+# browser as ["", ""], which the validator takes for a link to a node called "").
+DISPLAY_ONLY = {"ImageCompare", "PreviewImage", "PreviewAny", "MaskPreview", "PreviewAudio"}
+# Validation errors that only mean "this PC doesn't have that model/file": the pod downloads the models
+# and gets the input images uploaded, so these say nothing about whether the job works there.
+LOCAL_ONLY_ERRORS = {"value_not_in_list", "custom_validation_failed"}
+
+
+def strip_display_only(prompt: dict) -> tuple[dict, list[str]]:
+    """A copy of the job without display-only nodes that nothing else uses."""
+    used = {str(v[0]) for n in prompt.values() for v in n.get("inputs", {}).values()
+            if isinstance(v, list) and len(v) == 2 and isinstance(v[1], int)}
+    drop = [nid for nid, n in prompt.items() if n.get("class_type") in DISPLAY_ONLY and str(nid) not in used]
+    return {k: v for k, v in prompt.items() if k not in drop}, [prompt[k]["class_type"] for k in drop]
+
+
+def _error_summary(node_errors: dict) -> str:
+    parts = []
+    for nid, ne in node_errors.items():
+        for e in ne.get("errors", []):
+            parts.append(f"{ne.get('class_type', '?')} #{nid}: {e.get('message', '')} {e.get('details', '')}".strip())
+    return "; ".join(parts)[:400]
+
+
+def local_problems(prompt: dict) -> list[str]:
+    """Runs ComfyUI's own validator on this PC (validation only, nothing is executed) on the job as it
+    will be sent to the pod, and returns the problems that would also stop it there. Files and models
+    this PC lacks are ignored. If the check itself can't run, it never blocks the job."""
+    import asyncio
+
+    import execution
+
+    cleaned, _ = strip_display_only(prompt)
+    try:
+        fut = asyncio.run_coroutine_threadsafe(
+            execution.validate_prompt(uuid.uuid4().hex, cleaned, None), PromptServer.instance.loop)
+        valid, error, outputs, node_errors = fut.result(timeout=120)
+    except Exception as e:
+        logging.warning("[pod queue] local check skipped: %s", e)
+        return []
+    problems = []
+    for nid, ne in (node_errors or {}).items():
+        for e in ne.get("errors", []):
+            if e.get("type") not in LOCAL_ONLY_ERRORS:
+                problems.append(f"{ne.get('class_type', '?')} #{nid}: {e.get('message', '')} ({e.get('details', '')})")
+    if not valid and not node_errors and error:
+        problems.append(f"{error.get('message', '')} {error.get('details', '')}".strip())
+    return problems
 
 
 EMPTY_MASK = "no mask painted on "
@@ -185,8 +244,22 @@ def ensure_filters(prompt: dict) -> list[str]:
         return str(next_id)
 
     savers = [n for n in prompt.values() if n.get("class_type") in IMAGE_SAVERS]
-    if not savers:
+    video_savers = [n for n in prompt.values() if n.get("class_type") in VIDEO_SAVERS]
+    if not savers and not video_savers:
         notes.append("no Save node: nothing would be saved or downloaded")
+    for node in video_savers:
+        # the frames go into Create Video; the camera pass goes right before it (no blur: per-frame masks
+        # would shimmer at the edges, and the starting still already has its background blurred)
+        src = node.get("inputs", {}).get("video")
+        create = prompt.get(src[0], {}) if isinstance(src, list) else {}
+        frames = create.get("inputs", {}).get("images")
+        if create.get("class_type") != "CreateVideo" or not isinstance(frames, list):
+            notes.append("couldn't find the frames of a saved video: no camera pass on it")
+        elif CAMERA not in _ancestors(prompt, frames[0]):
+            create["inputs"]["images"] = [new(CAMERA, image=frames, seed=random.randrange(2**31), iso_grain=0.025,
+                                              grain_size=0.1, chroma_noise=0.35, chromatic_aberration=0.05,
+                                              vignette=0.15, color_jitter=0.3, video_frames=True), 0]
+            notes.append("added the camera pass to the video frames")
     for node in savers:
         src = node.get("inputs", {}).get("images")
         if not isinstance(src, list):
@@ -328,17 +401,21 @@ class Remote:
                 + data + f"\r\n--{boundary}--\r\n".encode())
         self._req("/upload/image", body, {"Content-Type": f"multipart/form-data; boundary={boundary}"}, timeout=600)
 
-    def queue(self, item: dict, client_id: str) -> str:
-        payload = {"prompt": item["prompt"], "client_id": client_id}
+    def queue(self, item: dict, client_id: str) -> tuple[str, dict]:
+        """(prompt_id, node_errors). ComfyUI accepts a job whose saving outputs are valid even when a
+        display-only output isn't, and lists the bad ones in node_errors -- that is a warning, not a
+        failure: only a missing prompt_id means the job was refused."""
+        prompt, _ = strip_display_only(item["prompt"])
+        payload = {"prompt": prompt, "client_id": client_id}
         if item.get("workflow"):
             payload["extra_data"] = {"extra_pnginfo": {"workflow": item["workflow"]}}  # PNGs keep the workflow
         try:
             res = self.post_json("/prompt", payload)
         except urllib.error.HTTPError as e:
             raise RuntimeError(f"rejected ({e.code}): {e.read().decode(errors='replace')[:800]}") from None
-        if res.get("node_errors"):
-            raise RuntimeError(f"node errors: {json.dumps(res['node_errors'])[:800]}")
-        return res["prompt_id"]
+        if not res.get("prompt_id"):
+            raise RuntimeError(f"refused: {json.dumps(res.get('node_errors') or res)[:800]}")
+        return res["prompt_id"], res.get("node_errors") or {}
 
     def download(self, entry: dict, dest: str) -> None:
         q = urllib.parse.urlencode({"filename": entry["filename"], "subfolder": entry.get("subfolder", ""), "type": "output"})
@@ -413,6 +490,7 @@ class Runner:
         self.pod_id: int | None = None
         self._setup_checked = 0.0
         self.project = DEFAULT_PROJECT
+        self.persons_checked, self.persons_missing, self.aborting = 0, 0, False
         self.remote: Remote | None = None
         self.pending: dict[str, dict] = {}  # pod prompt_id -> held item, until its files are downloaded
         self.undownloaded: list[tuple[dict, dict, str]] = []  # (item, output entry, error) that failed every retry
@@ -626,6 +704,7 @@ class Runner:
     def _run(self, settings: dict) -> None:
         remote = None
         self.pod_id, self.remote, self.pending, self.undownloaded = None, None, {}, []
+        self.persons_checked, self.persons_missing, self.aborting = 0, 0, False
         try:
             items = load_items()
             self.project = project_of(items)
@@ -635,6 +714,22 @@ class Runner:
                 flags.append("--with-upscale")
             if any("minimax_h3" in s for s in strings):
                 flags.append("--with-minimax")
+
+            self.set(phase="checking the jobs on this PC (free)")
+            checked = []
+            for it in items:
+                problems = local_problems(it["prompt"])
+                if problems:
+                    self.log(f"!! #{it['n']} would not run, skipped (still in the list): {'; '.join(problems[:3])}")
+                else:
+                    checked.append(it)
+            if not checked:
+                raise RuntimeError("None of the held jobs would run (see above), so no pod was rented.")
+            if len(checked) < len(items):
+                self.log(f"{len(checked)} of {len(items)} job(s) passed the check on this PC.")
+            else:
+                self.log(f"All {len(items)} job(s) passed the check on this PC.")
+            items = checked
 
             url = self._pod_url(settings, flags)
             self.set(url=url)
@@ -680,7 +775,10 @@ class Runner:
             client_id, pending = uuid.uuid4().hex, self.pending
             for it in runnable:
                 try:
-                    pending[remote.queue(it, client_id)] = it
+                    pid, warnings = remote.queue(it, client_id)
+                    pending[pid] = it
+                    if warnings:
+                        self.log(f"#{it['n']} queued; the pod skips these outputs: {_error_summary(warnings)}")
                 except RuntimeError as e:
                     self._failed(it, str(e))
             self.set(total=len(pending) + self.state["failed"], phase="generating")
@@ -734,7 +832,7 @@ class Runner:
                             if ev == "execution_error"), "unknown error")
                 self._failed(it, msg.strip()[:500])
                 continue
-            saved, missing = 0, 0
+            saved, missing, saved_entries = 0, 0, []
             for node_out in (h.get("outputs") or {}).values():
                 for entries in node_out.values():
                     for e in entries if isinstance(entries, list) else []:
@@ -745,6 +843,7 @@ class Runner:
                                 self.undownloaded.append((it, e, err))
                             else:
                                 saved += 1
+                                saved_entries.append(e)
             with self.lock:
                 self.state["done"] += 1
                 done, total = self.state["done"], self.state["total"]
@@ -752,10 +851,66 @@ class Runner:
                 self.log(f"!! [{done}/{total}] #{it['n']}: {saved} file(s) saved, {missing} could not be downloaded "
                          "(kept in the list)")
             elif saved == 0:
-                self.log(f"!! [{done}/{total}] #{it['n']} finished but saved no image (kept in the list)")
+                self.log(f"!! [{done}/{total}] #{it['n']} finished but saved nothing (kept in the list)")
+            elif not self._has_person(it, saved_entries[0]):
+                with self.lock:
+                    self.state["failed"] += 1
+                self.log(f"!! [{done}/{total}] #{it['n']}: no person found in the image -- only the background was "
+                         "generated (saved anyway, kept in the list to run again)")
+                self.persons_missing += 1
+                if self.persons_checked == 1 and not self.aborting:
+                    # the first image already failed: the rest would very likely too. Don't pay for 24 more.
+                    self.aborting = True
+                    remote.cancel_all()
+                    raise RuntimeError("The first image has no person in it, so the run was stopped before paying "
+                                       "for the rest. The jobs are still in the list.")
             else:
                 self._finished(it)
                 self.log(f"[{done}/{total}] #{it['n']} done, {saved} file(s) saved to output/")
+
+    def _has_person(self, it: dict, entry: dict) -> bool:
+        """For jobs that place a person (they use the Auto Mask): ask the pod whether the finished image
+        has a person in it -- SDPose + BiRefNet + the Auto Mask's own person test (a confident body that
+        sits on the subject cut-out), queued at the front so it doesn't wait behind the batch. True when
+        the job doesn't place a person, or when the check itself can't run (never block on the check)."""
+        prompt = it["prompt"]
+        if self.aborting or not any(n.get("class_type") == "AIInfluencerAutoMask" for n in prompt.values()):
+            return True
+        sdpose = next((n["inputs"].get("ckpt_name") for n in prompt.values()
+                       if n.get("class_type") == "CheckpointLoaderSimple" and "sdpose" in str(n["inputs"].get("ckpt_name", "")).lower()),
+                      None)
+        if not sdpose:
+            return True
+        name = f"{entry['subfolder']}/{entry['filename']}" if entry.get("subfolder") else entry["filename"]
+        check = {
+            "1": {"class_type": "LoadImageOutput", "inputs": {"image": f"{name} [output]"}},
+            "2": {"class_type": "ImageScaleToTotalPixels", "inputs": {"image": ["1", 0], "upscale_method": "lanczos",
+                                                                    "megapixels": 1.0, "resolution_steps": 16}},
+            "3": {"class_type": "CheckpointLoaderSimple", "inputs": {"ckpt_name": sdpose}},
+            "4": {"class_type": "SDPoseKeypointExtractor", "inputs": {"model": ["3", 0], "vae": ["3", 2], "image": ["2", 0],
+                                                                     "batch_size": 16}},
+            "5": {"class_type": "LoadBackgroundRemovalModel", "inputs": {"bg_removal_name": BIREFNET}},
+            "6": {"class_type": "RemoveBackground", "inputs": {"bg_removal_model": ["5", 0], "image": ["2", 0]}},
+            "7": {"class_type": "AIInfluencerAutoMask", "inputs": {"plate": ["2", 0], "plate_keypoints": ["4", 0],
+                                                                  "plate_subject": ["6", 0], "mode": "replace person",
+                                                                  "margin": 4.0, "fixed_position": "center"}},
+            "8": {"class_type": "PreviewAny", "inputs": {"source": ["7", 2]}},
+        }
+        self.persons_checked += 1
+        try:
+            res = self.remote.post_json("/prompt", {"prompt": check, "client_id": uuid.uuid4().hex, "front": True})
+            pid = res["prompt_id"]
+            for _ in range(60):
+                time.sleep(2)
+                h = self.remote.get_json(f"/history/{pid}").get(pid)
+                if h:
+                    text = "".join((h.get("outputs") or {}).get("8", {}).get("text", []))
+                    if not text:
+                        return True  # the check errored: don't judge the image on that
+                    return text.startswith("replace person")
+        except Exception as e:
+            self.log(f"(person check skipped for #{it['n']}: {type(e).__name__})")
+        return True
 
     def _download(self, entry: dict, out_dir: str) -> str | None:
         """Downloads one output file, retrying; returns None on success or the last error."""
@@ -974,6 +1129,23 @@ async def pod_queue_remove(request):
     with _store_lock:
         save_items([] if body.get("all") else [it for it in load_items() if it["id"] not in ids])
     return web.json_response(_listing())
+
+
+@routes.post("/ai_influencer/pod_queue/check")
+async def pod_queue_check(request):
+    """The free pre-flight on this PC, without renting anything: every held job, or one posted prompt."""
+    body = await request.json() if request.can_read_body else {}
+    loop = PromptServer.instance.loop
+    if isinstance(body.get("prompt"), dict):
+        jobs = [{"n": 0, "prompt": body["prompt"]}]
+    else:
+        jobs = load_items()
+    out = []
+    for it in jobs:  # local_problems waits on the server loop, so run it in a worker thread
+        problems = await loop.run_in_executor(None, local_problems, it["prompt"])
+        removed = strip_display_only(it["prompt"])[1]
+        out.append({"n": it.get("n"), "problems": problems, "display_only_removed": removed})
+    return web.json_response({"jobs": out, "ok": sum(not j["problems"] for j in out), "total": len(out)})
 
 
 @routes.post("/ai_influencer/pod_queue/run")

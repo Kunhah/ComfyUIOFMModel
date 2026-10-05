@@ -190,7 +190,9 @@ class AIInfluencerSaveVideo(IO.ComfyNode):
             }
         )
 
-        return IO.NodeOutput(video, full_path)
+        # listed in the prompt's history like any saved file, which is how the Pod queue finds it to download
+        saved = ui.SavedResult(file, subfolder, IO.FolderType.output)
+        return IO.NodeOutput(video, full_path, ui=ui.PreviewVideo([saved]))
 
 
 class AIInfluencerToolkitSaveExtension(ComfyExtension):
