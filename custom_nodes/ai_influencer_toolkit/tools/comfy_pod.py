@@ -4,7 +4,8 @@
 (which trains and exits), this pod stays up for you to use in the browser.
 
 Everything it runs is local open weights, so nothing generated on the pod is sent to a provider
-for moderation; add --with-minimax for the MiniMax H3 video models (Workflow 11).
+for moderation; add --with-minimax for the MiniMax H3 video models (Workflow 11) and --with-animate
+for Wan Animate 2 (Workflow 14, motion transfer).
 
 Three ways it can stop billing, so a forgotten pod can't drain the balance:
   1. `destroy` from here;
@@ -13,6 +14,7 @@ Three ways it can stop billing, so a forgotten pod can't drain the balance:
 
     python comfy_pod.py launch --hours 2          # rent + set up, prints the ComfyUI URL
     python comfy_pod.py launch --with-minimax    # ... plus the MiniMax H3 video models (~45 GB)
+    python comfy_pod.py launch --with-animate    # ... plus Wan Animate 2 for motion transfer (~25 GB)
     python comfy_pod.py launch --with-upscale    # ... plus SeedVR2 (~4 GB), for the upscale in Workflows 08/10
     python comfy_pod.py url | status | destroy
     python comfy_pod.py watch --idle-minutes 25   # auto-destroy when you stop generating
@@ -66,7 +68,7 @@ done
 [ -s "$LORA_OUT" ] && echo "LORA_OK" || echo "WARN: lora download failed"
 set -x
 tar xzf /tmp/kit.tgz -C /tmp
-COMFY="$COMFY" PROJECT="$PROJECT" WITH_UPSCALE="${WITH_UPSCALE:-0}" WITH_MINIMAX="${WITH_MINIMAX:-0}" bash /tmp/kit/pod_bootstrap.sh || echo "WARN: bootstrap had errors"
+COMFY="$COMFY" PROJECT="$PROJECT" WITH_UPSCALE="${WITH_UPSCALE:-0}" WITH_MINIMAX="${WITH_MINIMAX:-0}" WITH_ANIMATE="${WITH_ANIMATE:-0}" bash /tmp/kit/pod_bootstrap.sh || echo "WARN: bootstrap had errors"
 
 # custom nodes only load at startup, so restart ComfyUI -- and if nothing supervises it
 # (this image has no supervisor), start it ourselves or the pod comes up with no web UI.
@@ -94,7 +96,8 @@ def comfy_url(info: dict) -> str | None:
 
 
 def profile_of(args) -> gpu_select.Profile:
-    return gpu_select.PROFILES["minimax" if args.with_minimax else "krea2"]
+    # MiniMax's requirements cover Wan Animate's too (its disk has room for both)
+    return gpu_select.PROFILES["minimax" if args.with_minimax else "animate" if args.with_animate else "krea2"]
 
 
 def cmd_search(args) -> int:
@@ -136,6 +139,7 @@ def cmd_launch(args) -> int:
         "-p 8188:8188",
         f"-e WEB_PASSWORD={token}",
         f"-e WITH_MINIMAX={1 if args.with_minimax else 0}",
+        f"-e WITH_ANIMATE={1 if args.with_animate else 0}",
         f"-e WITH_UPSCALE={1 if args.with_upscale else 0}",
         f"-e VAST_API_KEY={os.environ['VAST_API_KEY']}",
         f"-e HF_TOKEN={os.environ['HF_TOKEN']}",
@@ -250,6 +254,9 @@ def main() -> int:
     ap.add_argument("--with-minimax", action="store_true",
                     help="Also install the MiniMax H3 models for Workflow 11 (~45 GB); the GPU search then "
                          "only considers Blackwell cards with 32 GB+, since H3's text encoder ships in nvfp4.")
+    ap.add_argument("--with-animate", action="store_true",
+                    help="Also install Wan Animate 2 for Workflow 14 (motion transfer, ~25 GB); the GPU search "
+                         "then asks for a bigger disk.")
     ap.add_argument("--with-upscale", action="store_true",
                     help="Also download SeedVR2 (~4 GB) for the upscale in Workflows 08/10 and held Pod queue jobs that use it.")
     ap.add_argument("--dry-run", action="store_true")

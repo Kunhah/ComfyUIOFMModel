@@ -18,11 +18,13 @@ asks for are then applied for real by the Camera Imperfections node (nodes_camer
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 from comfy_api.latest import IO, ComfyExtension
 from typing_extensions import override
 
 from . import logging_util
+from .nodes_variation import DEFAULT_ANGLES
 
 MANDATORY_IMPERFECTIONS = (
     "mundane candid photography, unretouched amateur snapshot: slightly off-center framing, "
@@ -38,6 +40,55 @@ DEFAULT_IDENTITY_INSTRUCTIONS = (
     "preserve this exact person's facial identity, bone structure, and recognizable features "
     "from the reference; do not beautify or change the face"
 )
+
+with open(Path(__file__).with_name("view_presets") / "character_views.json", encoding="utf-8") as f:
+    CHARACTER_VIEWS = json.load(f)["cards"]
+VIEW_SETS = ["manual", "head", "head360", "upper360", "full360", "all 32"]
+
+
+class AIInfluencerCharacterViews(IO.ComfyNode):
+    @classmethod
+    def define_schema(cls) -> IO.Schema:
+        return IO.Schema(
+            node_id="AIInfluencerCharacterViews",
+            display_name="Character Views (AI Influencer)",
+            category="ai_influencer",
+            description="Optional expression and camera-view batches for Krea. Manual keeps your action and camera text unchanged.",
+            inputs=[
+                IO.Combo.Input("view_set", options=VIEW_SETS + [v["title"] for v in CHARACTER_VIEWS], default="manual"),
+                IO.Int.Input("seed", default=42, min=0, max=2147483647, control_after_generate=True),
+                IO.String.Input("subject_action", default="", multiline=True),
+                IO.String.Input("camera_and_lens", default="", multiline=True),
+                IO.Int.Input("manual_candidates", default=1, min=1, max=64, optional=True,
+                             tooltip="Candidates in manual mode. View presets generate one candidate per view."),
+                IO.String.Input("manual_angles", default=DEFAULT_ANGLES, multiline=True, optional=True,
+                                tooltip="09b's editable body angles in manual mode. Presets supply the matching body turn."),
+            ],
+            outputs=[
+                IO.String.Output(display_name="subject_action", is_output_list=True),
+                IO.String.Output(display_name="camera_and_lens", is_output_list=True),
+                IO.Int.Output(display_name="seed", is_output_list=True),
+                IO.String.Output(display_name="folder", is_output_list=True),
+                IO.String.Output(display_name="view", is_output_list=True),
+                IO.Int.Output(display_name="candidates", is_output_list=True),
+                IO.String.Output(display_name="angles", is_output_list=True),
+            ],
+        )
+
+    @classmethod
+    def execute(cls, view_set, seed, subject_action="", camera_and_lens="", manual_candidates=1,
+                manual_angles=DEFAULT_ANGLES) -> IO.NodeOutput:
+        if view_set == "manual":
+            return IO.NodeOutput([subject_action], [camera_and_lens], [seed], [""], [""], [manual_candidates], [manual_angles])
+        views = [v for v in CHARACTER_VIEWS if view_set == "all 32" or v["section"] == view_set or v["title"] == view_set]
+        if not views:
+            raise ValueError(f"Unknown character view: {view_set}")
+        return IO.NodeOutput(
+            [v["action"] for v in views], [v["camera"] for v in views],
+            [(seed + i) % 2147483648 for i in range(len(views))],
+            [f"views_{v['section']}_{seed}" for v in views], [v["title"] for v in views],
+            [1] * len(views), [f"{v['yaw']}:" for v in views],
+        )
 
 
 class AIInfluencerLoadCharacter(IO.ComfyNode):
@@ -143,4 +194,4 @@ class AIInfluencerPromptBuilder(IO.ComfyNode):
 class AIInfluencerToolkitCharacterExtension(ComfyExtension):
     @override
     async def get_node_list(self) -> list[type[IO.ComfyNode]]:
-        return [AIInfluencerLoadCharacter, AIInfluencerPromptBuilder]
+        return [AIInfluencerLoadCharacter, AIInfluencerPromptBuilder, AIInfluencerCharacterViews]

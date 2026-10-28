@@ -1,6 +1,6 @@
 {
- "last_node_id": 20,
- "last_link_id": 23,
+ "last_node_id": 24,
+ "last_link_id": 35,
  "nodes": [
   {
    "id": 1,
@@ -62,7 +62,7 @@
      "name": "CLIP",
      "type": "CLIP",
      "links": [
-      4
+      5
      ],
      "slot_index": 0
     }
@@ -103,8 +103,8 @@
      "name": "VAE",
      "type": "VAE",
      "links": [
-      8,
-      14
+      9,
+      15
      ],
      "slot_index": 0
     }
@@ -149,7 +149,7 @@
      "name": "MODEL",
      "type": "MODEL",
      "links": [
-      9
+      2
      ],
      "slot_index": 0
     },
@@ -177,6 +177,46 @@
   },
   {
    "id": 5,
+   "type": "LoraLoaderModelOnly",
+   "pos": [
+    30,
+    670
+   ],
+   "size": [
+    320,
+    130
+   ],
+   "flags": {},
+   "order": 4,
+   "mode": 4,
+   "inputs": [
+    {
+     "name": "model",
+     "type": "MODEL",
+     "link": 2
+    }
+   ],
+   "outputs": [
+    {
+     "name": "MODEL",
+     "type": "MODEL",
+     "links": [
+      10
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "LoraLoaderModelOnly"
+   },
+   "widgets_values": [
+    "",
+    1.0
+   ],
+   "title": "Optional extra LoRA - NSFW / concept fine-tune (Ctrl+B to enable)"
+  },
+  {
+   "id": 6,
    "type": "LoadImage",
    "pos": [
     460,
@@ -187,7 +227,7 @@
     380
    ],
    "flags": {},
-   "order": 4,
+   "order": 5,
    "mode": 0,
    "inputs": [],
    "outputs": [
@@ -195,7 +235,7 @@
      "name": "IMAGE",
      "type": "IMAGE",
      "links": [
-      2
+      3
      ],
      "slot_index": 0
     },
@@ -215,7 +255,7 @@
    ]
   },
   {
-   "id": 6,
+   "id": 7,
    "type": "ImageScaleToTotalPixels",
    "pos": [
     460,
@@ -226,13 +266,13 @@
     130
    ],
    "flags": {},
-   "order": 5,
+   "order": 6,
    "mode": 0,
    "inputs": [
     {
      "name": "image",
      "type": "IMAGE",
-     "link": 2
+     "link": 3
     }
    ],
    "outputs": [
@@ -240,8 +280,8 @@
      "name": "IMAGE",
      "type": "IMAGE",
      "links": [
-      7,
-      22
+      8,
+      25
      ],
      "slot_index": 0
     }
@@ -256,7 +296,7 @@
    ]
   },
   {
-   "id": 7,
+   "id": 8,
    "type": "AIInfluencerLoadCharacter",
    "pos": [
     890,
@@ -267,7 +307,7 @@
     150
    ],
    "flags": {},
-   "order": 6,
+   "order": 7,
    "mode": 0,
    "inputs": [],
    "outputs": [
@@ -287,7 +327,7 @@
      "name": "identity_prompt",
      "type": "STRING",
      "links": [
-      3
+      4
      ],
      "slot_index": 2
     },
@@ -312,7 +352,7 @@
    ]
   },
   {
-   "id": 8,
+   "id": 9,
    "type": "AIInfluencerPromptBuilder",
    "pos": [
     1250,
@@ -323,15 +363,31 @@
     620
    ],
    "flags": {},
-   "order": 7,
+   "order": 8,
    "mode": 0,
    "inputs": [
     {
      "name": "identity",
      "type": "STRING",
-     "link": 3,
+     "link": 4,
      "widget": {
       "name": "identity"
+     }
+    },
+    {
+     "name": "subject_action",
+     "type": "STRING",
+     "link": 27,
+     "widget": {
+      "name": "subject_action"
+     }
+    },
+    {
+     "name": "camera_and_lens",
+     "type": "STRING",
+     "link": 28,
+     "widget": {
+      "name": "camera_and_lens"
      }
     }
    ],
@@ -340,8 +396,9 @@
      "name": "prompt",
      "type": "STRING",
      "links": [
-      5,
-      21
+      6,
+      22,
+      24
      ],
      "slot_index": 0
     }
@@ -363,7 +420,7 @@
    ]
   },
   {
-   "id": 9,
+   "id": 10,
    "type": "CLIPTextEncode",
    "pos": [
     1750,
@@ -374,18 +431,18 @@
     100
    ],
    "flags": {},
-   "order": 8,
+   "order": 9,
    "mode": 0,
    "inputs": [
     {
      "name": "clip",
      "type": "CLIP",
-     "link": 4
+     "link": 5
     },
     {
      "name": "text",
      "type": "STRING",
-     "link": 5,
+     "link": 6,
      "widget": {
       "name": "text"
      }
@@ -396,8 +453,8 @@
      "name": "CONDITIONING",
      "type": "CONDITIONING",
      "links": [
-      6,
-      10
+      7,
+      11
      ],
      "slot_index": 0
     }
@@ -410,7 +467,7 @@
    ]
   },
   {
-   "id": 10,
+   "id": 11,
    "type": "ConditioningZeroOut",
    "pos": [
     1750,
@@ -421,13 +478,13 @@
     30
    ],
    "flags": {},
-   "order": 9,
+   "order": 10,
    "mode": 0,
    "inputs": [
     {
      "name": "conditioning",
      "type": "CONDITIONING",
-     "link": 6
+     "link": 7
     }
    ],
    "outputs": [
@@ -435,7 +492,7 @@
      "name": "CONDITIONING",
      "type": "CONDITIONING",
      "links": [
-      11
+      12
      ],
      "slot_index": 0
     }
@@ -446,7 +503,7 @@
    "widgets_values": []
   },
   {
-   "id": 11,
+   "id": 12,
    "type": "VAEEncode",
    "pos": [
     1750,
@@ -457,18 +514,18 @@
     50
    ],
    "flags": {},
-   "order": 10,
+   "order": 11,
    "mode": 0,
    "inputs": [
     {
      "name": "pixels",
      "type": "IMAGE",
-     "link": 7
+     "link": 8
     },
     {
      "name": "vae",
      "type": "VAE",
-     "link": 8
+     "link": 9
     }
    ],
    "outputs": [
@@ -476,7 +533,7 @@
      "name": "LATENT",
      "type": "LATENT",
      "links": [
-      12
+      13
      ],
      "slot_index": 0
     }
@@ -487,7 +544,7 @@
    "widgets_values": []
   },
   {
-   "id": 12,
+   "id": 13,
    "type": "KSampler",
    "pos": [
     2110,
@@ -498,28 +555,36 @@
     262
    ],
    "flags": {},
-   "order": 11,
+   "order": 12,
    "mode": 0,
    "inputs": [
     {
      "name": "model",
      "type": "MODEL",
-     "link": 9
+     "link": 10
     },
     {
      "name": "positive",
      "type": "CONDITIONING",
-     "link": 10
+     "link": 11
     },
     {
      "name": "negative",
      "type": "CONDITIONING",
-     "link": 11
+     "link": 12
     },
     {
      "name": "latent_image",
      "type": "LATENT",
-     "link": 12
+     "link": 13
+    },
+    {
+     "name": "seed",
+     "type": "INT",
+     "link": 29,
+     "widget": {
+      "name": "seed"
+     }
     }
    ],
    "outputs": [
@@ -527,7 +592,7 @@
      "name": "LATENT",
      "type": "LATENT",
      "links": [
-      13
+      14
      ],
      "slot_index": 0
     }
@@ -547,7 +612,7 @@
    "title": "Pose sampler (denoise 0.7-0.9)"
   },
   {
-   "id": 13,
+   "id": 14,
    "type": "VAEDecode",
    "pos": [
     2110,
@@ -558,18 +623,18 @@
     50
    ],
    "flags": {},
-   "order": 12,
+   "order": 13,
    "mode": 0,
    "inputs": [
     {
      "name": "samples",
      "type": "LATENT",
-     "link": 13
+     "link": 14
     },
     {
      "name": "vae",
      "type": "VAE",
-     "link": 14
+     "link": 15
     }
    ],
    "outputs": [
@@ -577,8 +642,9 @@
      "name": "IMAGE",
      "type": "IMAGE",
      "links": [
-      16,
-      17
+      17,
+      18,
+      23
      ],
      "slot_index": 0
     }
@@ -589,7 +655,7 @@
    "widgets_values": []
   },
   {
-   "id": 14,
+   "id": 15,
    "type": "LoadBackgroundRemovalModel",
    "pos": [
     2540,
@@ -600,7 +666,7 @@
     60
    ],
    "flags": {},
-   "order": 13,
+   "order": 14,
    "mode": 0,
    "inputs": [],
    "outputs": [
@@ -608,7 +674,7 @@
      "name": "bg_model",
      "type": "BACKGROUND_REMOVAL",
      "links": [
-      15
+      16
      ],
      "slot_index": 0
     }
@@ -628,7 +694,7 @@
    ]
   },
   {
-   "id": 15,
+   "id": 16,
    "type": "RemoveBackground",
    "pos": [
     2540,
@@ -639,18 +705,18 @@
     50
    ],
    "flags": {},
-   "order": 14,
+   "order": 15,
    "mode": 0,
    "inputs": [
     {
      "name": "bg_removal_model",
      "type": "BACKGROUND_REMOVAL",
-     "link": 15
+     "link": 16
     },
     {
      "name": "image",
      "type": "IMAGE",
-     "link": 16
+     "link": 17
     }
    ],
    "outputs": [
@@ -658,7 +724,7 @@
      "name": "mask",
      "type": "MASK",
      "links": [
-      18
+      19
      ],
      "slot_index": 0
     }
@@ -669,7 +735,7 @@
    "widgets_values": []
   },
   {
-   "id": 16,
+   "id": 17,
    "type": "AIInfluencerBlurBackground",
    "pos": [
     2540,
@@ -680,18 +746,18 @@
     180
    ],
    "flags": {},
-   "order": 15,
+   "order": 16,
    "mode": 0,
    "inputs": [
     {
      "name": "image",
      "type": "IMAGE",
-     "link": 17
+     "link": 18
     },
     {
      "name": "subject_mask",
      "type": "MASK",
-     "link": 18
+     "link": 19
     }
    ],
    "outputs": [
@@ -699,7 +765,7 @@
      "name": "image",
      "type": "IMAGE",
      "links": [
-      19
+      20
      ],
      "slot_index": 0
     },
@@ -722,7 +788,7 @@
    "title": "Blur Background"
   },
   {
-   "id": 17,
+   "id": 18,
    "type": "AIInfluencerCameraImperfections",
    "pos": [
     2980,
@@ -733,13 +799,13 @@
     280
    ],
    "flags": {},
-   "order": 16,
+   "order": 17,
    "mode": 0,
    "inputs": [
     {
      "name": "image",
      "type": "IMAGE",
-     "link": 19
+     "link": 20
     }
    ],
    "outputs": [
@@ -747,8 +813,8 @@
      "name": "image",
      "type": "IMAGE",
      "links": [
-      20,
-      23
+      21,
+      26
      ],
      "slot_index": 0
     }
@@ -769,7 +835,7 @@
    "title": "Camera Imperfections"
   },
   {
-   "id": 18,
+   "id": 19,
    "type": "AIInfluencerSaveImage",
    "pos": [
     1750,
@@ -780,20 +846,44 @@
     420
    ],
    "flags": {},
-   "order": 17,
+   "order": 18,
    "mode": 0,
    "inputs": [
     {
      "name": "images",
      "type": "IMAGE",
-     "link": 20
+     "link": 21
     },
     {
      "name": "prompt_text",
      "type": "STRING",
-     "link": 21,
+     "link": 22,
      "widget": {
       "name": "prompt_text"
+     }
+    },
+    {
+     "name": "seed",
+     "type": "INT",
+     "link": 30,
+     "widget": {
+      "name": "seed"
+     }
+    },
+    {
+     "name": "subfolder",
+     "type": "STRING",
+     "link": 31,
+     "widget": {
+      "name": "subfolder"
+     }
+    },
+    {
+     "name": "notes",
+     "type": "STRING",
+     "link": 32,
+     "widget": {
+      "name": "notes"
      }
     }
    ],
@@ -829,10 +919,99 @@
     "",
     "",
     ""
-   ]
+   ],
+   "title": "Save filtered copy"
   },
   {
-   "id": 19,
+   "id": 20,
+   "type": "AIInfluencerSaveImage",
+   "pos": [
+    3410,
+    60
+   ],
+   "size": [
+    360,
+    420
+   ],
+   "flags": {},
+   "order": 19,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "images",
+     "type": "IMAGE",
+     "link": 23
+    },
+    {
+     "name": "prompt_text",
+     "type": "STRING",
+     "link": 24,
+     "widget": {
+      "name": "prompt_text"
+     }
+    },
+    {
+     "name": "seed",
+     "type": "INT",
+     "link": 33,
+     "widget": {
+      "name": "seed"
+     }
+    },
+    {
+     "name": "subfolder",
+     "type": "STRING",
+     "link": 34,
+     "widget": {
+      "name": "subfolder"
+     }
+    },
+    {
+     "name": "notes",
+     "type": "STRING",
+     "link": 35,
+     "widget": {
+      "name": "notes"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [],
+     "slot_index": 0
+    },
+    {
+     "name": "output_path",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 1
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerSaveImage"
+   },
+   "widgets_values": [
+    "lina",
+    "local_unfiltered",
+    "local_krea2",
+    "Krea 2 Turbo + LoRA (pose img2img)",
+    "generate",
+    "",
+    "",
+    "",
+    -1,
+    "fixed",
+    0,
+    "",
+    "",
+    ""
+   ],
+   "title": "Save unfiltered copy"
+  },
+  {
+   "id": 21,
    "type": "ImageCompare",
    "pos": [
     2110,
@@ -843,18 +1022,18 @@
     240
    ],
    "flags": {},
-   "order": 18,
+   "order": 20,
    "mode": 0,
    "inputs": [
     {
      "name": "image_a",
      "type": "IMAGE",
-     "link": 22
+     "link": 25
     },
     {
      "name": "image_b",
      "type": "IMAGE",
-     "link": 23
+     "link": 26
     }
    ],
    "outputs": [],
@@ -865,10 +1044,10 @@
    "title": "Reference / result"
   },
   {
-   "id": 20,
+   "id": 22,
    "type": "MarkdownNote",
    "pos": [
-    3410,
+    3800,
     0
    ],
    "size": [
@@ -876,7 +1055,7 @@
     700
    ],
    "flags": {},
-   "order": 19,
+   "order": 21,
    "mode": 0,
    "inputs": [],
    "outputs": [],
@@ -884,7 +1063,123 @@
     "Node name for S&R": "MarkdownNote"
    },
    "widgets_values": [
-    "# 09 Krea 2 Pose Transfer\n\nPut any photo with the pose you want in `input/ai_influencer/lina/poses/` and load it in 02. Your character is generated in the same pose and framing.\n\n**How it works, honestly:** this ComfyUI build has **no ControlNet for Krea 2**, so this is image-to-image. The reference is encoded and re-noised, and `denoise` sets how much of it survives:\n- **0.7**: pose, framing *and* colors/lighting of the reference stick (face may pull toward the reference person)\n- **0.8**: good default, pose and framing kept, your character's face\n- **0.9**: only the rough layout is kept\n\nIt copies composition, not an exact skeleton. If the pose must match exactly, a Krea 2 ControlNet (not available here yet) or a pose-capable edit model is needed.\n\n**05 Background blur** always puts the background out of focus (BiRefNet subject mask + a real lens-style blur, same node as Workflow 08). Set `blur_amount` to 0 or mute the group to keep it sharp.\n\n**06 Camera imperfections** adds the ISO grain, lens fringing, corner falloff and white balance drift a real camera leaves behind, which is what keeps the result from reading as AI. Same node and same defaults as Workflow 08.\n\nFor **edits of an existing image** (hair color, outfit, background) there is no workflow any more: Workflow 03 (GPT Image 2.5 edit) was removed. Re-generate here with a changed prompt instead.\n\n## Models (put them in ComfyUI/models/...)\n\n| File | Folder |\n|---|---|\n| [krea2_turbo_fp8_scaled.safetensors](https://huggingface.co/Comfy-Org/Krea-2/resolve/main/diffusion_models/krea2_turbo_fp8_scaled.safetensors) | `diffusion_models/` |\n| [qwen3vl_4b_fp8_scaled.safetensors](https://huggingface.co/Comfy-Org/Krea-2/resolve/main/text_encoders/qwen3vl_4b_fp8_scaled.safetensors) | `text_encoders/` |\n| [qwen_image_vae.safetensors](https://huggingface.co/Comfy-Org/Krea-2/resolve/main/vae/qwen_image_vae.safetensors) | `vae/` |\n| [seedvr2_3b_int8_convrot.safetensors](https://huggingface.co/Comfy-Org/SeedVR2/resolve/main/diffusion_models/seedvr2_3b_int8_convrot.safetensors) | `diffusion_models/` |\n| [seedvr2_ema_vae_fp16.safetensors](https://huggingface.co/Comfy-Org/SeedVR2/resolve/main/vae/seedvr2_ema_vae_fp16.safetensors) | `vae/` |\n| [sigclip_vision_patch14_384.safetensors](https://huggingface.co/Comfy-Org/sigclip_vision_384/resolve/main/sigclip_vision_patch14_384.safetensors) | `clip_vision/` |\n| [birefnet.safetensors](https://huggingface.co/Comfy-Org/BiRefNet/resolve/main/background_removal/birefnet.safetensors) | `background_removal/` |\n\nYour character LoRA checkpoints go in `models/loras/` (a subfolder per character is fine, e.g. `models/loras/lina/`).\n\nKrea 2 needs a big GPU (RTX 5090 / RTX 6000 Pro class). Run these on RunPod, not a 6 GB card."
+    "# 09 Krea 2 Pose Transfer\n\nPut any photo with the pose you want in `input/ai_influencer/lina/poses/` and load it in 02. Your character is generated in the same pose and framing.\n\n**How it works, honestly:** this ComfyUI build has **no ControlNet for Krea 2**, so this is image-to-image. The reference is encoded and re-noised, and `denoise` sets how much of it survives:\n- **0.7**: pose, framing *and* colors/lighting of the reference stick (face may pull toward the reference person)\n- **0.8**: good default, pose and framing kept, your character's face\n- **0.9**: only the rough layout is kept\n\nIt copies composition, not an exact skeleton. If the pose must match exactly, a Krea 2 ControlNet (not available here yet) or a pose-capable edit model is needed.\n\n**05 Background blur** always puts the background out of focus (BiRefNet subject mask + a real lens-style blur, same node as Workflow 08). Set `blur_amount` to 0 or mute the group to keep it sharp.\n\n**06 Camera imperfections** adds the ISO grain, lens fringing, corner falloff and white balance drift a real camera leaves behind, which is what keeps the result from reading as AI. Same node and same defaults as Workflow 08.\n\nEvery queue saves both versions: the normal filtered image in `outputs/images/candidates/` and the clean pre-filter image in `outputs/images/unfiltered/`, so you can apply a lighter pass later.\n\nFor **edits of an existing image** (hair color, outfit, background) there is no workflow any more: Workflow 03 (GPT Image 2.5 edit) was removed. Re-generate here with a changed prompt instead.\n\n## Models (put them in ComfyUI/models/...)\n\n| File | Folder |\n|---|---|\n| [krea2_turbo_fp8_scaled.safetensors](https://huggingface.co/Comfy-Org/Krea-2/resolve/main/diffusion_models/krea2_turbo_fp8_scaled.safetensors) | `diffusion_models/` |\n| [qwen3vl_4b_fp8_scaled.safetensors](https://huggingface.co/Comfy-Org/Krea-2/resolve/main/text_encoders/qwen3vl_4b_fp8_scaled.safetensors) | `text_encoders/` |\n| [qwen_image_vae.safetensors](https://huggingface.co/Comfy-Org/Krea-2/resolve/main/vae/qwen_image_vae.safetensors) | `vae/` |\n| [seedvr2_3b_int8_convrot.safetensors](https://huggingface.co/Comfy-Org/SeedVR2/resolve/main/diffusion_models/seedvr2_3b_int8_convrot.safetensors) | `diffusion_models/` |\n| [seedvr2_ema_vae_fp16.safetensors](https://huggingface.co/Comfy-Org/SeedVR2/resolve/main/vae/seedvr2_ema_vae_fp16.safetensors) | `vae/` |\n| [sigclip_vision_patch14_384.safetensors](https://huggingface.co/Comfy-Org/sigclip_vision_384/resolve/main/sigclip_vision_patch14_384.safetensors) | `clip_vision/` |\n| [birefnet.safetensors](https://huggingface.co/Comfy-Org/BiRefNet/resolve/main/background_removal/birefnet.safetensors) | `background_removal/` |\n\nYour character LoRA checkpoints go in `models/loras/` (a subfolder per character is fine, e.g. `models/loras/lina/`).\n\nKrea 2 needs a big GPU (RTX 5090 / RTX 6000 Pro class). Run these on RunPod, not a 6 GB card."
+   ]
+  },
+  {
+   "id": 23,
+   "type": "AIInfluencerCharacterViews",
+   "pos": [
+    460,
+    960
+   ],
+   "size": [
+    440,
+    540
+   ],
+   "flags": {},
+   "order": 22,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "subject_action",
+     "type": "STRING",
+     "links": [
+      27
+     ],
+     "slot_index": 0,
+     "shape": 6
+    },
+    {
+     "name": "camera_and_lens",
+     "type": "STRING",
+     "links": [
+      28
+     ],
+     "slot_index": 1,
+     "shape": 6
+    },
+    {
+     "name": "seed",
+     "type": "INT",
+     "links": [
+      29,
+      30,
+      33
+     ],
+     "slot_index": 2,
+     "shape": 6
+    },
+    {
+     "name": "folder",
+     "type": "STRING",
+     "links": [
+      31,
+      34
+     ],
+     "slot_index": 3,
+     "shape": 6
+    },
+    {
+     "name": "view",
+     "type": "STRING",
+     "links": [
+      32,
+      35
+     ],
+     "slot_index": 4,
+     "shape": 6
+    },
+    {
+     "name": "candidates",
+     "type": "INT",
+     "links": [],
+     "slot_index": 5,
+     "shape": 6
+    },
+    {
+     "name": "angles",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 6,
+     "shape": 6
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerCharacterViews"
+   },
+   "widgets_values": [
+    "manual",
+    42,
+    "randomize",
+    "same pose as the reference",
+    "85mm f/1.8 portrait lens, shallow depth of field, background strongly out of focus, creamy bokeh, eye level",
+    1,
+    "0: the body facing the camera\n35: the body turned slightly toward frame-right, face toward the camera\n-35: the body turned slightly toward frame-left, face toward the camera\n65: three-quarter view, the body turned toward frame-right, head turned back toward the camera\n-65: three-quarter view, the body turned toward frame-left, head turned back toward the camera\n90: seen in profile, facing frame-right\n-90: seen in profile, facing frame-left\n160: seen from behind, looking back over the shoulder toward the camera"
+   ]
+  },
+  {
+   "id": 24,
+   "type": "MarkdownNote",
+   "pos": [
+    940,
+    960
+   ],
+   "size": [
+    470,
+    540
+   ],
+   "flags": {},
+   "order": 23,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [],
+   "properties": {
+    "Node name for S&R": "MarkdownNote"
+   },
+   "widgets_values": [
+    "## Optional view batch (same Krea model and vast.ai Pod queue)\n\n**manual**: edit action and camera here; other Prompt Builder fields still control identity, clothing, location and light.\nChoose **head**, **head360**, **upper360**, **full360** for eight views, **all 32**, or one named view. Each gets its own seed and one candidate; manual mode keeps the configured candidate count. The view selector replaces action and framing only; no model or resolution changes.\n\nQueue normally with **Hold for the pod**. The existing vast.ai path runs each view and saves filtered / clean copies as configured by this workflow.\n\n08 uses the character LoRA to hold identity. In pose-based workflows, the photo and skeleton still constrain composition: a text request for a back/profile view cannot guarantee a real 3D turn. Use a matching pose photo or raise sampler denoise to allow larger changes. 09b gets the preset's matching skeleton angle; placement and reference-pose controls still apply. Its manual angle list is edited here.\n\nAdapted from MATRIX LAB's 32-view prompts (Apache-2.0). Source and license: `view_presets/` in the toolkit. No Qwen models are needed."
    ]
   }
  ],
@@ -899,147 +1194,147 @@
   ],
   [
    2,
-   5,
-   0,
-   6,
-   0,
-   "IMAGE"
-  ],
-  [
-   3,
-   7,
-   2,
-   8,
-   0,
-   "STRING"
-  ],
-  [
-   4,
-   2,
-   0,
-   9,
-   0,
-   "CLIP"
-  ],
-  [
-   5,
-   8,
-   0,
-   9,
-   1,
-   "STRING"
-  ],
-  [
-   6,
-   9,
-   0,
-   10,
-   0,
-   "CONDITIONING"
-  ],
-  [
-   7,
-   6,
-   0,
-   11,
-   0,
-   "IMAGE"
-  ],
-  [
-   8,
-   3,
-   0,
-   11,
-   1,
-   "VAE"
-  ],
-  [
-   9,
    4,
    0,
-   12,
+   5,
    0,
    "MODEL"
   ],
   [
-   10,
+   3,
+   6,
+   0,
+   7,
+   0,
+   "IMAGE"
+  ],
+  [
+   4,
+   8,
+   2,
    9,
    0,
-   12,
-   1,
-   "CONDITIONING"
+   "STRING"
   ],
   [
-   11,
+   5,
+   2,
+   0,
    10,
    0,
-   12,
-   2,
+   "CLIP"
+  ],
+  [
+   6,
+   9,
+   0,
+   10,
+   1,
+   "STRING"
+  ],
+  [
+   7,
+   10,
+   0,
+   11,
+   0,
    "CONDITIONING"
   ],
   [
-   12,
-   11,
+   8,
+   7,
    0,
    12,
-   3,
-   "LATENT"
+   0,
+   "IMAGE"
   ],
   [
-   13,
-   12,
-   0,
-   13,
-   0,
-   "LATENT"
-  ],
-  [
-   14,
+   9,
    3,
    0,
-   13,
+   12,
    1,
    "VAE"
   ],
   [
-   15,
+   10,
+   5,
+   0,
+   13,
+   0,
+   "MODEL"
+  ],
+  [
+   11,
+   10,
+   0,
+   13,
+   1,
+   "CONDITIONING"
+  ],
+  [
+   12,
+   11,
+   0,
+   13,
+   2,
+   "CONDITIONING"
+  ],
+  [
+   13,
+   12,
+   0,
+   13,
+   3,
+   "LATENT"
+  ],
+  [
+   14,
+   13,
+   0,
    14,
    0,
+   "LATENT"
+  ],
+  [
    15,
+   3,
+   0,
+   14,
+   1,
+   "VAE"
+  ],
+  [
+   16,
+   15,
+   0,
+   16,
    0,
    "BACKGROUND_REMOVAL"
   ],
   [
-   16,
-   13,
-   0,
-   15,
-   1,
-   "IMAGE"
-  ],
-  [
    17,
-   13,
+   14,
    0,
    16,
-   0,
+   1,
    "IMAGE"
   ],
   [
    18,
-   15,
+   14,
    0,
-   16,
-   1,
-   "MASK"
+   17,
+   0,
+   "IMAGE"
   ],
   [
    19,
    16,
    0,
    17,
-   0,
-   "IMAGE"
+   1,
+   "MASK"
   ],
   [
    20,
@@ -1051,27 +1346,123 @@
   ],
   [
    21,
-   8,
-   0,
    18,
+   0,
+   19,
+   0,
+   "IMAGE"
+  ],
+  [
+   22,
+   9,
+   0,
+   19,
    1,
    "STRING"
   ],
   [
-   22,
-   6,
+   23,
+   14,
    0,
-   19,
+   20,
    0,
    "IMAGE"
   ],
   [
-   23,
-   17,
+   24,
+   9,
    0,
-   19,
+   20,
+   1,
+   "STRING"
+  ],
+  [
+   25,
+   7,
+   0,
+   21,
+   0,
+   "IMAGE"
+  ],
+  [
+   26,
+   18,
+   0,
+   21,
    1,
    "IMAGE"
+  ],
+  [
+   27,
+   23,
+   0,
+   9,
+   1,
+   "STRING"
+  ],
+  [
+   28,
+   23,
+   1,
+   9,
+   2,
+   "STRING"
+  ],
+  [
+   29,
+   23,
+   2,
+   13,
+   4,
+   "INT"
+  ],
+  [
+   30,
+   23,
+   2,
+   19,
+   2,
+   "INT"
+  ],
+  [
+   31,
+   23,
+   3,
+   19,
+   3,
+   "STRING"
+  ],
+  [
+   32,
+   23,
+   4,
+   19,
+   4,
+   "STRING"
+  ],
+  [
+   33,
+   23,
+   2,
+   20,
+   2,
+   "INT"
+  ],
+  [
+   34,
+   23,
+   3,
+   20,
+   3,
+   "STRING"
+  ],
+  [
+   35,
+   23,
+   4,
+   20,
+   4,
+   "STRING"
   ]
  ],
  "groups": [
@@ -1082,7 +1473,7 @@
     0,
     0,
     400,
-    680
+    840
    ],
    "color": "#3f789e",
    "font_size": 24,
@@ -1150,6 +1541,19 @@
     700
    ],
    "color": "#a1309b",
+   "font_size": 24,
+   "flags": {}
+  },
+  {
+   "id": 7,
+   "title": "CHARACTER VIEWS \u2014 optional MATRIX expression / angle batches",
+   "bounding": [
+    430,
+    900,
+    1040,
+    680
+   ],
+   "color": "#b58b2a",
    "font_size": 24,
    "flags": {}
   }

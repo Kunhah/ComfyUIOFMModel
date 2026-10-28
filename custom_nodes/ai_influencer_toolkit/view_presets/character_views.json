@@ -1,0 +1,230 @@
+{
+  "source": "https://github.com/JsonMatrixLab/MATRIX-Qwen21-Dataset-Workflow",
+  "commit": "2280c035b7a34e75f3903c6e09d1399f60f66985",
+  "cards": [
+    {
+      "section": "head",
+      "title": "H01 HEAD · Frontal Neutral",
+      "action": "Neutral relaxed expression, lips softly closed, calm direct gaze into the camera, head level and facing the camera straight-on.",
+      "camera": "Shoulder-up portrait framed from the upper chest up, the whole head and hair visible",
+      "yaw": 0
+    },
+    {
+      "section": "head",
+      "title": "H02 HEAD · Soft Smile",
+      "action": "Soft closed-mouth smile: the corners of the lips gently raised, the cheeks slightly lifted, relaxed eyes, warm direct gaze into the camera, head level and facing the camera straight-on.",
+      "camera": "Shoulder-up portrait framed from the upper chest up, the whole head and hair visible",
+      "yaw": 0
+    },
+    {
+      "section": "head",
+      "title": "H03 HEAD · Laugh",
+      "action": "Laughing naturally: mouth open showing the upper teeth, cheeks raised high, eyes narrowed from laughing, head level and facing the camera.",
+      "camera": "Shoulder-up portrait framed from the upper chest up, the whole head and hair visible",
+      "yaw": 0
+    },
+    {
+      "section": "head",
+      "title": "H04 HEAD · Mouth Open",
+      "action": "Mouth open in a relaxed natural way: the jaw loosely dropped, lips parted, the upper teeth visible, eyebrows relaxed, gaze into the camera, head level and facing the camera straight-on.",
+      "camera": "Shoulder-up portrait framed from the upper chest up, the whole head and hair visible",
+      "yaw": 0
+    },
+    {
+      "section": "head",
+      "title": "H05 HEAD · Eyes Closed",
+      "action": "Both eyes fully closed with relaxed eyelids and the lashes resting, calm serene expression, lips softly closed, head level and facing the camera straight-on.",
+      "camera": "Shoulder-up portrait framed from the upper chest up, the whole head and hair visible",
+      "yaw": 0
+    },
+    {
+      "section": "head",
+      "title": "H06 HEAD · Looking Away",
+      "action": "Head turned about 30 degrees toward the LEFT edge of the image, the eyes looking far off toward the LEFT edge of the image, not at the camera, neutral relaxed expression, lips softly closed.",
+      "camera": "Shoulder-up portrait framed from the upper chest up, the whole head and hair visible",
+      "yaw": -30
+    },
+    {
+      "section": "head",
+      "title": "H07 HEAD · Slight High Angle",
+      "action": "Camera slightly above eye level, tilted down about 15 degrees: the top of the forehead is closer to the camera and appears larger than the chin. The person looks slightly up into the camera, neutral relaxed expression, lips softly closed.",
+      "camera": "Shoulder-up portrait framed from the upper chest up, the whole head and hair visible",
+      "yaw": 0
+    },
+    {
+      "section": "head",
+      "title": "H08 HEAD · Slight Low Angle",
+      "action": "Camera slightly below the chin, pointing up about 15 degrees: the jawline and chin are closer to the camera, the underside of the nose is slightly visible and the forehead appears smaller. The person looks slightly down into the camera, neutral relaxed expression, lips softly closed.",
+      "camera": "Shoulder-up portrait framed from the upper chest up, the whole head and hair visible",
+      "yaw": 0
+    },
+    {
+      "section": "head360",
+      "title": "HR1 HEAD 360 · Front",
+      "action": "Neutral relaxed expression, lips softly closed, head level and facing the camera straight-on.",
+      "camera": "Shoulder-up portrait framed from the upper chest up, the whole head and hair visible",
+      "yaw": 0
+    },
+    {
+      "section": "head360",
+      "title": "HR2 HEAD 360 · 45 Left",
+      "action": "Head and shoulders turned about 45 degrees so that the face looks toward the LEFT edge of the image, three-quarter view, head level, neutral expression.",
+      "camera": "Shoulder-up portrait framed from the upper chest up, the whole head and hair visible",
+      "yaw": -45
+    },
+    {
+      "section": "head360",
+      "title": "HR3 HEAD 360 · 90 Left",
+      "action": "Exact profile: head and shoulders turned so that the nose points to the LEFT edge of the image, only one side of the face visible, head level, neutral expression.",
+      "camera": "Shoulder-up portrait framed from the upper chest up, the whole head and hair visible",
+      "yaw": -90
+    },
+    {
+      "section": "head360",
+      "title": "HR4 HEAD 360 · 135 Left",
+      "action": "Three-quarter back view: head and shoulders turned about 135 degrees away from the camera toward the LEFT edge of the image, mostly the back of the head and the back of the shoulders visible, only the cheek line and the ear of one side of the face visible, the eyes do not look at the camera.",
+      "camera": "Shoulder-up portrait framed from the upper chest up, the whole head and hair visible",
+      "yaw": -135
+    },
+    {
+      "section": "head360",
+      "title": "HR5 HEAD 360 · 180 Back",
+      "action": "Seen from directly behind: the back of the head, the hair and the shoulders face the camera, no face visible.",
+      "camera": "Shoulder-up portrait framed from the upper chest up, the whole head and hair visible",
+      "yaw": 180
+    },
+    {
+      "section": "head360",
+      "title": "HR6 HEAD 360 · 135 Right",
+      "action": "Three-quarter back view: head and shoulders turned about 135 degrees away from the camera toward the RIGHT edge of the image, mostly the back of the head and the back of the shoulders visible, only the cheek line and the ear of one side of the face visible, the eyes do not look at the camera.",
+      "camera": "Shoulder-up portrait framed from the upper chest up, the whole head and hair visible",
+      "yaw": 135
+    },
+    {
+      "section": "head360",
+      "title": "HR7 HEAD 360 · 90 Right",
+      "action": "Exact profile: head and shoulders turned so that the nose points to the RIGHT edge of the image, only one side of the face visible, head level, neutral expression.",
+      "camera": "Shoulder-up portrait framed from the upper chest up, the whole head and hair visible",
+      "yaw": 90
+    },
+    {
+      "section": "head360",
+      "title": "HR8 HEAD 360 · 45 Right",
+      "action": "Head and shoulders turned about 45 degrees so that the face looks toward the RIGHT edge of the image, three-quarter view, head level, neutral expression.",
+      "camera": "Shoulder-up portrait framed from the upper chest up, the whole head and hair visible",
+      "yaw": 45
+    },
+    {
+      "section": "upper360",
+      "title": "UR1 UPPER BODY 360 · Front",
+      "action": "the person faces the camera straight-on.",
+      "camera": "Half-body from the hips up, standing straight with the arms relaxed slightly away from the body, camera at chest height about 2 metres away, no wide-angle distortion, the face and torso sharp",
+      "yaw": 0
+    },
+    {
+      "section": "upper360",
+      "title": "UR2 UPPER BODY 360 · 45 Left",
+      "action": "the whole body turned about 45 degrees so that the chest faces the LEFT edge of the image, three-quarter view, the head facing the camera.",
+      "camera": "Half-body from the hips up, standing straight with the arms relaxed slightly away from the body, camera at chest height about 2 metres away, no wide-angle distortion, the face and torso sharp",
+      "yaw": -45
+    },
+    {
+      "section": "upper360",
+      "title": "UR3 UPPER BODY 360 · 90 Left",
+      "action": "exact side view, the body and the face point toward the LEFT edge of the image, head level.",
+      "camera": "Half-body from the hips up, standing straight with the arms relaxed slightly away from the body, camera at chest height about 2 metres away, no wide-angle distortion, the face and torso sharp",
+      "yaw": -90
+    },
+    {
+      "section": "upper360",
+      "title": "UR4 UPPER BODY 360 · 135 Left",
+      "action": "the whole body turned about 135 degrees away from the camera toward the LEFT edge of the image, three-quarter back view, mostly the back visible, the face not looking at the camera.",
+      "camera": "Half-body from the hips up, standing straight with the arms relaxed slightly away from the body, camera at chest height about 2 metres away, no wide-angle distortion, the face and torso sharp",
+      "yaw": -135
+    },
+    {
+      "section": "upper360",
+      "title": "UR5 UPPER BODY 360 · 180 Back",
+      "action": "seen from directly behind, the back of the head and the back of the body face the camera, no face visible.",
+      "camera": "Half-body from the hips up, standing straight with the arms relaxed slightly away from the body, camera at chest height about 2 metres away, no wide-angle distortion, the head and torso sharp",
+      "yaw": 180
+    },
+    {
+      "section": "upper360",
+      "title": "UR6 UPPER BODY 360 · 135 Right",
+      "action": "the whole body turned about 135 degrees away from the camera toward the RIGHT edge of the image, three-quarter back view, mostly the back visible, the face not looking at the camera.",
+      "camera": "Half-body from the hips up, standing straight with the arms relaxed slightly away from the body, camera at chest height about 2 metres away, no wide-angle distortion, the face and torso sharp",
+      "yaw": 135
+    },
+    {
+      "section": "upper360",
+      "title": "UR7 UPPER BODY 360 · 90 Right",
+      "action": "exact side view, the body and the face point toward the RIGHT edge of the image, head level.",
+      "camera": "Half-body from the hips up, standing straight with the arms relaxed slightly away from the body, camera at chest height about 2 metres away, no wide-angle distortion, the face and torso sharp",
+      "yaw": 90
+    },
+    {
+      "section": "upper360",
+      "title": "UR8 UPPER BODY 360 · 45 Right",
+      "action": "the whole body turned about 45 degrees so that the chest faces the RIGHT edge of the image, three-quarter view, the head facing the camera.",
+      "camera": "Half-body from the hips up, standing straight with the arms relaxed slightly away from the body, camera at chest height about 2 metres away, no wide-angle distortion, the face and torso sharp",
+      "yaw": 45
+    },
+    {
+      "section": "full360",
+      "title": "FR1 FULL BODY 360 · Front",
+      "action": "the person faces the camera straight-on.",
+      "camera": "Full body from head to feet, the whole body inside the frame, standing straight with the arms relaxed slightly away from the body, camera at waist height about 3 metres away, no wide-angle distortion",
+      "yaw": 0
+    },
+    {
+      "section": "full360",
+      "title": "FR2 FULL BODY 360 · 45 Left",
+      "action": "the whole body turned about 45 degrees so that the chest faces the LEFT edge of the image, three-quarter view, the head facing the camera.",
+      "camera": "Full body from head to feet, the whole body inside the frame, standing straight with the arms relaxed slightly away from the body, camera at waist height about 3 metres away, no wide-angle distortion",
+      "yaw": -45
+    },
+    {
+      "section": "full360",
+      "title": "FR3 FULL BODY 360 · 90 Left",
+      "action": "exact side view, the body and the face point toward the LEFT edge of the image, head level.",
+      "camera": "Full body from head to feet, the whole body inside the frame, standing straight with the arms relaxed slightly away from the body, camera at waist height about 3 metres away, no wide-angle distortion",
+      "yaw": -90
+    },
+    {
+      "section": "full360",
+      "title": "FR4 FULL BODY 360 · 135 Left",
+      "action": "the whole body turned about 135 degrees away from the camera toward the LEFT edge of the image, three-quarter back view, mostly the back visible, the face not looking at the camera.",
+      "camera": "Full body from head to feet, the whole body inside the frame, standing straight with the arms relaxed slightly away from the body, camera at waist height about 3 metres away, no wide-angle distortion",
+      "yaw": -135
+    },
+    {
+      "section": "full360",
+      "title": "FR5 FULL BODY 360 · 180 Back",
+      "action": "seen from directly behind, the back of the head and the back of the body face the camera, no face visible.",
+      "camera": "Full body from head to feet, the whole body inside the frame, standing straight with the arms relaxed slightly away from the body, camera at waist height about 3 metres away, no wide-angle distortion",
+      "yaw": 180
+    },
+    {
+      "section": "full360",
+      "title": "FR6 FULL BODY 360 · 135 Right",
+      "action": "the whole body turned about 135 degrees away from the camera toward the RIGHT edge of the image, three-quarter back view, mostly the back visible, the face not looking at the camera.",
+      "camera": "Full body from head to feet, the whole body inside the frame, standing straight with the arms relaxed slightly away from the body, camera at waist height about 3 metres away, no wide-angle distortion",
+      "yaw": 135
+    },
+    {
+      "section": "full360",
+      "title": "FR7 FULL BODY 360 · 90 Right",
+      "action": "exact side view, the body and the face point toward the RIGHT edge of the image, head level.",
+      "camera": "Full body from head to feet, the whole body inside the frame, standing straight with the arms relaxed slightly away from the body, camera at waist height about 3 metres away, no wide-angle distortion",
+      "yaw": 90
+    },
+    {
+      "section": "full360",
+      "title": "FR8 FULL BODY 360 · 45 Right",
+      "action": "the whole body turned about 45 degrees so that the chest faces the RIGHT edge of the image, three-quarter view, the head facing the camera.",
+      "camera": "Full body from head to feet, the whole body inside the frame, standing straight with the arms relaxed slightly away from the body, camera at waist height about 3 metres away, no wide-angle distortion",
+      "yaw": 45
+    }
+  ]
+}

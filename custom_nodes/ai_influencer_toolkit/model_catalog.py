@@ -1,4 +1,4 @@
-"""Every model file the local workflows (07-12, 09b) load: where it goes, where it comes from, how big it is,
+"""Every model file the local workflows (07-14, 09b) load: where it goes, where it comes from, how big it is,
 and what it is for in plain words. Used by model_routes.py (the "Models" window in the browser) and
 tools/models.py (the same from a terminal).
 
@@ -74,6 +74,16 @@ MODELS = [
     Model("minimax_h3_fl2v_turbo_8step_v1.0_comfyui_bf16.safetensors", "loras",
           "https://huggingface.co/lightx2v/Minimax-h3-Turbo/resolve/main/minimax_h3_fl2v_turbo_8step_v1.0_comfyui_bf16.safetensors",
           1956193000, "Makes MiniMax H3 finish in 8 steps instead of 20", "minimax"),
+    Model("wan_animate_2_distill_int8_convrot.safetensors", "diffusion_models",
+          HF + "Wan-Animate-2/resolve/main/diffusion_models/wan_animate_2_distill_int8_convrot.safetensors",
+          16653175528, "Wan Animate 2, the model that makes the person copy a video's movement (Workflow 14)", "wan_animate"),
+    Model("umt5_xxl_fp8_e4m3fn_scaled.safetensors", "text_encoders",
+          HF + "Wan-Animate-2/resolve/main/text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors",
+          6735906897, "Reads the motion description for Wan Animate 2", "wan_animate"),
+    Model("clip_vision_h.safetensors", "clip_vision", HF + "Wan-Animate-2/resolve/main/clip_vision/clip_vision_h.safetensors",
+          1264219396, "Looks at the reference picture and the video's first frame for Wan Animate 2", "wan_animate"),
+    Model("Wan2_1_VAE_bf16.safetensors", "vae", HF + "Wan-Animate-2/resolve/main/vae/Wan2_1_VAE_bf16.safetensors",
+          253806278, "Turns Wan Animate 2's result into video frames", "wan_animate"),
 ]
 BY_NAME = {m.name: m for m in MODELS}
 

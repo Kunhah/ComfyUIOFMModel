@@ -1,0 +1,1235 @@
+{
+  "id": "b2e85e6a-ce97-45c2-bdd7-703d5718b642",
+  "revision": 0,
+  "last_node_id": 21,
+  "last_link_id": 20,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "Fast Groups Muter (rgthree)",
+      "pos": [
+        0,
+        80
+      ],
+      "size": [
+        326.2099514770502,
+        147.41997955322233
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "OPT_CONNECTION",
+          "type": "*",
+          "links": null
+        }
+      ],
+      "properties": {
+        "matchColors": "",
+        "matchTitle": "ROUTE",
+        "showNav": true,
+        "showAllGraphs": false,
+        "sort": "position",
+        "customSortAlphabet": "",
+        "toggleRestriction": "max one"
+      },
+      "color": "#222",
+      "bgcolor": "#000"
+    },
+    {
+      "id": 2,
+      "type": "LoadImage",
+      "pos": [
+        390,
+        80
+      ],
+      "size": [
+        285,
+        314
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            1
+          ]
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.37.0",
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "example.png",
+        "image"
+      ],
+      "widgets_values_named": {
+        "image": "example.png",
+        "upload": "image"
+      }
+    },
+    {
+      "id": 3,
+      "type": "LoadImage",
+      "pos": [
+        700,
+        80
+      ],
+      "size": [
+        285,
+        314
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            2
+          ]
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.37.0",
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "example.png",
+        "image"
+      ],
+      "widgets_values_named": {
+        "image": "example.png",
+        "upload": "image"
+      }
+    },
+    {
+      "id": 6,
+      "type": "LoadImage",
+      "pos": [
+        387.14688329389,
+        954.0683021299387
+      ],
+      "size": [
+        285,
+        314
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            4
+          ]
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": null
+        }
+      ],
+      "title": "Reference 01",
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.37.0",
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "example.png",
+        "image"
+      ],
+      "widgets_values_named": {
+        "image": "example.png",
+        "upload": "image"
+      }
+    },
+    {
+      "id": 7,
+      "type": "LoadImage",
+      "pos": [
+        697.14688329389,
+        954.0683021299387
+      ],
+      "size": [
+        285,
+        314
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            5
+          ]
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": null
+        }
+      ],
+      "title": "Reference 02",
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.37.0",
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "example.png",
+        "image"
+      ],
+      "widgets_values_named": {
+        "image": "example.png",
+        "upload": "image"
+      }
+    },
+    {
+      "id": 8,
+      "type": "LoadImage",
+      "pos": [
+        1007.14688329389,
+        954.0683021299387
+      ],
+      "size": [
+        285,
+        314
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            6
+          ]
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": null
+        }
+      ],
+      "title": "Reference 03",
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.37.0",
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "example.png",
+        "image"
+      ],
+      "widgets_values_named": {
+        "image": "example.png",
+        "upload": "image"
+      }
+    },
+    {
+      "id": 9,
+      "type": "LoadImage",
+      "pos": [
+        1317.14688329389,
+        954.0683021299387
+      ],
+      "size": [
+        285,
+        314
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            7
+          ]
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": null
+        }
+      ],
+      "title": "Reference 04",
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.37.0",
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "example.png",
+        "image"
+      ],
+      "widgets_values_named": {
+        "image": "example.png",
+        "upload": "image"
+      }
+    },
+    {
+      "id": 10,
+      "type": "LoadImage",
+      "pos": [
+        387.14688329389,
+        1289.068302129942
+      ],
+      "size": [
+        285,
+        314
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            8
+          ]
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": null
+        }
+      ],
+      "title": "Reference 05",
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.37.0",
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "example.png",
+        "image"
+      ],
+      "widgets_values_named": {
+        "image": "example.png",
+        "upload": "image"
+      }
+    },
+    {
+      "id": 4,
+      "type": "MATRIX_Wan3",
+      "pos": [
+        1040,
+        80
+      ],
+      "size": [
+        430,
+        479
+      ],
+      "flags": {},
+      "order": 16,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "operation.image",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": 1
+        },
+        {
+          "name": "operation.last_image",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": 2
+        },
+        {
+          "name": "prompt",
+          "shape": 7,
+          "type": "STRING",
+          "widget": {
+            "name": "prompt"
+          },
+          "link": 19
+        }
+      ],
+      "outputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "links": [
+            15
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "MATRIX_Wan3",
+        "matrixWan3": {
+          "schemaVersion": 3,
+          "imageToVideo": {
+            "aspect_ratio": "9:16",
+            "image_variant": "Regular"
+          }
+        }
+      },
+      "widgets_values": [
+        "Image to Video",
+        "Standard",
+        "720p",
+        5,
+        "9:16",
+        false,
+        false,
+        false,
+        "Random",
+        1,
+        "Auto",
+        false,
+        false,
+        "initial",
+        "",
+        "blocked",
+        "Regular",
+        "",
+        ""
+      ],
+      "widgets_values_named": {
+        "operation": "Image to Video",
+        "tier": "Standard",
+        "resolution": "720p",
+        "duration": 5,
+        "aspect_ratio": "9:16",
+        "enable_audio": false,
+        "generate_audio": false,
+        "enable_prompt_expansion": false,
+        "seed_mode": "Random",
+        "seed": 1,
+        "edit_duration": "Auto",
+        "allow_video_materialization": false,
+        "acknowledge_provider_trimming": false,
+        "intent_nonce": "9516ad66-b916-46a0-ba38-ff93a94b45bf",
+        "credential_scope": "e4741fb4-b970-4ac8-b53c-c459f140e786",
+        "billing_activation": "wavespeed_v1",
+        "image_variant": "Regular",
+        "prompt": "",
+        "matrix_wan3_operation_notice_e0e19e20-8258-459a-a5ac-ca38c2c4a63c": ""
+      }
+    },
+    {
+      "id": 5,
+      "type": "MATRIX_VideoMetadataKiller",
+      "pos": [
+        1985.5299999999997,
+        81.21000000000011
+      ],
+      "size": [
+        439.60929687500027,
+        556.5600000000001
+      ],
+      "flags": {},
+      "order": 20,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "link": 16
+        }
+      ],
+      "outputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "links": null
+        }
+      ],
+      "title": "CLEAN MP4 OUTPUT \u2014 MUTED WITH ROUTE",
+      "properties": {
+        "Node name for S&R": "MATRIX_VideoMetadataKiller"
+      },
+      "widgets_values": [
+        "matrixlab/youtube/wan-first-last"
+      ],
+      "widgets_values_named": {
+        "filename_prefix": "matrixlab/youtube/wan-first-last"
+      },
+      "color": "#263818",
+      "bgcolor": "#111b08"
+    },
+    {
+      "id": 11,
+      "type": "MATRIX_Wan3",
+      "pos": [
+        1657.14688329389,
+        954.0683021299387
+      ],
+      "size": [
+        430,
+        679
+      ],
+      "flags": {},
+      "order": 15,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "operation.reference_images.image_01",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": 4
+        },
+        {
+          "name": "operation.reference_images.image_02",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": 5
+        },
+        {
+          "name": "operation.reference_images.image_03",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": 6
+        },
+        {
+          "name": "operation.reference_images.image_04",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": 7
+        },
+        {
+          "name": "operation.reference_images.image_05",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": 8
+        },
+        {
+          "name": "operation.reference_images.image_06",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": 10
+        },
+        {
+          "name": "operation.reference_images.image_07",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": 11
+        },
+        {
+          "name": "operation.reference_images.image_08",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": 12
+        },
+        {
+          "name": "operation.reference_images.image_09",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": 13
+        },
+        {
+          "name": "operation.reference_images.image_10",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": 14
+        },
+        {
+          "name": "operation.reference_videos.video_01",
+          "shape": 7,
+          "type": "VIDEO",
+          "link": null
+        },
+        {
+          "name": "operation.reference_audios.audio_01",
+          "shape": 7,
+          "type": "AUDIO",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "links": [
+            17
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "MATRIX_Wan3",
+        "matrixWan3": {
+          "schemaVersion": 3,
+          "imageToVideo": {
+            "aspect_ratio": "Auto",
+            "image_variant": "Regular"
+          }
+        }
+      },
+      "widgets_values": [
+        "Reference to Video",
+        "Standard",
+        "720p",
+        5,
+        "9:16",
+        false,
+        false,
+        false,
+        "Random",
+        1,
+        "Auto",
+        false,
+        false,
+        "initial",
+        "",
+        "blocked",
+        "Regular",
+        "",
+        ""
+      ],
+      "widgets_values_named": {
+        "operation": "Reference to Video",
+        "tier": "Standard",
+        "resolution": "720p",
+        "duration": 5,
+        "aspect_ratio": "9:16",
+        "enable_audio": false,
+        "generate_audio": false,
+        "enable_prompt_expansion": false,
+        "seed_mode": "Random",
+        "seed": 1,
+        "edit_duration": "Auto",
+        "allow_video_materialization": false,
+        "acknowledge_provider_trimming": false,
+        "intent_nonce": "615d24c0-4734-4343-b39b-d853bf21b137",
+        "credential_scope": "4b46e207-9ed8-4c19-82eb-e5c21f9d56d4",
+        "billing_activation": "wavespeed_v1",
+        "image_variant": "Regular",
+        "prompt": "",
+        "matrix_wan3_operation_notice_b96c1c7b-3158-4eb0-a743-5388e9c73073": ""
+      }
+    },
+    {
+      "id": 12,
+      "type": "MATRIX_VideoMetadataKiller",
+      "pos": [
+        2652.6202832938907,
+        953.4788121299391
+      ],
+      "size": [
+        514.0255068749997,
+        754.3647499999997
+      ],
+      "flags": {},
+      "order": 19,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "link": 18
+        }
+      ],
+      "outputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "links": null
+        }
+      ],
+      "title": "CLEAN MP4 OUTPUT \u2014 MUTED WITH ROUTE",
+      "properties": {
+        "Node name for S&R": "MATRIX_VideoMetadataKiller"
+      },
+      "widgets_values": [
+        "matrixlab/youtube/wan-references"
+      ],
+      "widgets_values_named": {
+        "filename_prefix": "matrixlab/youtube/wan-references"
+      },
+      "color": "#263818",
+      "bgcolor": "#111b08"
+    },
+    {
+      "id": 13,
+      "type": "LoadImage",
+      "pos": [
+        697.14688329389,
+        1289.068302129942
+      ],
+      "size": [
+        285,
+        314
+      ],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            10
+          ]
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": null
+        }
+      ],
+      "title": "Reference 06",
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.37.0",
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "example.png",
+        "image"
+      ],
+      "widgets_values_named": {
+        "image": "example.png",
+        "upload": "image"
+      }
+    },
+    {
+      "id": 14,
+      "type": "LoadImage",
+      "pos": [
+        1007.14688329389,
+        1289.068302129942
+      ],
+      "size": [
+        285,
+        314
+      ],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            11
+          ]
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": null
+        }
+      ],
+      "title": "Reference 07",
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.37.0",
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "example.png",
+        "image"
+      ],
+      "widgets_values_named": {
+        "image": "example.png",
+        "upload": "image"
+      }
+    },
+    {
+      "id": 15,
+      "type": "LoadImage",
+      "pos": [
+        1317.14688329389,
+        1289.068302129942
+      ],
+      "size": [
+        285,
+        314
+      ],
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            12
+          ]
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": null
+        }
+      ],
+      "title": "Reference 08",
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.37.0",
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "example.png",
+        "image"
+      ],
+      "widgets_values_named": {
+        "image": "example.png",
+        "upload": "image"
+      }
+    },
+    {
+      "id": 16,
+      "type": "LoadImage",
+      "pos": [
+        387.14688329389,
+        1624.068302129942
+      ],
+      "size": [
+        285,
+        314
+      ],
+      "flags": {},
+      "order": 11,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            13
+          ]
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": null
+        }
+      ],
+      "title": "Reference 09",
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.37.0",
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "example.png",
+        "image"
+      ],
+      "widgets_values_named": {
+        "image": "example.png",
+        "upload": "image"
+      }
+    },
+    {
+      "id": 17,
+      "type": "LoadImage",
+      "pos": [
+        697.14688329389,
+        1624.068302129942
+      ],
+      "size": [
+        285,
+        314
+      ],
+      "flags": {},
+      "order": 12,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            14
+          ]
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": null
+        }
+      ],
+      "title": "Reference 10",
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.37.0",
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "example.png",
+        "image"
+      ],
+      "widgets_values_named": {
+        "image": "example.png",
+        "upload": "image"
+      }
+    },
+    {
+      "id": 18,
+      "type": "SaveVideo",
+      "pos": [
+        1500.8972097081853,
+        81.05619421961345
+      ],
+      "size": [
+        438.19000000000005,
+        563.3800000000001
+      ],
+      "flags": {},
+      "order": 18,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "link": 15
+        }
+      ],
+      "outputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "links": [
+            16
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.37.0"
+      },
+      "widgets_values": [
+        "video/ComfyUI",
+        "auto",
+        "auto",
+        "auto"
+      ],
+      "widgets_values_named": {
+        "filename_prefix": "video/ComfyUI",
+        "format": "auto",
+        "format.codec": "auto",
+        "codec": "auto"
+      }
+    },
+    {
+      "id": 19,
+      "type": "SaveVideo",
+      "pos": [
+        2116.214122432076,
+        954.7418064855523
+      ],
+      "size": [
+        497.7788700000001,
+        771.13579
+      ],
+      "flags": {},
+      "order": 17,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "link": 17
+        }
+      ],
+      "outputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "links": [
+            18
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.37.0"
+      },
+      "widgets_values": [
+        "video/ComfyUI",
+        "auto",
+        "auto",
+        "auto"
+      ],
+      "widgets_values_named": {
+        "filename_prefix": "video/ComfyUI",
+        "format": "auto",
+        "format.codec": "auto",
+        "codec": "auto"
+      }
+    },
+    {
+      "id": 20,
+      "type": "MATRIX_Prompt",
+      "pos": [
+        398.54799435054366,
+        489.8791842856442
+      ],
+      "size": [
+        564.8427491388925,
+        282
+      ],
+      "flags": {},
+      "order": 13,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "links": [
+            19
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "MATRIX_Prompt"
+      },
+      "widgets_values": [
+        ""
+      ],
+      "widgets_values_named": {
+        "prompt": ""
+      }
+    },
+    {
+      "id": 21,
+      "type": "MATRIX_Prompt",
+      "pos": [
+        1028.932088862802,
+        1672.7067565011598
+      ],
+      "size": [
+        564.8427491388925,
+        282
+      ],
+      "flags": {},
+      "order": 14,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "links": []
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "MATRIX_Prompt"
+      },
+      "widgets_values": [
+        ""
+      ],
+      "widgets_values_named": {
+        "prompt": ""
+      }
+    }
+  ],
+  "links": [
+    [
+      16,
+      18,
+      0,
+      5,
+      0,
+      "VIDEO"
+    ],
+    [
+      18,
+      19,
+      0,
+      12,
+      0,
+      "VIDEO"
+    ],
+    [
+      15,
+      4,
+      0,
+      18,
+      0,
+      "VIDEO"
+    ],
+    [
+      17,
+      11,
+      0,
+      19,
+      0,
+      "VIDEO"
+    ],
+    [
+      1,
+      2,
+      0,
+      4,
+      0,
+      "IMAGE"
+    ],
+    [
+      2,
+      3,
+      0,
+      4,
+      1,
+      "IMAGE"
+    ],
+    [
+      19,
+      20,
+      0,
+      4,
+      2,
+      "STRING"
+    ],
+    [
+      4,
+      6,
+      0,
+      11,
+      0,
+      "IMAGE"
+    ],
+    [
+      5,
+      7,
+      0,
+      11,
+      1,
+      "IMAGE"
+    ],
+    [
+      6,
+      8,
+      0,
+      11,
+      2,
+      "IMAGE"
+    ],
+    [
+      7,
+      9,
+      0,
+      11,
+      3,
+      "IMAGE"
+    ],
+    [
+      8,
+      10,
+      0,
+      11,
+      4,
+      "IMAGE"
+    ],
+    [
+      10,
+      13,
+      0,
+      11,
+      5,
+      "IMAGE"
+    ],
+    [
+      11,
+      14,
+      0,
+      11,
+      6,
+      "IMAGE"
+    ],
+    [
+      12,
+      15,
+      0,
+      11,
+      7,
+      "IMAGE"
+    ],
+    [
+      13,
+      16,
+      0,
+      11,
+      8,
+      "IMAGE"
+    ],
+    [
+      14,
+      17,
+      0,
+      11,
+      9,
+      "IMAGE"
+    ]
+  ],
+  "groups": [
+    {
+      "id": 1,
+      "title": "ROUTE A - FIRST / LAST FRAME",
+      "bounding": [
+        350,
+        20,
+        2117.7818169427696,
+        807.5196018932797
+      ],
+      "color": "#31584d",
+      "flags": {}
+    },
+    {
+      "id": 2,
+      "title": "ROUTE B - TEN REFERENCE IMAGES",
+      "bounding": [
+        347.14688329389,
+        894.0683021299387,
+        2878.9613399999994,
+        1103.8948999999998
+      ],
+      "color": "#304c62",
+      "flags": {}
+    }
+  ],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.35049389948139265,
+      "offset": [
+        915.8806386643677,
+        427.79814074976326
+      ]
+    },
+    "frontendVersion": "1.53.6"
+  },
+  "version": 0.4
+}

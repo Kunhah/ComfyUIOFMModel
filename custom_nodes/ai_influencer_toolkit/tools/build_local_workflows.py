@@ -10,6 +10,7 @@ user/default/workflows/ai_influencer/. Re-run after editing this file; it overwr
     09c_practice_no_gpu.json         09b's clicks without Krea 2, to rehearse before renting a GPU
     01_character_creation.json       GPT Image 2.5: front portrait candidates -> character sheets -> example photos
     13_pick_winner.json              pick one of a 09b queue's candidates into final/
+    14_wan_animate_motion_transfer.json  the person in a still copies the movement of a video (Wan Animate 2)
 """
 from __future__ import annotations
 
@@ -280,7 +281,11 @@ def lora_model(g: Graph, unet, x: int, y: int, project: str):
     apply = g.node("AIInfluencerApplyCharacterLora", (x, y), [project, "(from character.json)", -1.0], size=(320, 130),
                    inputs=[("model", "MODEL")], outputs=[("MODEL", "MODEL"), ("trigger", "STRING"), ("lora_name", "STRING")])
     g.link(unet, 0, apply, "model")
-    return apply
+    # Bypassed until you pick a file: any extra LoRA (NSFW / concept / style fine-tune) stacks on the character LoRA.
+    extra = g.node("LoraLoaderModelOnly", (x, y + 160), ["", 1.0], size=(320, 130), inputs=[("model", "MODEL")],
+                   outputs=[("MODEL", "MODEL")], title="Optional extra LoRA - NSFW / concept fine-tune (Ctrl+B to enable)", mode=BYPASS)
+    g.link(apply, 0, extra, "model")
+    return extra
 
 
 def save_node(g: Graph, image_src, pos, stage: str, model: str, prompt_src=None, operation="generate", project="lina", provider="local_krea2",
@@ -294,9 +299,62 @@ def save_node(g: Graph, image_src, pos, stage: str, model: str, prompt_src=None,
     return save
 
 
+def character_views(g: Graph, builder, x=430, y=1440, seed=42, candidates=1, angles=DEFAULT_ANGLES):
+    g.group("CHARACTER VIEWS — optional MATRIX expression / angle batches", x, y, 1040, 680, color="#b58b2a")
+    views = g.node("AIInfluencerCharacterViews", (x + 30, y + 60),
+                   ["manual", seed, "randomize", builder["widgets_values"][2], builder["widgets_values"][5], candidates, angles],
+                   size=(440, 540), outputs=[("subject_action", "STRING"), ("camera_and_lens", "STRING"),
+                                             ("seed", "INT"), ("folder", "STRING"), ("view", "STRING"),
+                                             ("candidates", "INT"), ("angles", "STRING")])
+    for output in views["outputs"]:
+        output["shape"] = 6
+    g.link(views, 0, builder, "subject_action", widget=True)
+    g.link(views, 1, builder, "camera_and_lens", widget=True)
+    g.note((x + 510, y + 60), """## Optional view batch (same Krea model and vast.ai Pod queue)
+
+**manual**: edit action and camera here; other Prompt Builder fields still control identity, clothing, location and light.
+Choose **head**, **head360**, **upper360**, **full360** for eight views, **all 32**, or one named view. Each gets its own seed and one candidate; manual mode keeps the configured candidate count. The view selector replaces action and framing only; no model or resolution changes.
+
+Queue normally with **Hold for the pod**. The existing vast.ai path runs each view and saves filtered / clean copies as configured by this workflow.
+
+08 uses the character LoRA to hold identity. In pose-based workflows, the photo and skeleton still constrain composition: a text request for a back/profile view cannot guarantee a real 3D turn. Use a matching pose photo or raise sampler denoise to allow larger changes. 09b gets the preset's matching skeleton angle; placement and reference-pose controls still apply. Its manual angle list is edited here.
+
+Adapted from MATRIX LAB's 32-view prompts (Apache-2.0). Source and license: `view_presets/` in the toolkit. No Qwen models are needed.""", size=(470, 540))
+    return views
+
+
+def fuse_character_views(g: Graph):
+    builder = next(n for n in g.nodes if n["type"] == "AIInfluencerPromptBuilder")
+    mapper = next((n for n in g.nodes if n["type"] in ("AIInfluencerPlacementVariations", "AIInfluencerPoseAngle")), None)
+    samplers = [n for n in g.nodes if n["type"] == "KSampler"]
+    latent = next((n for n in g.nodes if n["type"] == "EmptyLatentImage"), None)
+    seed = (mapper or samplers[0])["widgets_values"][0]
+    candidates = mapper["widgets_values"][2] if mapper else latent["widgets_values"][2] if latent else 1
+    y = max(group["bounding"][1] + group["bounding"][3] for group in g.groups) + 60
+    angles = mapper["widgets_values"][-1] if mapper and mapper["type"] == "AIInfluencerPlacementVariations" else DEFAULT_ANGLES
+    views = character_views(g, builder, y=y, seed=seed, candidates=candidates, angles=angles)
+    if mapper:
+        g.link(views, 2, mapper, "seed", widget=True)
+        g.link(views, 5, mapper, "candidates", widget=True)
+        if mapper["type"] == "AIInfluencerPlacementVariations":
+            g.link(views, 6, mapper, "angles", widget=True)
+    else:
+        for sample in samplers:
+            g.link(views, 2, sample, "seed", widget=True)
+        if latent:
+            g.link(views, 5, latent, "batch_size", widget=True)
+        for save in [n for n in g.nodes if n["type"] == "AIInfluencerSaveImage"]:
+            # The independent, uploaded-image confirmation pass in 10 must run only once.
+            if save["mode"] == NEVER:
+                continue
+            g.link(views, 2, save, "seed", widget=True)
+            g.link(views, 3, save, "subfolder", widget=True)
+            g.link(views, 4, save, "notes", widget=True)
+
+
 def build_08():
     g = Graph()
-    g.group("01 MODELS + CHARACTER LORA", 0, 0, 400, 680)
+    g.group("01 MODELS + CHARACTER LORA", 0, 0, 400, 840)
     unet, clip, vae = krea_loaders(g, 30, 60)
     model = lora_model(g, unet, 30, 510, "lina")
 
@@ -385,12 +443,13 @@ Generate with **Krea 2 Turbo** plus your character LoRA (trained on RAW, see REA
 Change `lina` in the Load Character, Apply Character LoRA and Save nodes for another character.
 
 {MODELS_NOTE}""", size=(560, 700))
+    fuse_character_views(g)
     g.dump("08_krea2_local_master.json")
 
 
 def build_09():
     g = Graph()
-    g.group("01 MODELS + CHARACTER LORA", 0, 0, 400, 680)
+    g.group("01 MODELS + CHARACTER LORA", 0, 0, 400, 840)
     unet, clip, vae = krea_loaders(g, 30, 60)
     model = lora_model(g, unet, 30, 510, "lina")
 
@@ -430,12 +489,15 @@ def build_09():
     g.group("06 CAMERA IMPERFECTIONS (always on)", 2950, 0, 420, 700, color="#a1309b")
     shot = camera_imperfections(g, blurred, 2980, 60)
 
-    save_node(g, shot, (1750, 400), "local_candidate", "Krea 2 Turbo + LoRA (pose img2img) + bg blur + camera", builder)
+    filtered_save = save_node(g, shot, (1750, 400), "local_candidate", "Krea 2 Turbo + LoRA (pose img2img) + bg blur + camera", builder)
+    filtered_save["title"] = "Save filtered copy"
+    raw_save = save_node(g, img, (3410, 60), "local_unfiltered", "Krea 2 Turbo + LoRA (pose img2img)", builder)
+    raw_save["title"] = "Save unfiltered copy"
     cmp_ = g.node("ImageCompare", (2110, 440), [], size=(320, 240), inputs=[("image_a", "IMAGE"), ("image_b", "IMAGE")], title="Reference / result")
     g.link(scaled, 0, cmp_, "image_a")
     g.link(shot, 0, cmp_, "image_b")
 
-    g.note((3410, 0), f"""# 09 Krea 2 Pose Transfer
+    g.note((3800, 0), f"""# 09 Krea 2 Pose Transfer
 
 Put any photo with the pose you want in `input/ai_influencer/lina/poses/` and load it in 02. Your character is generated in the same pose and framing.
 
@@ -450,15 +512,18 @@ It copies composition, not an exact skeleton. If the pose must match exactly, a 
 
 **06 Camera imperfections** adds the ISO grain, lens fringing, corner falloff and white balance drift a real camera leaves behind, which is what keeps the result from reading as AI. Same node and same defaults as Workflow 08.
 
+Every queue saves both versions: the normal filtered image in `outputs/images/candidates/` and the clean pre-filter image in `outputs/images/unfiltered/`, so you can apply a lighter pass later.
+
 For **edits of an existing image** (hair color, outfit, background) there is no workflow any more: Workflow 03 (GPT Image 2.5 edit) was removed. Re-generate here with a changed prompt instead.
 
 {MODELS_NOTE}""", size=(560, 700))
+    fuse_character_views(g)
     g.dump("09_krea2_pose_transfer.json")
 
 
 def build_10():
     g = Graph()
-    g.group("01 MODELS + CHARACTER LORA", 0, 0, 400, 680)
+    g.group("01 MODELS + CHARACTER LORA", 0, 0, 400, 840)
     unet, clip, vae = krea_loaders(g, 30, 60)
     model = lora_model(g, unet, 30, 510, "lina")
 
@@ -503,7 +568,7 @@ def build_10():
     g.group("05 BACKGROUND BLUR + CAMERA + SAVE", 1290, 800, 800, 940, color="#444")
     blurred = blur_background(g, upscaled, 1320, 860)
     shot = camera_imperfections(g, blurred, 1320, 1320)
-    save_node(g, shot, (1680, 860), "local_final", "Krea 2 Turbo + LoRA + SeedVR2 4x + bg blur + camera", builder, operation="refine")
+    save_node(g, shot, (1680, 860), "local_final", "Krea 2 Turbo + LoRA + SeedVR2 4x + bg blur + camera", operation="refine")
     final_preview = g.node("PreviewImage", (1680, 1320), size=(340, 160), inputs=[("images", "IMAGE")], title="4K result")
     g.link(shot, 0, final_preview, "images")
     for n in g.nodes[confirm_start:]:
@@ -527,6 +592,7 @@ Want the skin-polish pass as well? Workflow 08 has it (generate → polish → 2
 The preview PNGs carry the full workflow inside them, so you can drag one back onto the canvas to recover its exact seed and prompt.
 
 {{MODELS_NOTE}}""".replace("{{MODELS_NOTE}}", MODELS_NOTE), size=(560, 900))
+    fuse_character_views(g)
     g.dump("10_preview_then_4k.json")
 
 
@@ -645,18 +711,26 @@ def build_09c():
     g.link(grow, 0, blur, "subject_mask")  # on the pod this mask comes from BiRefNet instead
     shot = camera_imperfections(g, blur, 1750, 620)
 
-    g.group("07 OUTPUT: one folder per queue, like 09b", 2150, 0, 800, 560, color="#444")
+    g.group("07 OUTPUT: filtered + unfiltered copies", 2150, 0, 1170, 560, color="#444")
     save = save_node(g, shot, (2180, 60), "local_candidate", "practice run (no GPU)", None,
                      operation="other", project="", provider="other")
+    save["title"] = "Save filtered copy"
     g.link(vary, 1, save, "prompt_text", widget=True)
     g.link(vary, 2, save, "seed", widget=True)
     g.link(vary, 4, save, "notes", widget=True)
     g.link(vary, 3, save, "subfolder", widget=True)
-    cmp_ = g.node("ImageCompare", (2570, 60), [], size=(340, 480), inputs=[("image_a", "IMAGE"), ("image_b", "IMAGE")], title="Plate / result")
+    raw_save = save_node(g, composite, (2570, 60), "local_unfiltered", "practice run (no GPU)", None,
+                         operation="other", project="", provider="other")
+    raw_save["title"] = "Save unfiltered copy"
+    g.link(vary, 1, raw_save, "prompt_text", widget=True)
+    g.link(vary, 2, raw_save, "seed", widget=True)
+    g.link(vary, 4, raw_save, "notes", widget=True)
+    g.link(vary, 3, raw_save, "subfolder", widget=True)
+    cmp_ = g.node("ImageCompare", (2960, 60), [], size=(340, 480), inputs=[("image_a", "IMAGE"), ("image_b", "IMAGE")], title="Plate / result")
     g.link(scaled, 0, cmp_, "image_a")
     g.link(shot, 0, cmp_, "image_b")
 
-    g.note((2980, 0), """# 09c Practice run (no GPU, no models)
+    g.note((3350, 0), """# 09c Practice run (no GPU, no models)
 
 Workflow 09b's clicks, minus Krea 2. Everything here runs on CPU in a few seconds, so you can
 learn the moves before the vast.ai meter starts. Queue it as is first, then change things.
@@ -675,9 +749,10 @@ learn the moves before the vast.ai meter starts. Queue it as is first, then chan
 5. **05**: here the *skeleton* is pasted into the mask so you can see where she would stand. On
    the pod Krea 2 paints her there. Outside the mask the plate is bit-identical.
 6. **06**: background blur, then ISO grain, fringing, falloff, white balance drift.
-7. **07**: the 4 candidates land together in `outputs/images/candidates/9b_<seed>/`, each logged
-   with its label. Then open **Workflow 13** to pick the winner -- also a free, local step. (These
-   practice files say `practice_run` in their names; delete their folders when you're done.)
+7. **07**: the 4 filtered candidates land together in `outputs/images/candidates/9b_<seed>/`, with
+   clean pre-filter copies under `outputs/images/unfiltered/9b_<seed>/`. Each is logged with its
+   label. Then open **Workflow 13** to pick the winner -- also a free, local step. (These practice
+   files say `practice_run` in their names; delete their folders when you're done.)
 
 ## What is missing on purpose
 Krea 2 + your character LoRA, the identity reference LoRA, SDPose's pose extraction from a photo,
@@ -927,6 +1002,211 @@ Dragging a candidate PNG onto the canvas restores its whole 09b setup, seed incl
     g.dump("13_pick_winner.json")
 
 
+WAN_UNET = "wan_animate_2_distill_int8_convrot.safetensors"
+WAN_TE = "umt5_xxl_fp8_e4m3fn_scaled.safetensors"
+WAN_CLIP_VISION = "clip_vision_h.safetensors"
+WAN_VAE = "Wan2_1_VAE_bf16.safetensors"
+for _name, _folder in ((WAN_UNET, "diffusion_models"), (WAN_TE, "text_encoders"), (WAN_CLIP_VISION, "clip_vision"), (WAN_VAE, "vae")):
+    MODEL_URLS[_name] = (_folder, f"https://huggingface.co/Comfy-Org/Wan-Animate-2/resolve/main/{_folder}/{_name}")
+CHOOSE_VIDEO = "ai_influencer_choose_a_video.mp4"  # input_listing.VIDEO_PLACEHOLDER
+# AIInfluencerMotionPrompt's own defaults (nodes_motion.py); kept here so this script needs no ComfyUI
+MOTION_LOOK = ("Photoreal vertical social clip of the person from the reference image: same face, same hair, same outfit, "
+               "same light and location. Keep their identity, skin texture and clothing identical to the reference image.")
+MOTION_TEXT = ("The person moves exactly like the driving video, matching the timing of every step, turn, arm movement, "
+               "hand gesture and facial expression.")
+MOTION_AVOID = ("oversaturated, overexposed, static, blurry details, subtitles, text, watermark, painting, illustration, "
+                "cartoon, airbrushed plastic skin, HDR, oversharpened, worst quality, low quality, JPEG artifacts, deformed, "
+                "extra fingers, fused fingers, poorly drawn hands, poorly drawn face, extra limbs, warped face, flickering, "
+                "scene cut")
+
+
+def build_14():
+    """Motion transfer: the person in a still copies the movement of a driving video (Wan Animate 2, distilled).
+    Core ComfyUI's WanAnimate2ToVideo takes the raw video as pose_video, so the pose/face detectors, segmentation
+    and ~8 custom node packs of the "Motion Control" workflow this is based on aren't needed."""
+    g = Graph()
+    g.group("01 WHO + WHAT MOVEMENT", 0, 0, 1180, 1100)
+    still = g.node("LoadImage", (30, 60), [CHOOSE_PICTURE, "image"], size=(340, 420),
+                   outputs=[("IMAGE", "IMAGE"), ("MASK", "MASK")], title="The person (a final still of the character)")
+    video = g.node("LoadVideo", (400, 60), [CHOOSE_VIDEO, "image"], size=(340, 420),
+                   outputs=[("VIDEO", "VIDEO")], title="Driving video (the movement to copy)")
+    drive = g.node("AIInfluencerDrivingVideo", (770, 60), [0.0, 5.0, 30.0, 832], size=(380, 420),
+                   inputs=[("video", "VIDEO")],
+                   outputs=[("frames", "IMAGE"), ("audio", "AUDIO"), ("fps", "FLOAT"), ("length", "INT"), ("width", "INT"),
+                            ("height", "INT"), ("long_clip", "BOOLEAN"), ("duration", "STRING")],
+                   title="Which part, how fast, how big")
+    g.link(video, 0, drive, "video")
+    words = g.node("AIInfluencerMotionPrompt", (30, 520), [MOTION_LOOK, MOTION_TEXT, MOTION_AVOID], size=(1120, 540),
+                   outputs=[("positive", "STRING"), ("motion", "STRING"), ("negative", "STRING")],
+                   title="Motion description")
+
+    g.group("02 WAN ANIMATE 2 MODELS", 0, 1140, 620, 820, color="#88A")
+    unet = g.node("UNETLoader", (30, 1200), [WAN_UNET, "default"], size=(560, 110), outputs=[("MODEL", "MODEL")],
+                  title="Wan Animate 2 (distilled, 10 steps)")
+    extra = g.node("LoraLoaderModelOnly", (30, 1360), ["", 1.0], size=(560, 130), inputs=[("model", "MODEL")],
+                   outputs=[("MODEL", "MODEL")], title="Optional extra LoRA - Wan 2.x character / concept fine-tune (Ctrl+B to enable)",
+                   mode=BYPASS)
+    g.link(unet, 0, extra, "model")
+    clip = g.node("CLIPLoader", (30, 1540), [WAN_TE, "wan", "default"], size=(560, 130), outputs=[("CLIP", "CLIP")],
+                  title="Text encoder (umT5)")
+    vision = g.node("CLIPVisionLoader", (30, 1720), [WAN_CLIP_VISION], size=(560, 80),
+                    outputs=[("CLIP_VISION", "CLIP_VISION")], title="CLIP vision")
+    vae = g.node("VAELoader", (30, 1850), [WAN_VAE], size=(560, 80), outputs=[("VAE", "VAE")], title="Wan VAE")
+
+    g.group("03 CONDITIONING", 650, 1140, 940, 820, color="#3f789e")
+    ref = g.node("ResizeImageMaskNode", (680, 1200), ["scale dimensions", 832, 480, "center", "area"], size=(320, 180),
+                 inputs=[("input", "IMAGE,MASK")], outputs=[("resized", "IMAGE")], title="Still at the video's size")
+    g.link(still, 0, ref, "input")
+    g.link(drive, 4, ref, "resize_type.width", widget=True)
+    g.link(drive, 5, ref, "resize_type.height", widget=True)
+    first = g.node("ImageFromBatch", (680, 1430), [0, 1], size=(320, 100), inputs=[("image", "IMAGE")],
+                   outputs=[("IMAGE", "IMAGE")], title="Video's first frame")
+    g.link(drive, 0, first, "image")
+    seen = []
+    for img, y, title in ((ref, 1580, "CLIP vision: the still"), (first, 1730, "CLIP vision: the video")):
+        enc = g.node("CLIPVisionEncode", (680, y), ["none"], size=(320, 100),
+                     inputs=[("clip_vision", "CLIP_VISION"), ("image", "IMAGE")],
+                     outputs=[("CLIP_VISION_OUTPUT", "CLIP_VISION_OUTPUT")], title=title)
+        g.link(vision, 0, enc, "clip_vision")
+        g.link(img, 0, enc, "image")
+        seen.append(enc)
+    conds = []
+    for slot, y, title in ((0, 1200, "Positive (the person)"), (1, 1330, "Motion (pose branch)"), (2, 1460, "Negative")):
+        enc = g.node("CLIPTextEncode", (1030, y), [""], size=(300, 100), inputs=[("clip", "CLIP")],
+                     outputs=[("CONDITIONING", "CONDITIONING")], title=title)
+        g.link(clip, 0, enc, "clip")
+        g.link(words, slot, enc, "text", widget=True)
+        conds.append(enc)
+    animate = g.node("WanAnimate2ToVideo", (1030, 1600), [832, 480, 81, 1, 0, 1.0, 0.0, 1.0, 1.0], size=(520, 340),
+                     inputs=[("positive", "CONDITIONING"), ("negative", "CONDITIONING"), ("vae", "VAE"),
+                             ("reference_image", "IMAGE"), ("pose_video", "IMAGE"), ("clip_vision_output", "CLIP_VISION_OUTPUT"),
+                             ("positive_pose", "CONDITIONING"), ("clip_vision_output_pose", "CLIP_VISION_OUTPUT")],
+                     outputs=[("positive", "CONDITIONING"), ("negative", "CONDITIONING"), ("latent", "LATENT"),
+                              ("trim_latent", "INT"), ("trim_image", "INT"), ("video_frame_offset", "INT")],
+                     title="Wan Animate 2 (pose_strength / reference_image_strength live here)")
+    g.link(conds[0], 0, animate, "positive")
+    g.link(conds[2], 0, animate, "negative")
+    g.link(vae, 0, animate, "vae")
+    g.link(ref, 0, animate, "reference_image")
+    g.link(drive, 0, animate, "pose_video")
+    g.link(seen[0], 0, animate, "clip_vision_output")
+    g.link(conds[1], 0, animate, "positive_pose")
+    g.link(seen[1], 0, animate, "clip_vision_output_pose")
+    for slot, name in ((4, "width"), (5, "height"), (3, "length")):
+        g.link(drive, slot, animate, name, widget=True)
+
+    g.group("04 SAMPLE", 1620, 1140, 760, 820, color="#8A8")
+    windows = g.node("ContextWindowsManual", (1650, 1200), [21, 8, "standard_static", 1, False, "pyramid", 2, True, "0", False, "", True],
+                     size=(340, 380), inputs=[("model", "MODEL")], outputs=[("MODEL", "MODEL")],
+                     title="Context windows (used only for clips over 81 frames)")
+    g.link(extra, 0, windows, "model")
+    switch = g.node("ComfySwitchNode", (1650, 1630), [False], size=(340, 100),
+                    inputs=[("on_false", "*"), ("on_true", "*")], outputs=[("output", "*")], title="Long clip? windows on")
+    g.link(extra, 0, switch, "on_false")
+    g.link(windows, 0, switch, "on_true")
+    g.link(drive, 6, switch, "switch", widget=True)
+    cache = g.node("WanAnimate2Cache", (1650, 1780), ["cpu", "int8"], size=(340, 110), inputs=[("model", "MODEL")],
+                   outputs=[("MODEL", "MODEL")], title="Pose cache (about 2x faster, uses RAM)")
+    g.link(switch, 0, cache, "model")
+    shift = g.node("ModelSamplingSD3", (2020, 1200), [5.0], size=(330, 80), inputs=[("model", "MODEL")], outputs=[("MODEL", "MODEL")])
+    g.link(cache, 0, shift, "model")
+    sampler = g.node("KSamplerSelect", (2020, 1320), ["lcm"], size=(330, 80), outputs=[("SAMPLER", "SAMPLER")])
+    sched = g.node("BasicScheduler", (2020, 1440), ["simple", 10, 1.0], size=(330, 130), inputs=[("model", "MODEL")],
+                   outputs=[("SIGMAS", "SIGMAS")], title="Steps (10 for the distilled model)")
+    g.link(cache, 0, sched, "model")
+    sample = g.node("SamplerCustom", (2020, 1610), [True, 0, "randomize", 1.0], size=(330, 300),
+                    inputs=[("model", "MODEL"), ("positive", "CONDITIONING"), ("negative", "CONDITIONING"),
+                            ("sampler", "SAMPLER"), ("sigmas", "SIGMAS"), ("latent_image", "LATENT")],
+                    outputs=[("output", "LATENT"), ("denoised_output", "LATENT")], title="Sample (seed here)")
+    g.link(shift, 0, sample, "model")
+    g.link(animate, 0, sample, "positive")
+    g.link(animate, 1, sample, "negative")
+    g.link(sampler, 0, sample, "sampler")
+    g.link(sched, 0, sample, "sigmas")
+    g.link(animate, 2, sample, "latent_image")
+
+    g.group("05 DECODE + CAMERA PASS + SAVE", 2410, 1140, 1240, 820, color="#a1309b")
+    trim = g.node("TrimVideoLatent", (2440, 1200), [0], size=(280, 80), inputs=[("samples", "LATENT")],
+                  outputs=[("LATENT", "LATENT")], title="Drop the reference frame")
+    g.link(sample, 0, trim, "samples")
+    g.link(animate, 3, trim, "trim_amount", widget=True)
+    decode = g.node("VAEDecode", (2440, 1320), [], size=(280, 70), inputs=[("samples", "LATENT"), ("vae", "VAE")],
+                    outputs=[("IMAGE", "IMAGE")], title="Decode video")
+    g.link(trim, 0, decode, "samples")
+    g.link(vae, 0, decode, "vae")
+    cam = g.node("AIInfluencerCameraImperfections", (2440, 1430), [0, "randomize", 0.025, 0.1, 0.35, 0.05, 0.15, 0.3, True],
+                 size=(280, 300), inputs=[("image", "IMAGE")], outputs=[("image", "IMAGE")], title="Camera pass on every frame")
+    g.link(decode, 0, cam, "image")
+    mux = g.node("CreateVideo", (2750, 1200), [30.0, "auto", "sRGB", "none"], size=(280, 160),
+                 inputs=[("images", "IMAGE"), ("audio", "AUDIO")], outputs=[("VIDEO", "VIDEO")],
+                 title="Mux with the driving video's sound")
+    g.link(cam, 0, mux, "images")
+    g.link(drive, 1, mux, "audio")
+    g.link(drive, 2, mux, "fps", widget=True)
+    save = g.node("AIInfluencerSaveVideo", (3060, 1200), ["", "wan_animate_video", "wan_animate_local", "Wan Animate 2", "",
+                                                         "480p", "5", -1, "fixed", "", ""],
+                  size=(400, 420), inputs=[("video", "VIDEO")], outputs=[("VIDEO", "VIDEO"), ("output_path", "STRING")],
+                  title="Save & log the clip")
+    g.link(mux, 0, save, "video")
+    g.link(words, 1, save, "motion_prompt", widget=True)
+    g.link(drive, 7, save, "duration_seconds", widget=True)
+
+    # side by side with the driving video, to judge how well the movement was followed (off until you need it)
+    side = g.node("ImageStitch", (2750, 1430), ["left", True, 0, "white"], size=(280, 160),
+                  inputs=[("image1", "IMAGE"), ("image2", "IMAGE")], outputs=[("IMAGE", "IMAGE")],
+                  title="Side by side: driving | result (Ctrl+M to switch on)", mode=NEVER)
+    g.link(decode, 0, side, "image1")
+    g.link(drive, 0, side, "image2")
+    side_mux = g.node("CreateVideo", (2750, 1630), [30.0, "auto", "sRGB", "none"], size=(280, 160),
+                      inputs=[("images", "IMAGE"), ("audio", "AUDIO")], outputs=[("VIDEO", "VIDEO")], title="Comparison video", mode=NEVER)
+    g.link(side, 0, side_mux, "images")
+    g.link(drive, 1, side_mux, "audio")
+    g.link(drive, 2, side_mux, "fps", widget=True)
+    side_save = g.node("AIInfluencerSaveVideo", (3060, 1660), ["", "misc_video", "wan_animate_local", "Wan Animate 2 comparison", "",
+                                                              "480p", "5", -1, "fixed", "", "side by side with the driving video"],
+                       size=(400, 280), inputs=[("video", "VIDEO")], outputs=[("VIDEO", "VIDEO"), ("output_path", "STRING")],
+                       title="Save the comparison", mode=NEVER)
+    g.link(side_mux, 0, side_save, "video")
+
+    g.note((1220, 0), """# 14 Motion transfer (Wan Animate 2, open weights)
+
+The person in a **still** copies the **movement of a video**: a dance, a walk to the camera, a
+gesture, a facial expression. The look, outfit and location come from the still; only the motion
+comes from the video. Based on the "Motion Control" workflow (Wan 2.2 Animate through
+WanVideoWrapper + 8 custom node packs), rebuilt on core ComfyUI's **Wan Animate 2**, which reads
+the driving video directly: no pose detector, face crop or segmentation to set up.
+
+**Runs on a pod**, not on the local GTX 1060: tick *Hold for the pod* and press Run; the Pod queue
+adds `--with-animate` (24 GB card, ~25 GB of models) and uploads the still *and* the video.
+
+1. **The person**: a final still (Workflow 08/09/09b/10 output). It is cropped to the video's
+   shape, so pick a still framed like the video (full body for a dance, waist up for talking).
+2. **Driving video**: click *upload*. One person, steady camera, the whole body in frame for
+   body motion. Its **sound is kept** on the result (none if the video has none).
+3. **Which part, how fast, how big**: `start_seconds` / `duration_seconds` pick the span (0 = to
+   the end); `fps` 30 is what the model is trained on; `long_side` 832 is 480p class (fast), 1280
+   is 720p class. The node prints the frame count it worked out. Up to 81 frames (2.7 s at 30 fps)
+   is one pass; longer clips switch on the context windows automatically and take
+   proportionally longer.
+4. **Motion description**: `look` keeps the identity, `motion` names the movement for the pose
+   branch. The blurred background and handheld-phone wording is always added (not editable here,
+   same as Workflow 11).
+5. Run. The clip gets the camera pass on every frame and is saved to
+   `outputs/videos/` and logged.
+
+**Fine-tuning** (on the *Wan Animate 2* node): `pose_strength` below 1 loosens the choreography,
+`pose_end_percent` 0.7 keeps the movement but frees fine detail; `reference_image_strength` above
+1 holds the face tighter if it drifts. Steps/sampler are set for the distilled model: 10 steps,
+`lcm`, cfg 1. The seed is on *Sample*.
+
+**Compare**: select the three muted nodes in 05 (Side by side, Comparison video, Save the
+comparison) and press Ctrl+M to save a driving | result video next to the clip.
+
+**Use** a fictional character as the still. The video only lends its movement, but its sound is
+copied onto the result, so mind the music's and voice's rights where you post it.""", size=(900, 1100))
+    g.dump("14_wan_animate_motion_transfer.json")
+
+
 if __name__ == "__main__":
     build_07()
     build_08()
@@ -936,3 +1216,4 @@ if __name__ == "__main__":
     build_09c()
     build_01()
     build_13()
+    build_14()

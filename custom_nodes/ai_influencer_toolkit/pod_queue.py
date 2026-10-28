@@ -7,7 +7,8 @@ usual) stores the prompt here instead of running it. "Start pod & run all" then:
   1. if the pod kit on the HF repo is older than this PC's node pack / workflows / setup script /
      character.json, rebuilds it and uploads it (a pod runs whatever kit is on HF, not these files);
      then rents a pod with tools/comfy_pod.py (or uses the one already running), adding
-     --with-upscale / --with-minimax when a held prompt needs SeedVR2 / MiniMax H3;
+     --with-upscale / --with-minimax / --with-animate when a held prompt needs SeedVR2 / MiniMax H3 /
+     Wan Animate 2;
   2. waits until ComfyUI there has finished setting up (the node pack is registered only after the
      bootstrap's restart, which comes after every model download);
   3. checks every held prompt against the pod's node and model lists, uploads the input images
@@ -19,8 +20,9 @@ usual) stores the prompt here instead of running it. "Start pod & run all" then:
      timer still ends it) rather than destroyed with your image on it.
 
 Every image a held prompt saves goes through the background blur and then the camera pass as its
-last step: ensure_filters() adds whichever of the two a Save node's image is missing. A saved video
-(Workflow 11) gets the camera pass on its frames, with one white balance for the whole clip.
+last step: ensure_filters() adds whichever of the two a Save node's image is missing. Saves with
+the explicit `local_unfiltered` stage are preserved before those filters. A saved video (Workflows
+11, 14) gets the camera pass on its frames, with one white balance for the whole clip.
 
 Prompts that finished are removed from the held list; ones that failed stay, so they can be fixed
 and re-run. Everything here is local open weights on the pod: no partner API, no moderation.
@@ -104,6 +106,10 @@ def summarize(prompt: dict) -> str:
             image = next((n["inputs"]["image"] for n in prompt.values() if n.get("class_type") == "LoadImage"
                           and isinstance(n.get("inputs", {}).get("image"), str)), "")
             text = f"video {inputs.get('duration_seconds', '?')} s from {os.path.basename(image) or '?'}: {inputs.get('beats', '')}"
+        if not text and node.get("class_type") == "AIInfluencerMotionPrompt":
+            video = next((n["inputs"]["file"] for n in prompt.values() if n.get("class_type") == "LoadVideo"
+                          and isinstance(n.get("inputs", {}).get("file"), str)), "")
+            text = f"motion from {os.path.basename(video) or '?'}: {inputs.get('motion', '')}"
         if not text and isinstance(inputs.get("text"), str):
             text = inputs["text"]
         if not text and node.get("class_type") == "PrimitiveStringMultiline" and isinstance(inputs.get("value"), str):
@@ -243,9 +249,10 @@ def ensure_filters(prompt: dict) -> list[str]:
         prompt[str(next_id)] = {"class_type": class_type, "inputs": inputs}
         return str(next_id)
 
-    savers = [n for n in prompt.values() if n.get("class_type") in IMAGE_SAVERS]
+    image_savers = [n for n in prompt.values() if n.get("class_type") in IMAGE_SAVERS]
+    savers = [n for n in image_savers if n.get("inputs", {}).get("stage") != "local_unfiltered"]
     video_savers = [n for n in prompt.values() if n.get("class_type") in VIDEO_SAVERS]
-    if not savers and not video_savers:
+    if not image_savers and not video_savers:
         notes.append("no Save node: nothing would be saved or downloaded")
     for node in video_savers:
         # the frames go into Create Video; the camera pass goes right before it (no blur: per-frame masks
@@ -714,6 +721,8 @@ class Runner:
                 flags.append("--with-upscale")
             if any("minimax_h3" in s for s in strings):
                 flags.append("--with-minimax")
+            if any("wan_animate_2" in s for s in strings):
+                flags.append("--with-animate")
 
             self.set(phase="checking the jobs on this PC (free)")
             checked = []

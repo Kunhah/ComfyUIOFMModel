@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Run this INSIDE a ComfyUI GPU pod (vast.ai / RunPod), from the unpacked pod kit folder:
 #     bash pod_bootstrap.sh
-# It reproduces this local ComfyUI setup there: the AI Influencer node pack, workflows 01-11,
+# It reproduces this local ComfyUI setup there: the AI Influencer node pack, workflows 01-14,
 # the character's project files and dataset, and the Krea 2 + SeedVR2 models (~20 GB).
 # Re-running is safe: existing model files are not downloaded again.
 set -euo pipefail
@@ -113,6 +113,19 @@ if [ "${WITH_MINIMAX:-0}" = "1" ]; then
   dl vae              https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/main/vae/minimax_h3_video_vae_fp16.safetensors
   dl vae              https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/main/vae/minimax_h3_audio_vae_fp32.safetensors
   dl loras            https://huggingface.co/lightx2v/Minimax-h3-Turbo/resolve/main/minimax_h3_fl2v_turbo_8step_v1.0_comfyui_bf16.safetensors
+fi
+# Workflow 14 (Wan Animate 2 motion transfer). ~25 GB, so it is opt-in:
+#     WITH_ANIMATE=1 bash pod_bootstrap.sh
+if [ "${WITH_ANIMATE:-0}" = "1" ]; then
+  echo "== Wan Animate 2 (~25 GB) =="
+  if ! grep -q "WanAnimate2ToVideo" "$COMFY/comfy_extras/nodes_wan.py" 2>/dev/null; then
+    echo "  ComfyUI in this image has no Wan Animate 2 nodes; updating it"
+    git -C "$COMFY" pull --ff-only || echo "  WARN: git pull failed -- Workflow 14 will not load"
+  fi
+  dl diffusion_models https://huggingface.co/Comfy-Org/Wan-Animate-2/resolve/main/diffusion_models/wan_animate_2_distill_int8_convrot.safetensors
+  dl text_encoders    https://huggingface.co/Comfy-Org/Wan-Animate-2/resolve/main/text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors
+  dl clip_vision      https://huggingface.co/Comfy-Org/Wan-Animate-2/resolve/main/clip_vision/clip_vision_h.safetensors
+  dl vae              https://huggingface.co/Comfy-Org/Wan-Animate-2/resolve/main/vae/Wan2_1_VAE_bf16.safetensors
 fi
 
 if [ -n "$DL_FAILED" ]; then

@@ -7,8 +7,11 @@ Two independent safety nets, because a forgotten instance bills by the hour:
      and runs a background timer that destroys it after --hours even if training hangs.
 Net 2 works even with this machine switched off.
 
-Results (the last checkpoints + the sample images) are pushed to your private HF repo from the pod
-before it dies, so nothing is lost when it goes away; `watch` downloads them.
+Moving files (--transfer): by default (ssh) `watch` copies the dataset straight onto the pod and the
+results (the last checkpoints + the sample images) back off it, so the dataset only ever exists on
+this PC and the rented machine. The finished pod waits --pull-grace minutes for that download before
+destroying itself, so keep `watch` running. --transfer hf moves both through your private HF repo
+instead, which works with this machine off but puts the dataset under Hugging Face's content policy.
 
     python vast_pod.py search
     python vast_pod.py launch --dry-run                 # show the plan, rent nothing
@@ -16,7 +19,8 @@ before it dies, so nothing is lost when it goes away; `watch` downloads them.
     python vast_pod.py watch                            # follow, download results, destroy
     python vast_pod.py status | logs | destroy
 
-Needs VAST_API_KEY and HF_TOKEN (set them with tools/configure.py) (Krea 2 is gated; a private HF dataset repo also\ncarries the dataset in and the checkpoints out -- no other service involved).
+Needs VAST_API_KEY and HF_TOKEN (set them with tools/configure.py); HF_TOKEN because Krea 2 is gated.
+--transfer ssh also needs ssh/scp; it makes ~/.ssh/ai_influencer_vast and attaches it to each pod only.
 """
 from __future__ import annotations
 
@@ -47,7 +51,7 @@ ONSTART = r"""#!/bin/bash
 mkdir -p /var/podlogs
 exec > >(tee -a /var/podlogs/onstart.log) 2>&1
 set -x
-destroy() { curl -s -X DELETE -H "Authorization: Bearer $VAST_API_KEY" \
+destroy() { curl -fsSL -X DELETE -H "Authorization: Bearer $VAST_API_KEY" \
   "https://console.vast.ai/api/v0/instances/$CONTAINER_ID" ; }
 # net 2a: hard timer, fires even if training hangs or the renter's machine is off
 # MAX_HOURS is usually fractional ("2.0"), which bash $((...)) can't multiply, so awk does it
@@ -63,12 +67,9 @@ for v in /venv/main/bin/activate venv/bin/activate /opt/venv/bin/activate; do
 done
 export HF_HOME=/workspace/hf
 pip install -q huggingface_hub
-HFBASE="https://huggingface.co/datasets/$HF_REPO/resolve/main"
 mkdir -p datasets/$PROJECT config
-set +x  # keep the token out of the instance log (the host can read it)
-curl -fL -H "Authorization: Bearer $HF_TOKEN" "$HFBASE/dataset.zip" -o /tmp/ds.zip || { echo "FATAL: dataset download"; destroy; exit 1; }
+#@FETCH@
 unzip -qo /tmp/ds.zip -d datasets/$PROJECT
-curl -fL -H "Authorization: Bearer $HF_TOKEN" "$HFBASE/job.yaml" -o config/job.yaml || { echo "FATAL: config download"; destroy; exit 1; }
 # the config's dataset path is written for a different image layout; point it at where we actually unzipped
 sed -i "s|^\( *-\? *folder_path:\).*|\1 $AT/datasets/$PROJECT|" config/job.yaml
 grep -n "folder_path" config/job.yaml
@@ -81,7 +82,31 @@ python "$RUNPY" config/job.yaml 2>&1 | tee /var/podlogs/train.log
 echo "TRAINING_EXIT=${PIPESTATUS[0]}"
 
 tar czf /tmp/samples.tgz output/*/samples 2>/dev/null
-python - <<'PYINNER'
+#@DELIVER@
+[ "$AUTO_DESTROY" = "1" ] && destroy
+"""
+
+FETCH_HF = r"""HFBASE="https://huggingface.co/datasets/$HF_REPO/resolve/main"
+set +x  # keep the token out of the instance log (the host can read it)
+curl -fL -H "Authorization: Bearer $HF_TOKEN" "$HFBASE/dataset.zip" -o /tmp/ds.zip || { echo "FATAL: dataset download"; destroy; exit 1; }
+curl -fL -H "Authorization: Bearer $HF_TOKEN" "$HFBASE/job.yaml" -o config/job.yaml || { echo "FATAL: config download"; destroy; exit 1; }
+set -x"""
+
+# `watch` on the renter's machine pushes the dataset in and pulls results out over SSH, so the
+# dataset never leaves this PC and the rented machine. Both waits are bounded; the hard timer applies too.
+FETCH_SSH = r"""IN=/workspace/incoming; mkdir -p $IN
+for i in $(seq 1 $((${WAIT_MIN:-30}*6))); do [ -f $IN/READY ] && break; sleep 10; done
+[ -f $IN/READY ] || { echo "FATAL: no dataset arrived over SSH (is vast_pod.py watch running?)"; destroy; exit 1; }
+cp $IN/dataset.zip /tmp/ds.zip && cp $IN/job.yaml config/job.yaml || { echo "FATAL: incoming files"; destroy; exit 1; }"""
+
+DELIVER_SSH = r"""OUT=/workspace/out; mkdir -p $OUT
+cp /var/podlogs/onstart.log /var/podlogs/train.log /tmp/samples.tgz $OUT/ 2>/dev/null
+ls output/*/*.safetensors 2>/dev/null | LC_ALL=C sort | tail -n "${KEEP_CHECKPOINTS:-6}" | xargs -r cp -t $OUT/
+touch $OUT/DONE
+echo "RESULTS_READY"
+for i in $(seq 1 $((${PULL_GRACE_MIN:-60}*6))); do [ -f $OUT/PULLED ] && break; sleep 10; done"""
+
+DELIVER_HF = r"""python - <<'PYINNER'
 import glob, os
 from huggingface_hub import HfApi
 api = HfApi(token=os.environ["HF_TOKEN"]); repo = os.environ["HF_REPO"]
@@ -101,8 +126,49 @@ api.upload_file(path_or_fileobj=b"done", path_in_repo=f"results/{os.environ['CON
                 repo_id=repo, repo_type="dataset")
 PYINNER
 echo "RESULTS_UPLOADED"
-[ "$AUTO_DESTROY" = "1" ] && destroy
 """
+
+
+def onstart(transfer: str) -> str:
+    fetch, deliver = (FETCH_SSH, DELIVER_SSH) if transfer == "ssh" else (FETCH_HF, DELIVER_HF)
+    return ONSTART.replace("#@FETCH@", fetch).replace("#@DELIVER@", deliver)
+
+
+SSH_KEY = os.path.expanduser("~/.ssh/ai_influencer_vast")
+"""A key just for training pods: attached to each instance, never added to the vast.ai account."""
+
+
+def ensure_ssh_key() -> str:
+    if not os.path.isfile(SSH_KEY):
+        subprocess.run(["ssh-keygen", "-q", "-t", "ed25519", "-N", "", "-C", "ai-influencer-vast", "-f", SSH_KEY], check=True)
+    with open(SSH_KEY + ".pub", encoding="utf-8") as f:
+        return f.read().strip()
+
+
+def ssh_target(instance_id: int) -> tuple[str, int] | None:
+    from urllib.parse import urlparse
+
+    try:
+        url = urlparse(str(vast("ssh-url", str(instance_id), raw=False)).strip())
+    except SystemExit:
+        return None
+    return (f"{url.username or 'root'}@{url.hostname}", url.port or 22) if url.hostname else None
+
+
+def ssh_opts(project: str, instance_id: int) -> list[str]:
+    # per-instance known_hosts: vast reuses host:port pairs across instances
+    known = os.path.join(logging_util.get_project_output_dir(project), "pod", f"known_hosts_{instance_id}")
+    return ["-i", SSH_KEY, "-o", "IdentitiesOnly=yes", "-o", "BatchMode=yes", "-o", "ConnectTimeout=20",
+            "-o", "StrictHostKeyChecking=accept-new", "-o", f"UserKnownHostsFile={known}"]
+
+
+def ssh(project: str, instance_id: int, target: tuple[str, int], command: str) -> bool:
+    return subprocess.run(["ssh", *ssh_opts(project, instance_id), "-p", str(target[1]), target[0], command],
+                          capture_output=True).returncode == 0
+
+
+def scp(project: str, instance_id: int, target: tuple[str, int], sources: list[str], dest: str) -> bool:
+    return subprocess.run(["scp", *ssh_opts(project, instance_id), "-P", str(target[1]), *sources, dest]).returncode == 0
 
 
 def vastai_bin() -> str:
@@ -192,32 +258,47 @@ def cmd_launch(args) -> int:
     if not args.yes and input(f"Rent it (up to ${hourly * args.hours:.2f})? Type yes: ").strip().lower() != "yes":
         return 1
 
-    from huggingface_hub import HfApi
+    repo = ""
+    if args.transfer == "hf":
+        from huggingface_hub import HfApi
 
-    api = HfApi(token=os.environ["HF_TOKEN"])
-    repo = args.hf_repo or env_config.hf_repo(project)
-    api.create_repo(repo, repo_type="dataset", private=True, exist_ok=True)
-    print(f"uploading dataset + config to private HF repo {repo} ...")
-    api.upload_file(path_or_fileobj=dataset_zip, path_in_repo="dataset.zip", repo_id=repo, repo_type="dataset")
-    api.upload_file(path_or_fileobj=config_yaml, path_in_repo="job.yaml", repo_id=repo, repo_type="dataset")
+        api = HfApi(token=os.environ["HF_TOKEN"])
+        repo = args.hf_repo or env_config.hf_repo(project)
+        api.create_repo(repo, repo_type="dataset", private=True, exist_ok=True)
+        print(f"uploading dataset + config to private HF repo {repo} ...")
+        api.upload_file(path_or_fileobj=dataset_zip, path_in_repo="dataset.zip", repo_id=repo, repo_type="dataset")
+        api.upload_file(path_or_fileobj=config_yaml, path_in_repo="job.yaml", repo_id=repo, repo_type="dataset")
+    else:
+        pubkey = ensure_ssh_key()
 
     env = " ".join([
         f"-e VAST_API_KEY={os.environ['VAST_API_KEY']}",
-        f"-e HF_TOKEN={os.environ['HF_TOKEN']}",
+        f"-e HF_TOKEN={os.environ['HF_TOKEN']}",  # still needed: the Krea 2 base model is gated
         f"-e HF_REPO={repo}",
         f"-e PROJECT={project}", f"-e MAX_HOURS={args.hours}",
         f"-e KEEP_CHECKPOINTS={args.keep_checkpoints}",
         f"-e AUTO_DESTROY={0 if args.no_auto_destroy else 1}",
+        f"-e WAIT_MIN={args.loading_timeout}", f"-e PULL_GRACE_MIN={args.pull_grace}",
     ])
     res = vast("create", "instance", str(offer["id"]), "--image", IMAGE, "--disk", str(args.disk),
-               "--env", env, "--onstart-cmd", ONSTART,
+               "--env", env, "--onstart-cmd", onstart(args.transfer),
                "--ssh", "--direct", "--label", f"lora-{project}")
     instance_id = (res or {}).get("new_contract") if isinstance(res, dict) else None
     if not instance_id:
         raise SystemExit(f"launch failed: {res!r}")
-    save_state(project, {"instance_id": instance_id, "offer": offer["id"], "dph": hourly,
-                         "started": time.time(), "hours": args.hours, "hf_repo": repo})
+    state = {"instance_id": instance_id, "offer": offer["id"], "dph": hourly, "started": time.time(),
+             "hours": args.hours, "hf_repo": repo, "transfer": args.transfer}
+    if args.transfer == "ssh":
+        state.update(dataset=os.path.abspath(dataset_zip), config=os.path.abspath(config_yaml))
+        try:
+            vast("attach", "ssh", str(instance_id), pubkey, raw=False)
+            state["key_attached"] = True
+        except SystemExit as e:
+            print(f"couldn't attach the SSH key yet ({e}); watch will retry")
+    save_state(project, state)
     print(f"instance {instance_id} starting. Follow it:\n  python vast_pod.py watch --project {project}")
+    if args.transfer == "ssh":
+        print(f"Start watch now: it sends the dataset. The pod gives up after {args.loading_timeout} min without it.")
     return 0
 
 
@@ -252,7 +333,8 @@ def destroy_instance(instance_id: int) -> str:
     import httpx
 
     r = httpx.delete(f"https://console.vast.ai/api/v0/instances/{instance_id}",
-                     headers={"Authorization": f"Bearer {os.environ['VAST_API_KEY'].strip()}"}, timeout=30)
+                     headers={"Authorization": f"Bearer {os.environ['VAST_API_KEY'].strip()}"}, timeout=30,
+                     follow_redirects=True)
     return f"destroy {instance_id}: {r.status_code} {r.text[:120]}"
 
 
@@ -273,20 +355,55 @@ def cmd_watch(args) -> int:
     st = load_state(project)
     if not st:
         raise SystemExit("no run recorded")
-    from huggingface_hub import HfApi, hf_hub_download
-
-    api = HfApi(token=os.environ["HF_TOKEN"])
-    repo = st["hf_repo"]
     iid = st["instance_id"]
     out_dir = os.path.join(logging_util.get_project_output_dir(project), "pod", "results")
     os.makedirs(out_dir, exist_ok=True)
+    over_ssh = st.get("transfer", "hf") == "ssh"
+    if not over_ssh:
+        from huggingface_hub import HfApi, hf_hub_download
+
+        api = HfApi(token=os.environ["HF_TOKEN"])
+        repo = st["hf_repo"]
 
     def results_in_repo() -> list[str]:
+        if over_ssh:
+            return []
         try:
             prefix = f"results/{iid}/"
             return [f for f in api.list_repo_files(repo, repo_type="dataset") if f.startswith(prefix)]
         except Exception:
             return []
+
+    def ssh_step(status: str) -> bool:
+        """Push the dataset once the pod is up; pull the results once it says DONE. True when pulled."""
+        if status != "running":
+            return False
+        if not st.get("key_attached"):
+            try:
+                vast("attach", "ssh", str(iid), ensure_ssh_key(), raw=False)
+                st["key_attached"] = True
+            except SystemExit:
+                return False
+        target = ssh_target(iid)
+        if target is None:
+            return False
+        remote = f"{target[0]}:"
+        if not st.get("uploaded"):
+            print("  sending dataset + config over SSH")
+            if (ssh(project, iid, target, "mkdir -p /workspace/incoming")
+                    and scp(project, iid, target, [st["dataset"]], remote + "/workspace/incoming/dataset.zip")
+                    and scp(project, iid, target, [st["config"]], remote + "/workspace/incoming/job.yaml")
+                    and ssh(project, iid, target, "touch /workspace/incoming/READY")):
+                st["uploaded"] = True
+                save_state(project, st)
+            return False
+        if not ssh(project, iid, target, "test -f /workspace/out/DONE"):
+            return False
+        print("  downloading results over SSH")
+        if scp(project, iid, target, [remote + "/workspace/out/*"], out_dir):
+            ssh(project, iid, target, "touch /workspace/out/PULLED")
+            return True
+        return False
 
     while True:
         elapsed = (time.time() - st["started"]) / 3600
@@ -309,6 +426,10 @@ def cmd_watch(args) -> int:
                 tail = ""
         print(f"[{elapsed:.2f}h ~${elapsed * st['dph']:.2f}] {status}  results:{len(files)}  {tail}", flush=True)
 
+        if over_ssh and info is not None and ssh_step(status):
+            print("training finished -> destroying instance")
+            print(destroy_instance(iid))
+            break
         if f"results/{iid}/DONE" in files:
             for f in files:
                 name = os.path.basename(f)
@@ -321,7 +442,7 @@ def cmd_watch(args) -> int:
                 print(destroy_instance(iid))
             break
         if info is None:
-            print("instance gone before results appeared; check `logs` output above / HF repo")
+            print("instance gone before results appeared; check the logs above" + ("" if over_ssh else " / HF repo"))
             break
         if status == "loading" and elapsed > args.loading_timeout / 60:
             print(f"still 'loading' after {args.loading_timeout} min -- image pull is failing -> destroying")
@@ -350,6 +471,11 @@ def main() -> int:
     ap.add_argument("--keep-checkpoints", type=int, default=6, help="How many of the last checkpoints to upload.")
     ap.add_argument("--dataset"); ap.add_argument("--config")
     ap.add_argument("--id", type=int, help="Instance id for destroy.")
+    ap.add_argument("--transfer", choices=["ssh", "hf"], default="ssh",
+                    help="How the dataset goes in and checkpoints come out: ssh (straight between this PC and the pod, "
+                         "needs `watch` running) or hf (through a private Hugging Face repo, subject to HF's content policy).")
+    ap.add_argument("--pull-grace", type=int, default=60,
+                    help="ssh: minutes the finished pod waits for watch to download results before destroying itself.")
     ap.add_argument("--hf-repo", help="Private HF dataset repo used to move files (default: AI_INFLUENCER_HF_REPO, else <user>/<project>-lora-transfer).")
     ap.add_argument("--interval", type=int, default=120, help="watch poll seconds.")
     ap.add_argument("--loading-timeout", type=int, default=30, help="Destroy if still stuck in 'loading' after this many minutes (failed image pull).")

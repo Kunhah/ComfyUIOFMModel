@@ -214,6 +214,7 @@ async function openWindow(names, reason) {
     const missing = list.filter(m => !m.installed && progress[m.name]?.status !== "finished");
     const usesKrea = reason === "menu" || list.some(m => KREA_GROUPS.includes(m.group));
     const minimaxTooBig = list.some(m => m.group === "minimax") && !(info.gpu?.vram_gb >= 31);
+    const animateTooBig = list.some(m => m.group === "wan_animate") && !(info.gpu?.vram_gb >= 23);
     const running = Object.values(progress).some(p => p.status === "running");
     const total = missing.reduce((s, m) => s + m.size, 0);
     const needsAddon = list.some(m => m.loader) && !info.addon.loaded;
@@ -222,12 +223,15 @@ async function openWindow(names, reason) {
       : `<p class="muted">The Low memory version also needs the free ComfyUI-GGUF add-on (it loads GGUF files). Downloading installs it; restart ComfyUI afterwards.</p>`;
     el.innerHTML = `<div class="box">
       <h2>${reason === "run" ? "This workflow needs model files first" : "Models for the local workflows"}</h2>
-      <p>${reason === "run" ? "This workflow makes" : "The local workflows (07-12, 09b) make"} the picture on <b>your own graphics card</b>, so ${reason === "run" ? "it needs" : "they need"} the AI model files on this computer.
+      <p>${reason === "run" ? "This workflow makes" : "The local workflows (07-14, 09b) make"} the picture on <b>your own graphics card</b>, so ${reason === "run" ? "it needs" : "they need"} the AI model files on this computer.
         They are downloaded once into <code>ComfyUI/models</code> and reused by every local workflow.
         The online workflows (01, 04, 05) need no downloads, but they spend Comfy credits.</p>
       ${usesKrea ? `<p class="advice">${esc(info.advice)}</p>` : ""}
       ${minimaxTooBig ? `<p class="advice">MiniMax H3 (Workflow 11) needs a graphics card with 32 GB of memory or more
         (RTX 5090 / RTX 6000 Pro class)${info.gpu ? `; this computer has ${esc(info.gpu.name)} (${info.gpu.vram_gb.toFixed(0)} GB)` : ""}.
+        Hold the job for a rented GPU with the Pod queue instead of downloading here.</p>` : ""}
+      ${animateTooBig ? `<p class="advice">Wan Animate 2 (Workflow 14) needs a graphics card with 24 GB of memory or more
+        (RTX 3090 / 4090 / 5090 class)${info.gpu ? `; this computer has ${esc(info.gpu.name)} (${info.gpu.vram_gb.toFixed(0)} GB)` : ""}.
         Hold the job for a rented GPU with the Pod queue instead of downloading here.</p>` : ""}
       ${usesKrea ? `<h3>Krea 2 version</h3>
         ${Object.entries(info.versions).map(([k, v]) => {

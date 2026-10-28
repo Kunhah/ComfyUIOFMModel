@@ -1,6 +1,6 @@
 {
- "last_node_id": 17,
- "last_link_id": 25,
+ "last_node_id": 18,
+ "last_link_id": 30,
  "nodes": [
   {
    "id": 1,
@@ -73,7 +73,7 @@
       3,
       6,
       13,
-      24
+      29
      ],
      "slot_index": 0
     }
@@ -238,7 +238,8 @@
      "name": "prompt",
      "type": "STRING",
      "links": [
-      20
+      20,
+      25
      ],
      "slot_index": 1,
      "shape": 6
@@ -247,7 +248,8 @@
      "name": "seed",
      "type": "INT",
      "links": [
-      21
+      21,
+      26
      ],
      "slot_index": 2,
      "shape": 6
@@ -256,7 +258,8 @@
      "name": "folder",
      "type": "STRING",
      "links": [
-      23
+      23,
+      28
      ],
      "slot_index": 3,
      "shape": 6
@@ -266,7 +269,8 @@
      "type": "STRING",
      "links": [
       5,
-      22
+      22,
+      27
      ],
      "slot_index": 4,
      "shape": 6
@@ -578,7 +582,8 @@
      "name": "IMAGE",
      "type": "IMAGE",
      "links": [
-      16
+      16,
+      24
      ],
      "slot_index": 0
     }
@@ -673,7 +678,7 @@
      "type": "IMAGE",
      "links": [
       19,
-      25
+      30
      ],
      "slot_index": 0
     }
@@ -778,13 +783,102 @@
     "",
     "",
     ""
-   ]
+   ],
+   "title": "Save filtered copy"
   },
   {
    "id": 16,
-   "type": "ImageCompare",
+   "type": "AIInfluencerSaveImage",
    "pos": [
     2570,
+    60
+   ],
+   "size": [
+    360,
+    420
+   ],
+   "flags": {},
+   "order": 15,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "images",
+     "type": "IMAGE",
+     "link": 24
+    },
+    {
+     "name": "prompt_text",
+     "type": "STRING",
+     "link": 25,
+     "widget": {
+      "name": "prompt_text"
+     }
+    },
+    {
+     "name": "seed",
+     "type": "INT",
+     "link": 26,
+     "widget": {
+      "name": "seed"
+     }
+    },
+    {
+     "name": "notes",
+     "type": "STRING",
+     "link": 27,
+     "widget": {
+      "name": "notes"
+     }
+    },
+    {
+     "name": "subfolder",
+     "type": "STRING",
+     "link": 28,
+     "widget": {
+      "name": "subfolder"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [],
+     "slot_index": 0
+    },
+    {
+     "name": "output_path",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 1
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerSaveImage"
+   },
+   "widgets_values": [
+    "",
+    "local_unfiltered",
+    "other",
+    "practice run (no GPU)",
+    "other",
+    "",
+    "",
+    "",
+    -1,
+    "fixed",
+    0,
+    "",
+    "",
+    ""
+   ],
+   "title": "Save unfiltered copy"
+  },
+  {
+   "id": 17,
+   "type": "ImageCompare",
+   "pos": [
+    2960,
     60
    ],
    "size": [
@@ -792,18 +886,18 @@
     480
    ],
    "flags": {},
-   "order": 15,
+   "order": 16,
    "mode": 0,
    "inputs": [
     {
      "name": "image_a",
      "type": "IMAGE",
-     "link": 24
+     "link": 29
     },
     {
      "name": "image_b",
      "type": "IMAGE",
-     "link": 25
+     "link": 30
     }
    ],
    "outputs": [],
@@ -814,10 +908,10 @@
    "title": "Plate / result"
   },
   {
-   "id": 17,
+   "id": 18,
    "type": "MarkdownNote",
    "pos": [
-    2980,
+    3350,
     0
    ],
    "size": [
@@ -825,7 +919,7 @@
     820
    ],
    "flags": {},
-   "order": 16,
+   "order": 17,
    "mode": 0,
    "inputs": [],
    "outputs": [],
@@ -833,7 +927,7 @@
     "Node name for S&R": "MarkdownNote"
    },
    "widgets_values": [
-    "# 09c Practice run (no GPU, no models)\n\nWorkflow 09b's clicks, minus Krea 2. Everything here runs on CPU in a few seconds, so you can\nlearn the moves before the vast.ai meter starts. Queue it as is first, then change things.\n\n## The loop you are rehearsing\n1. **01**: the location photo. Painting a mask is optional: with nothing painted, each candidate\n   gets its own place. Paint one (right-click -> **Open in MaskEditor**) and every candidate stands\n   where you painted -- only the angle still changes. `practice_plate.png` may already carry a\n   painted mask; the *Masks* preview and *What each candidate got* show which case you are in.\n2. **02**: *Placement & Angle per Seed* turns one queue into **4 candidates**, each with its own\n   seed, its own spot in the photo (left to right, nearer or further back) and its own body angle\n   (front, three-quarter, profile, back over the shoulder). The angle is drawn in the skeleton\n   *and* written into the prompt, so they never disagree. Queue again: new seed, new set.\n3. **03**: the masks and skeletons it made. In 09b the skeleton is picture 3 for Krea 2.\n4. **04**: the real Prompt Builder. The mandatory \"don't look AI\" block is appended for you.\n5. **05**: here the *skeleton* is pasted into the mask so you can see where she would stand. On\n   the pod Krea 2 paints her there. Outside the mask the plate is bit-identical.\n6. **06**: background blur, then ISO grain, fringing, falloff, white balance drift.\n7. **07**: the 4 candidates land together in `outputs/images/candidates/9b_<seed>/`, each logged\n   with its label. Then open **Workflow 13** to pick the winner -- also a free, local step. (These\n   practice files say `practice_run` in their names; delete their folders when you're done.)\n\n## What is missing on purpose\nKrea 2 + your character LoRA, the identity reference LoRA, SDPose's pose extraction from a photo,\nand BiRefNet -- all need model files. Nothing else differs from 09b."
+    "# 09c Practice run (no GPU, no models)\n\nWorkflow 09b's clicks, minus Krea 2. Everything here runs on CPU in a few seconds, so you can\nlearn the moves before the vast.ai meter starts. Queue it as is first, then change things.\n\n## The loop you are rehearsing\n1. **01**: the location photo. Painting a mask is optional: with nothing painted, each candidate\n   gets its own place. Paint one (right-click -> **Open in MaskEditor**) and every candidate stands\n   where you painted -- only the angle still changes. `practice_plate.png` may already carry a\n   painted mask; the *Masks* preview and *What each candidate got* show which case you are in.\n2. **02**: *Placement & Angle per Seed* turns one queue into **4 candidates**, each with its own\n   seed, its own spot in the photo (left to right, nearer or further back) and its own body angle\n   (front, three-quarter, profile, back over the shoulder). The angle is drawn in the skeleton\n   *and* written into the prompt, so they never disagree. Queue again: new seed, new set.\n3. **03**: the masks and skeletons it made. In 09b the skeleton is picture 3 for Krea 2.\n4. **04**: the real Prompt Builder. The mandatory \"don't look AI\" block is appended for you.\n5. **05**: here the *skeleton* is pasted into the mask so you can see where she would stand. On\n   the pod Krea 2 paints her there. Outside the mask the plate is bit-identical.\n6. **06**: background blur, then ISO grain, fringing, falloff, white balance drift.\n7. **07**: the 4 filtered candidates land together in `outputs/images/candidates/9b_<seed>/`, with\n   clean pre-filter copies under `outputs/images/unfiltered/9b_<seed>/`. Each is logged with its\n   label. Then open **Workflow 13** to pick the winner -- also a free, local step. (These practice\n   files say `practice_run` in their names; delete their folders when you're done.)\n\n## What is missing on purpose\nKrea 2 + your character LoRA, the identity reference LoRA, SDPose's pose extraction from a photo,\nand BiRefNet -- all need model files. Nothing else differs from 09b."
    ]
   }
  ],
@@ -1024,7 +1118,7 @@
   ],
   [
    24,
-   2,
+   12,
    0,
    16,
    0,
@@ -1032,9 +1126,49 @@
   ],
   [
    25,
+   5,
+   1,
+   16,
+   1,
+   "STRING"
+  ],
+  [
+   26,
+   5,
+   2,
+   16,
+   2,
+   "INT"
+  ],
+  [
+   27,
+   5,
+   4,
+   16,
+   3,
+   "STRING"
+  ],
+  [
+   28,
+   5,
+   3,
+   16,
+   4,
+   "STRING"
+  ],
+  [
+   29,
+   2,
+   0,
+   17,
+   0,
+   "IMAGE"
+  ],
+  [
+   30,
    14,
    0,
-   16,
+   17,
    1,
    "IMAGE"
   ]
@@ -1120,11 +1254,11 @@
   },
   {
    "id": 7,
-   "title": "07 OUTPUT: one folder per queue, like 09b",
+   "title": "07 OUTPUT: filtered + unfiltered copies",
    "bounding": [
     2150,
     0,
-    800,
+    1170,
     560
    ],
    "color": "#444",

@@ -1,6 +1,6 @@
 {
- "last_node_id": 50,
- "last_link_id": 100,
+ "last_node_id": 54,
+ "last_link_id": 110,
  "nodes": [
   {
    "id": 1,
@@ -335,6 +335,22 @@
      "widget": {
       "name": "identity"
      }
+    },
+    {
+     "name": "subject_action",
+     "type": "STRING",
+     "link": 107,
+     "widget": {
+      "name": "subject_action"
+     }
+    },
+    {
+     "name": "camera_and_lens",
+     "type": "STRING",
+     "link": 108,
+     "widget": {
+      "name": "camera_and_lens"
+     }
     }
    ],
    "outputs": [
@@ -344,7 +360,8 @@
      "links": [
       86,
       87,
-      100
+      100,
+      103
      ],
      "slot_index": 0
     }
@@ -571,7 +588,8 @@
      "type": "IMAGE",
      "links": [
       77,
-      78
+      78,
+      102
      ],
      "slot_index": 0
     }
@@ -666,7 +684,8 @@
     "",
     "",
     ""
-   ]
+   ],
+   "title": "Save filtered copy"
   },
   {
    "id": 16,
@@ -711,7 +730,7 @@
     "Node name for S&R": "MarkdownNote"
    },
    "widgets_values": [
-    "# 09d Krea 2 - the pose photo's pose, in your location, from a new angle each seed\n\nEach image **starts from the pose photo** (image-to-image, like Workflow 09), so the pose and framing\nare the photo's, and is repainted as your character in your location:\n\n| Input | What it gives |\n|---|---|\n| **Pose photo** (group 07) | the starting image: body pose and framing. *Pose strength* = the sampler's **denoise** |\n| **Picture 1** (group 06) | the person's face and identity (plus the character LoRA in group 01) |\n| **Picture 2** (group 02) | **the room**: walls, furniture, colours, light (a new shot of it, not a copy) |\n| **Picture 3** | the skeleton of the pose, detected on the moved photo |\n\n## Pose strength (sampler denoise, group 04)\n- **0.75**: very close to the pose photo (its colours start to show through too)\n- **0.8**: default - the pose and framing, your person and room\n- **0.9**: only the rough pose\n\n## A new angle per seed (group 05c, *Pose Angle per Seed*)\nBefore encoding, the camera is moved a little around the pose photo: a small turn, tilt, zoom and\nshift, different for every seed. `variation` scales them all (0 = the photo exactly); `max_turn`,\n`max_tilt`, `max_zoom`, `max_shift` set the limits. `candidates` = images per queue, each from its own\nangle. *Pose photo as seen this seed* shows what each candidate starts from.\n\n**Framing (`frame`)**: before the camera moves, the pose photo is cropped around the person to a normal phone shape - by default the location photo's shape when the person fits, otherwise the closest phone shape that does (3:4, 1:1, 4:3, 3:2...). Never padded, so a very wide pose photo can't give a panorama. About 1 MP.\n\n**Folders (`folder_by`)**: every seed of the same prompt is saved in the same folder, `outputs/images/final/9d_<prompt code>/`. Switch to 'queue' for one folder per queue. Background blur and the camera pass run last."
+    "# 09d Krea 2 - the pose photo's pose, in your location, from a new angle each seed\n\nEach image **starts from the pose photo** (image-to-image, like Workflow 09), so the pose and framing\nare the photo's, and is repainted as your character in your location:\n\n| Input | What it gives |\n|---|---|\n| **Pose photo** (group 07) | the starting image: body pose and framing. *Pose strength* = the sampler's **denoise** |\n| **Picture 1** (group 06) | the person's face and identity (plus the character LoRA in group 01) |\n| **Picture 2** (group 02) | **the room**: walls, furniture, colours, light (a new shot of it, not a copy) |\n| **Picture 3** | the skeleton of the pose, detected on the moved photo |\n\n## Pose strength (sampler denoise, group 04)\n- **0.75**: very close to the pose photo (its colours start to show through too)\n- **0.8**: default - the pose and framing, your person and room\n- **0.9**: only the rough pose\n\n## A new angle per seed (group 05c, *Pose Angle per Seed*)\nBefore encoding, the camera is moved a little around the pose photo: a small turn, tilt, zoom and\nshift, different for every seed. `variation` scales them all (0 = the photo exactly); `max_turn`,\n`max_tilt`, `max_zoom`, `max_shift` set the limits. `candidates` = images per queue, each from its own\nangle. *Pose photo as seen this seed* shows what each candidate starts from.\n\n**Framing (`frame`)**: before the camera moves, the pose photo is cropped around the person to a normal phone shape - by default the location photo's shape when the person fits, otherwise the closest phone shape that does (3:4, 1:1, 4:3, 3:2...). Never padded, so a very wide pose photo can't give a panorama. About 1 MP.\n\n**Folders (`folder_by`)**: every seed of the same prompt is saved in the same folder, `outputs/images/final/9d_<prompt code>/`. Switch to 'queue' for one folder per queue. Background blur and the camera pass run last. Every queue also saves a clean pre-filter copy under `outputs/images/unfiltered/`."
    ],
    "color": "#222",
    "bgcolor": "#000"
@@ -742,7 +761,7 @@
      "name": "MODEL",
      "type": "MODEL",
      "links": [
-      9
+      101
      ],
      "slot_index": 0
     }
@@ -1348,6 +1367,22 @@
      "name": "prompt",
      "type": "STRING",
      "link": 100
+    },
+    {
+     "name": "seed",
+     "type": "INT",
+     "link": 109,
+     "widget": {
+      "name": "seed"
+     }
+    },
+    {
+     "name": "candidates",
+     "type": "INT",
+     "link": 110,
+     "widget": {
+      "name": "candidates"
+     }
     }
    ],
    "outputs": [
@@ -1366,7 +1401,8 @@
      "type": "INT",
      "links": [
       85,
-      88
+      88,
+      104
      ],
      "slot_index": 1
     },
@@ -1374,7 +1410,8 @@
      "name": "folder",
      "type": "STRING",
      "links": [
-      90
+      90,
+      106
      ],
      "slot_index": 2
     },
@@ -1383,7 +1420,8 @@
      "type": "STRING",
      "links": [
       89,
-      92
+      92,
+      105
      ],
      "slot_index": 3
     }
@@ -1563,6 +1601,244 @@
     16
    ],
    "title": "Skeleton of the moved photo"
+  },
+  {
+   "id": 51,
+   "type": "LoraLoaderModelOnly",
+   "pos": [
+    30,
+    820
+   ],
+   "size": [
+    320,
+    130
+   ],
+   "flags": {},
+   "order": 34,
+   "mode": 4,
+   "inputs": [
+    {
+     "name": "model",
+     "type": "MODEL",
+     "link": 101
+    }
+   ],
+   "outputs": [
+    {
+     "name": "MODEL",
+     "type": "MODEL",
+     "links": [
+      9
+     ],
+     "slot_index": 0
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "LoraLoaderModelOnly"
+   },
+   "widgets_values": [
+    "",
+    1.0
+   ],
+   "title": "Optional extra LoRA - NSFW / concept fine-tune (Ctrl+B to enable)"
+  },
+  {
+   "id": 52,
+   "type": "AIInfluencerSaveImage",
+   "pos": [
+    2920,
+    760
+   ],
+   "size": [
+    360,
+    420
+   ],
+   "flags": {},
+   "order": 42,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "images",
+     "type": "IMAGE",
+     "link": 102
+    },
+    {
+     "name": "prompt_text",
+     "type": "STRING",
+     "link": 103,
+     "widget": {
+      "name": "prompt_text"
+     }
+    },
+    {
+     "name": "seed",
+     "type": "INT",
+     "link": 104,
+     "widget": {
+      "name": "seed"
+     }
+    },
+    {
+     "name": "notes",
+     "type": "STRING",
+     "link": 105,
+     "widget": {
+      "name": "notes"
+     }
+    },
+    {
+     "name": "subfolder",
+     "type": "STRING",
+     "link": 106,
+     "widget": {
+      "name": "subfolder"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [],
+     "slot_index": 0
+    },
+    {
+     "name": "output_path",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 1
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerSaveImage"
+   },
+   "widgets_values": [
+    "",
+    "local_unfiltered",
+    "local_krea2",
+    "Krea 2 Turbo + LoRA + pose img2img (moved camera) + location ref",
+    "generate",
+    "",
+    "",
+    "",
+    -1,
+    "fixed",
+    0,
+    "",
+    "",
+    ""
+   ],
+   "title": "Save unfiltered copy"
+  },
+  {
+   "id": 53,
+   "type": "AIInfluencerCharacterViews",
+   "pos": [
+    460,
+    2660
+   ],
+   "size": [
+    440,
+    540
+   ],
+   "flags": {},
+   "order": 36,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "subject_action",
+     "type": "STRING",
+     "links": [
+      107
+     ],
+     "slot_index": 0,
+     "shape": 6
+    },
+    {
+     "name": "camera_and_lens",
+     "type": "STRING",
+     "links": [
+      108
+     ],
+     "slot_index": 1,
+     "shape": 6
+    },
+    {
+     "name": "seed",
+     "type": "INT",
+     "links": [
+      109
+     ],
+     "slot_index": 2,
+     "shape": 6
+    },
+    {
+     "name": "folder",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 3,
+     "shape": 6
+    },
+    {
+     "name": "view",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 4,
+     "shape": 6
+    },
+    {
+     "name": "candidates",
+     "type": "INT",
+     "links": [
+      110
+     ],
+     "slot_index": 5,
+     "shape": 6
+    },
+    {
+     "name": "angles",
+     "type": "STRING",
+     "links": [],
+     "slot_index": 6,
+     "shape": 6
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "AIInfluencerCharacterViews"
+   },
+   "widgets_values": [
+    "manual",
+    0,
+    "randomize",
+    "relaxed expression, looking toward the camera",
+    "35mm, eye level",
+    1,
+    "0: the body facing the camera\n35: the body turned slightly toward frame-right, face toward the camera\n-35: the body turned slightly toward frame-left, face toward the camera\n65: three-quarter view, the body turned toward frame-right, head turned back toward the camera\n-65: three-quarter view, the body turned toward frame-left, head turned back toward the camera\n90: seen in profile, facing frame-right\n-90: seen in profile, facing frame-left\n160: seen from behind, looking back over the shoulder toward the camera"
+   ]
+  },
+  {
+   "id": 54,
+   "type": "MarkdownNote",
+   "pos": [
+    940,
+    2660
+   ],
+   "size": [
+    470,
+    540
+   ],
+   "flags": {},
+   "order": 37,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [],
+   "properties": {
+    "Node name for S&R": "MarkdownNote"
+   },
+   "widgets_values": [
+    "## Optional view batch (same Krea model and vast.ai Pod queue)\n\n**manual**: edit action and camera here; other Prompt Builder fields still control identity, clothing, location and light.\nChoose **head**, **head360**, **upper360**, **full360** for eight views, **all 32**, or one named view. Each gets its own seed and one candidate; manual mode keeps the configured candidate count. The view selector replaces action and framing only; no model or resolution changes.\n\nQueue normally with **Hold for the pod**. The existing vast.ai path runs each view and saves filtered / clean copies as configured by this workflow.\n\n08 uses the character LoRA to hold identity. In pose-based workflows, the photo and skeleton still constrain composition: a text request for a back/profile view cannot guarantee a real 3D turn. Use a matching pose photo or raise sampler denoise to allow larger changes. 09b gets the preset's matching skeleton angle; placement and reference-pose controls still apply. Its manual angle list is edited here.\n\nAdapted from MATRIX LAB's 32-view prompts (Apache-2.0). Source and license: `view_presets/` in the toolkit. No Qwen models are needed."
+   ]
   }
  ],
  "links": [
@@ -1608,7 +1884,7 @@
   ],
   [
    9,
-   21,
+   51,
    0,
    12,
    0,
@@ -1933,6 +2209,86 @@
    46,
    3,
    "STRING"
+  ],
+  [
+   101,
+   21,
+   0,
+   51,
+   0,
+   "MODEL"
+  ],
+  [
+   102,
+   13,
+   0,
+   52,
+   0,
+   "IMAGE"
+  ],
+  [
+   103,
+   8,
+   0,
+   52,
+   1,
+   "STRING"
+  ],
+  [
+   104,
+   46,
+   1,
+   52,
+   2,
+   "INT"
+  ],
+  [
+   105,
+   46,
+   3,
+   52,
+   3,
+   "STRING"
+  ],
+  [
+   106,
+   46,
+   2,
+   52,
+   4,
+   "STRING"
+  ],
+  [
+   107,
+   53,
+   0,
+   8,
+   1,
+   "STRING"
+  ],
+  [
+   108,
+   53,
+   1,
+   8,
+   2,
+   "STRING"
+  ],
+  [
+   109,
+   53,
+   2,
+   46,
+   4,
+   "INT"
+  ],
+  [
+   110,
+   53,
+   5,
+   46,
+   5,
+   "INT"
   ]
  ],
  "groups": [
@@ -1943,7 +2299,7 @@
     0,
     0,
     400,
-    860
+    990
    ],
    "color": "#3f789e",
    "font_size": 24,
@@ -2037,6 +2393,32 @@
     1000
    ],
    "color": "#8A8",
+   "font_size": 24,
+   "flags": {}
+  },
+  {
+   "id": 11,
+   "title": "09 OUTPUT: unfiltered copy",
+   "bounding": [
+    2890,
+    700,
+    420,
+    760
+   ],
+   "color": "#444",
+   "font_size": 24,
+   "flags": {}
+  },
+  {
+   "id": 10,
+   "title": "CHARACTER VIEWS \u2014 optional MATRIX expression / angle batches",
+   "bounding": [
+    430,
+    2600,
+    1040,
+    680
+   ],
+   "color": "#b58b2a",
    "font_size": 24,
    "flags": {}
   }

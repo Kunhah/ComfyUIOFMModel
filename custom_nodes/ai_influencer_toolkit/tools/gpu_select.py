@@ -16,6 +16,8 @@ Requirements, and why:
   minimax  MiniMax H3 (Workflow 11) plus Krea 2. The H3 text encoder ships in nvfp4, which only
            Blackwell runs (compute capability 10.0+: RTX 5090, RTX PRO 4000/5000/6000, B200), and
            H3 needs a 32 GB card. ~45 GB more to download, so a bigger disk.
+  animate  Wan Animate 2 distilled int8 (Workflow 14) plus Krea 2. The 16.7 GB model fits a 24 GB
+           card next to the activations; int8 runs on Ampere and newer. ~25 GB more to download.
 """
 from __future__ import annotations
 
@@ -44,6 +46,8 @@ PROFILES = {
                      max_price=0.60, download_gb=20, work_hours=1.0),
     "minimax": Profile("minimax", "MiniMax H3 video + Krea 2", min_vram_gb=31, min_compute_cap=1000, disk_gb=200,
                        max_price=1.50, download_gb=65, work_hours=1.0),
+    "animate": Profile("animate", "Wan Animate 2 motion transfer + Krea 2", min_vram_gb=23, min_compute_cap=800, disk_gb=100,
+                       max_price=0.80, download_gb=45, work_hours=1.0),
 }
 
 

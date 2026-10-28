@@ -46,9 +46,12 @@ OUTPUT_STAGE_SUBDIR: dict[str, str] = {
     "krea_candidate": os.path.join("outputs", "images", "candidates"),
     "gpt_refined": os.path.join("outputs", "images", "final"),
     "local_candidate": os.path.join("outputs", "images", "candidates"),
+    "local_unfiltered": os.path.join("outputs", "images", "unfiltered"),
     "local_final": os.path.join("outputs", "images", "final"),
     "misc_image": os.path.join("outputs", "images", "misc"),
     "seedance_video": os.path.join("outputs", "videos"),
+    "minimax_h3_video": os.path.join("outputs", "videos"),
+    "wan_animate_video": os.path.join("outputs", "videos"),
     "misc_video": os.path.join("outputs", "videos"),
 }
 

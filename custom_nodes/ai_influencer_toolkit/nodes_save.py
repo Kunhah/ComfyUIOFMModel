@@ -15,8 +15,8 @@ from . import logging_util, pricing
 
 _PROVIDERS = ["krea", "local_krea2", "openai_gpt_image", "bytedance_seedream", "bytedance_seedance", "openrouter", "fal_ai", "other"]
 _OPERATIONS = ["generate", "edit", "refine", "image_to_video", "other"]
-_IMAGE_STAGES = ["character_candidate", "character_canonical", "krea_candidate", "gpt_refined", "local_candidate", "local_final", "character_sheet", "misc_image"]
-_VIDEO_STAGES = ["seedance_video", "minimax_h3_video", "misc_video"]
+_IMAGE_STAGES = ["character_candidate", "character_canonical", "krea_candidate", "gpt_refined", "local_candidate", "local_unfiltered", "local_final", "character_sheet", "misc_image"]
+_VIDEO_STAGES = ["seedance_video", "minimax_h3_video", "wan_animate_video", "misc_video"]
 
 
 class AIInfluencerSaveImage(IO.ComfyNode):
@@ -129,8 +129,8 @@ class AIInfluencerSaveVideo(IO.ComfyNode):
                 IO.Video.Input("video"),
                 IO.String.Input("project", default=""),
                 IO.Combo.Input("stage", options=_VIDEO_STAGES),
-                IO.Combo.Input("provider", options=["bytedance_seedance", "minimax_h3_local", "other"]),
-                IO.String.Input("model", default="", tooltip="e.g. 'Seedance 2.5' or 'MiniMax H3'"),
+                IO.Combo.Input("provider", options=["bytedance_seedance", "minimax_h3_local", "wan_animate_local", "other"]),
+                IO.String.Input("model", default="", tooltip="e.g. 'Seedance 2.5', 'MiniMax H3' or 'Wan Animate 2'"),
                 IO.String.Input("motion_prompt", default="", multiline=True, optional=True, tooltip="The motion prompt sent, used only to derive a short prompt_id for the log."),
                 IO.String.Input("resolution", default="", optional=True, tooltip="e.g. '1080p'"),
                 IO.String.Input("duration_seconds", default="", optional=True),
@@ -174,7 +174,7 @@ class AIInfluencerSaveVideo(IO.ComfyNode):
             {
                 "provider": provider,
                 "model": model,
-                "operation": "image_to_video",
+                "operation": "motion_transfer" if stage == "wan_animate_video" else "image_to_video",
                 "project": project,
                 "stage": stage,
                 "resolution_or_aspect": resolution or None,
